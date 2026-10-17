@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="2048" viewBox="0 0 768 1024">
+  
+  <rect width="768" height="1024" fill="#fff"/>
+  <g fill="#fff" stroke="#000" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="20" y="20" width="728" height="984" rx="28"/>
+    <circle cx="110" cy="110" r="56"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 110) rotate(0)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 110) rotate(45)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 110) rotate(90)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 110) rotate(135)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 110) rotate(180)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 110) rotate(225)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 110) rotate(270)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 110) rotate(315)"/>
+    <circle cx="110" cy="110" r="14"/>
+    <circle cx="658" cy="110" r="56"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 110) rotate(0)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 110) rotate(45)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 110) rotate(90)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 110) rotate(135)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 110) rotate(180)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 110) rotate(225)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 110) rotate(270)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 110) rotate(315)"/>
+    <circle cx="658" cy="110" r="14"/>
+    <circle cx="110" cy="914" r="56"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 914) rotate(0)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 914) rotate(45)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 914) rotate(90)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 914) rotate(135)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 914) rotate(180)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 914) rotate(225)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 914) rotate(270)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(110 914) rotate(315)"/>
+    <circle cx="110" cy="914" r="14"/>
+    <circle cx="658" cy="914" r="56"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 914) rotate(0)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 914) rotate(45)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 914) rotate(90)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 914) rotate(135)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 914) rotate(180)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 914) rotate(225)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 914) rotate(270)"/>
+    <path d="M0 -14 C 13 -25.4 13 -42.5 0 -52 C -13 -42.5 -13 -25.4 0 -14 Z" transform="translate(658 914) rotate(315)"/>
+    <circle cx="658" cy="914" r="14"/>
+    <circle cx="384" cy="512" r="340"/>
+    <circle cx="689" cy="512" r="22"/>
+    <circle cx="678.6" cy="590.9" r="22"/>
+    <circle cx="648.1" cy="664.5" r="22"/>
+    <circle cx="599.7" cy="727.7" r="22"/>
+    <circle cx="536.5" cy="776.1" r="22"/>
+    <circle cx="462.9" cy="806.6" r="22"/>
+    <circle cx="384" cy="817" r="22"/>
+    <circle cx="305.1" cy="806.6" r="22"/>
+    <circle cx="231.5" cy="776.1" r="22"/>
+    <circle cx="168.3" cy="727.7" r="22"/>
+    <circle cx="119.9" cy="664.5" r="22"/>
+    <circle cx="89.4" cy="590.9" r="22"/>
+    <circle cx="79" cy="512" r="22"/>
+    <circle cx="89.4" cy="433.1" r="22"/>
+    <circle cx="119.9" cy="359.5" r="22"/>
+    <circle cx="168.3" cy="296.3" r="22"/>
+    <circle cx="231.5" cy="247.9" r="22"/>
+    <circle cx="305.1" cy="217.4" r="22"/>
+    <circle cx="384" cy="207" r="22"/>
+    <circle cx="462.9" cy="217.4" r="22"/>
+    <circle cx="536.5" cy="247.9" r="22"/>
+    <circle cx="599.7" cy="296.3" r="22"/>
+    <circle cx="648.1" cy="359.5" r="22"/>
+    <circle cx="678.6" cy="433.1" r="22"/>
+    <circle cx="384" cy="512" r="270"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(0)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(22.5)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(45)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(67.5)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(90)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(112.5)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(135)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(157.5)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(180)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(202.5)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(225)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(247.5)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(270)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(292.5)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(315)"/>
+    <path d="M0 -182 C 34 -207.2 34 -245.0 0 -266 C -34 -245.0 -34 -207.2 0 -182 Z" transform="translate(384 512) rotate(337.5)"/>
+    <circle cx="384" cy="512" r="180"/>
+    <ellipse cx="384" cy="372" rx="24" ry="36" transform="rotate(0 384 512)"/>
+    <ellipse cx="384" cy="372" rx="24" ry="36" transform="rotate(30 384 512)"/>
+    <ellipse cx="384" cy="372" rx="24" ry="36" transform="rotate(60 384 512)"/>
+    <ellipse cx="384" cy="372" rx="24" ry="36" transform="rotate(90 384 512)"/>
+    <ellipse cx="384" cy="372" rx="24" ry="36" transform="rotate(120 384 512)"/>
+    <ellipse cx="384" cy="372" rx="24" ry="36" transform="rotate(150 384 512)"/>
+    <ellipse cx="384" cy="372" rx="24" ry="36" transform="rotate(180 384 512)"/>
+    <ellipse cx="384" cy="372" rx="24" ry="36" transform="rotate(210 384 512)"/>
+    <ellipse cx="384" cy="372" rx="24" ry="36" transform="rotate(240 384 512)"/>
+    <ellipse cx="384" cy="372" rx="24" ry="36" transform="rotate(270 384 512)"/>
+    <ellipse cx="384" cy="372" rx="24" ry="36" transform="rotate(300 384 512)"/>
+    <ellipse cx="384" cy="372" rx="24" ry="36" transform="rotate(330 384 512)"/>
+    <circle cx="384" cy="512" r="100"/>
+    <path d="M0 -42 C 20 -58.8 20 -84.0 0 -98 C -20 -84.0 -20 -58.8 0 -42 Z" transform="translate(384 512) rotate(0)"/>
+    <path d="M0 -42 C 20 -58.8 20 -84.0 0 -98 C -20 -84.0 -20 -58.8 0 -42 Z" transform="translate(384 512) rotate(45)"/>
+    <path d="M0 -42 C 20 -58.8 20 -84.0 0 -98 C -20 -84.0 -20 -58.8 0 -42 Z" transform="translate(384 512) rotate(90)"/>
+    <path d="M0 -42 C 20 -58.8 20 -84.0 0 -98 C -20 -84.0 -20 -58.8 0 -42 Z" transform="translate(384 512) rotate(135)"/>
+    <path d="M0 -42 C 20 -58.8 20 -84.0 0 -98 C -20 -84.0 -20 -58.8 0 -42 Z" transform="translate(384 512) rotate(180)"/>
+    <path d="M0 -42 C 20 -58.8 20 -84.0 0 -98 C -20 -84.0 -20 -58.8 0 -42 Z" transform="translate(384 512) rotate(225)"/>
+    <path d="M0 -42 C 20 -58.8 20 -84.0 0 -98 C -20 -84.0 -20 -58.8 0 -42 Z" transform="translate(384 512) rotate(270)"/>
+    <path d="M0 -42 C 20 -58.8 20 -84.0 0 -98 C -20 -84.0 -20 -58.8 0 -42 Z" transform="translate(384 512) rotate(315)"/>
+    <circle cx="384" cy="512" r="40"/>
+    <circle cx="384" cy="512" r="15"/>
+  </g>
+</svg>

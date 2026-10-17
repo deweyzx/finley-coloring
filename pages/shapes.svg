@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="2048" viewBox="0 0 768 1024">
+  
+  <rect width="768" height="1024" fill="#fff"/>
+  <g fill="#fff" stroke="#000" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="20" y="20" width="728" height="984" rx="28"/>
+    <circle cx="207" cy="200" r="120"/>
+    <circle cx="207" cy="200" r="78"/>
+    <circle cx="207" cy="200" r="36"/>
+    <rect x="451" y="90" width="220" height="220" rx="22"/>
+    <polygon points="561,100 661,200 561,300 461,200"/>
+    <polygon points="207,392 328.2,602 85.8,602"/>
+    <polygon points="207,602 146.4,497 267.6,497"/>
+    <polygon points="561,382 595.1,475.1 694.1,478.7 616.2,539.9 643.3,635.3 561,580 478.7,635.3 505.8,539.9 427.9,478.7 526.9,475.1"/>
+    <path d="M207 934 C 47 824 107 694 207 769 C 307 694 367 824 207 934 Z"/>
+    <polygon points="686,824 623.5,932.3 498.5,932.3 436,824 498.5,715.7 623.5,715.7"/>
+    <polygon points="631,824 596,884.6 526,884.6 491,824 526,763.4 596,763.4"/>
+  </g>
+</svg>

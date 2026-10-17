@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!-- "user-scalable=no" stops Safari's own pinch-zoom; the app will do its own zooming on the picture. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Coloring Book</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- type="module" lets our JavaScript files import from each other. -->
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+
+  <!-- SCREEN 1: the gallery of pages -->
+  <section id="gallery-screen" class="screen">
+    <header class="topbar">
+      <h1>Coloring Book</h1>
+    </header>
+    <main id="gallery-grid" class="gallery-grid"></main>
+  </section>
+
+  <!-- SCREEN 2: coloring one page (hidden until a page is picked) -->
+  <section id="coloring-screen" class="screen" hidden>
+    <header class="topbar">
+      <button id="back-button" class="icon-button" type="button" aria-label="Back to gallery">
+        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+          <path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <h1 id="page-title"></h1>
+    </header>
+
+    <!-- The area the picture lives in. Later, pinch-zoom and pan happen here. -->
+    <div id="canvas-area" class="canvas-area">
+      <!-- The "paper" holds the stacked layers. The line art canvas sits ON TOP of the color canvas,
+           so coloring can never cover the black lines. -->
+      <div id="paper" class="paper" hidden>
+        <canvas id="color-canvas"></canvas>
+        <canvas id="line-canvas"></canvas>
+      </div>
+      <p id="canvas-message" class="canvas-message"></p>
+    </div>
+  </section>
+
+</body>
+</html>
