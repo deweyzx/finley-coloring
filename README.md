@@ -16,20 +16,27 @@ Don't open `index.html` by double-clicking. Browsers block some features for fil
 |---|---|
 | `index.html` | The page skeleton: both screens (gallery and coloring) |
 | `css/styles.css` | All the looks: colors, sizes, layout |
-| `js/app.js` | Starts the app and switches between screens |
-| `js/gallery.js` | Draws the grid of page cards |
+| `js/app.js` | Starts the app and picks the screen from the address (`#/flowers/tulips`) |
+| `js/library.js` | Reads `pages/pages.js` and works out each page's path, id and title |
+| `js/gallery.js` | The library screens: categories, sub-categories, pages |
+| `js/thumbnails.js` | Makes small preview pictures once, and saves them |
+| `js/storage.js` | The IndexedDB database (thumbnails now, her coloring later) |
 | `js/editor.js` | The coloring screen |
 | `js/lineart.js` | Loads a page and turns its white areas see-through |
-| `pages/pages.js` | **The list of coloring pages** |
-| `pages/*.svg` | The placeholder pages |
+| `pages/pages.js` | **The list of categories and pages** |
+| `pages/<category>/<sub-category>/` | The page images |
 | `serve.py`, `start-server.bat` | Local test server (only for your PC, not part of the app) |
 
 ## Adding a coloring page
 
-1. Put the image in the `pages` folder.
-2. Add one line to `pages/pages.js`, for example:
-   `{ id: "owl", title: "Owl", file: "pages/owl.png" },`
-3. Never change a page's `id` later. Her saved coloring is stored under it.
+1. Put the image in its sub-category folder, e.g. `pages/flowers/roses/red-rose.png`.
+2. In `pages/pages.js`, add `"red-rose.png",` to the Roses `pages` list.
+   The title "Red Rose" is made from the file name automatically.
+3. Every file name must be unique across the whole library, and must not be renamed
+   after she's colored it (her progress is saved under the name). Moving it to another folder is fine.
+4. If you replace a picture with a different one, give it a new file name. Otherwise the old thumbnail is still shown.
+
+New categories and sub-categories: create the folder, then copy an existing block in `pages/pages.js`.
 
 **Best format:** PNG, black lines on a white (or transparent) background.
 - **Size:** about 1500–2500 pixels on the long side. 1536 × 2048 (the iPad's shape) is ideal. Bigger pages use a lot of iPad memory and make fills slower.

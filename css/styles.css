@@ -104,11 +104,21 @@ html, body {
 }
 .page-card:active { transform: scale(0.97); }
 
+/* Categories and sub-categories look like a little stack of paper. */
+.page-card.stacked {
+  box-shadow:
+    var(--shadow),
+    6px 6px 0 -1px var(--surface),
+    6px 6px 3px 0 rgba(60, 45, 30, 0.12);
+}
+
 .thumb {
+  position: relative;
   aspect-ratio: 3 / 4;
   border-radius: 10px;
   overflow: hidden;
   background: #fff;
+  border: 1px solid #efe9e1;
 }
 .thumb img {
   width: 100%;
@@ -116,12 +126,61 @@ html, body {
   object-fit: contain;
   display: block;
   pointer-events: none;
+  opacity: 0;                    /* invisible until the thumbnail has loaded... */
+  transition: opacity 0.25s ease;
+}
+.thumb img.loaded { opacity: 1; } /* ...then it fades in */
+
+.page-card.missing .thumb::after {
+  content: "Image not found";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .page-name {
   font-size: 17px;
   font-weight: 500;
+  padding: 0 4px;
+}
+
+.card-detail {
+  margin-top: -6px;
   padding: 0 4px 2px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ---------- Library header ---------- */
+.titles {
+  min-width: 0; /* lets long titles shrink with "…" instead of overflowing */
+}
+.crumb {
+  margin: 0 0 1px;
+  font-size: 14px;
+  color: var(--muted);
+}
+a.icon-button { text-decoration: none; }
+a.page-card { text-decoration: none; }
+
+.notice {
+  margin: 0 20px 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fbe3dc;
+  color: #8a2f1c;
+  font-size: 15px;
+}
+
+.empty-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--muted);
+  font-size: 18px;
+  margin-top: 60px;
 }
 
 /* ---------- Coloring screen ---------- */

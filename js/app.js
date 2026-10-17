@@ -1,28 +1,55 @@
-// app.js - the starting point. It switches between the gallery screen and the coloring screen.
+// app.js - the starting point. It looks at the address after the "#" and shows
+// the matching screen:
+//   #/                  -> all categories
+//   #/flowers           -> the sub-categories of Flowers
+//   #/flowers/tulips    -> the pages in Tulips
+//   #/page/tulips       -> coloring the page "tulips"
 
-import { PAGES } from "../pages/pages.js";
-import { renderGallery } from "./gallery.js";
+import { findCategory, findSubcategory, findPage } from "./library.js";
+import { showLibrary, showCategory, showSubcategory } from "./gallery.js";
 import { openEditor, closeEditor } from "./editor.js";
 
 const galleryScreen = document.getElementById("gallery-screen");
 const coloringScreen = document.getElementById("coloring-screen");
-const backButton = document.getElementById("back-button");
+const coloringBack = document.getElementById("back-button");
 
-function showGallery() {
+function route() {
+  const parts = location.hash
+    .replace(/^#\/?/, "")
+    .split("/")
+    .filter(Boolean)
+    .map(decodeURIComponent);
+
+  if (parts[0] === "page") {
+    const page = findPage(parts[1]);
+    if (!page) return redirect("#/");
+    const sub = page.subcategory;
+    coloringBack.href = `#/${sub.category.folder}/${sub.folder}`;
+    galleryScreen.hidden = true;
+    coloringScreen.hidden = false;
+    openEditor(page);
+    return;
+  }
+
+  closeEditor();
   coloringScreen.hidden = true;
   galleryScreen.hidden = false;
-  renderGallery(PAGES, openPage);
+
+  if (parts.length === 0) return showLibrary();
+
+  const cat = findCategory(parts[0]);
+  if (!cat) return redirect("#/");
+  if (parts.length === 1) return showCategory(cat);
+
+  const sub = findSubcategory(cat, parts[1]);
+  if (!sub) return redirect(`#/${cat.folder}`);
+  showSubcategory(sub);
 }
 
-function openPage(page) {
-  galleryScreen.hidden = true;
-  coloringScreen.hidden = false;
-  openEditor(page);
+// Swap a bad address for a good one (without adding a step to the browser history).
+function redirect(hash) {
+  location.replace(hash);
 }
 
-backButton.addEventListener("click", () => {
-  closeEditor();
-  showGallery();
-});
-
-showGallery();
+window.addEventListener("hashchange", route);
+route();
