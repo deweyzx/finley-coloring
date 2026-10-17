@@ -21,6 +21,8 @@ for (const cat of LIBRARY) {
         id,
         title: (typeof entry === "object" && entry.title) || titleFromId(id),
         file: `pages/${cat.folder}/${sub.folder}/${fileName}`,
+        // Small preview made by the import tool (not for SVG pages; the app makes those itself).
+        thumb: /\.svg$/i.test(fileName) ? null : `thumbs/${cat.folder}/${sub.folder}/${id}.png`,
         subcategory,
       };
 

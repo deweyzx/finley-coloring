@@ -65,6 +65,9 @@ IMPORT_DIR = os.path.join(PROJECT, "import")
 PAGES_DIR = os.path.join(PROJECT, "pages")
 PAGES_JS = os.path.join(PAGES_DIR, "pages.js")
 LOG_FILE = os.path.join(PROJECT, "tools", "import-log.json")
+THUMBS_DIR = os.path.join(PROJECT, "thumbs")
+THUMB_BOX = (420, 560)  # thumbnails fit inside this many pixels (sharp on the iPad's library cards)
+THUMB_SHADES = 4        # shades of grey kept in thumbnails; fewer = smaller files
 
 
 class Skip(Exception):
@@ -596,18 +599,68 @@ def save_log(log):
         f.write("\n")
 
 
-def main():
-    if not os.path.isdir(IMPORT_DIR):
-        os.makedirs(IMPORT_DIR)
-        print("Created the 'import' folder. Put images in import/<category>/<sub-category>/")
-        print("for example import/Flowers/Roses/, then run this again.")
-        return
+def thumbnail_path(cat_folder, sub_folder, file_name):
+    """Where a page's small preview lives: thumbs/<category>/<sub-category>/<name>.png"""
+    return os.path.join(THUMBS_DIR, cat_folder, sub_folder, os.path.splitext(file_name)[0] + ".png")
 
+
+def save_thumbnail(page_img, path):
+    """Saves a small preview for the library cards: about 45 KB instead of a 400 KB page.
+    It uses only a few shades of grey, which makes line art files much smaller."""
+    thumb = page_img.convert("L")
+    thumb.thumbnail(THUMB_BOX, Image.LANCZOS)
+    shades = Image.new("P", (1, 1))
+    steps = [round(i * 255 / (THUMB_SHADES - 1)) for i in range(THUMB_SHADES)]
+    shades.putpalette([v for s in steps for v in (s, s, s)] + [255, 255, 255] * (256 - THUMB_SHADES))
+    thumb = thumb.convert("RGB").quantize(palette=shades, dither=Image.Dither.NONE)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    thumb.save(path, "PNG", optimize=True)
+
+
+def make_missing_thumbnails(library):
+    """Makes thumbnails for pages that don't have one yet (or whose page file is newer),
+    e.g. pages added by hand or moved to another folder. SVG pages are skipped: the app
+    makes their previews itself."""
+    made, failed = 0, []
+    for cat in library:
+        for sub in cat["subcategories"]:
+            for entry in sub["pages"]:
+                file_name = page_file_name(entry)
+                if os.path.splitext(file_name)[1].lower() not in IMAGE_TYPES:
+                    continue
+                page_path = os.path.join(PAGES_DIR, cat["folder"], sub["folder"], file_name)
+                thumb = thumbnail_path(cat["folder"], sub["folder"], file_name)
+                if not os.path.exists(page_path):
+                    failed.append(f"{cat['folder']}/{sub['folder']}/{file_name}: listed in pages.js but the file is missing")
+                    continue
+                if os.path.exists(thumb) and os.path.getmtime(thumb) >= os.path.getmtime(page_path):
+                    continue
+                try:
+                    with Image.open(page_path) as im:
+                        save_thumbnail(im, thumb)
+                    made += 1
+                except Exception as e:
+                    failed.append(f"{cat['folder']}/{sub['folder']}/{file_name}: couldn't make a thumbnail ({e})")
+    if made:
+        print(f"Made {made} missing thumbnail{'s' if made != 1 else ''}.")
+    for problem in failed:
+        print("  Problem: " + problem)
+
+
+def main():
     try:
         library, header, trailer = read_pages_js()
     except PagesJsError as e:
         print(f"Problem reading pages.js: {e}")
         print("Nothing was imported. Fix pages.js (or undo your last change to it) and try again.")
+        return
+
+    make_missing_thumbnails(library)
+
+    if not os.path.isdir(IMPORT_DIR):
+        os.makedirs(IMPORT_DIR)
+        print("Created the 'import' folder. Put images in import/<category>/<sub-category>/")
+        print("for example import/Flowers/Roses/, then run this again.")
         return
 
     images, problems = find_images()
@@ -677,6 +730,7 @@ def main():
         out_dir = os.path.join(PAGES_DIR, category["folder"], sub["folder"])
         os.makedirs(out_dir, exist_ok=True)
         page_img.save(os.path.join(out_dir, name + ".png"), optimize=True)
+        save_thumbnail(page_img, thumbnail_path(category["folder"], sub["folder"], name + ".png"))
         sub["pages"].append(name + ".png")
 
         info = {"source": shown, "sha256": digest, "fingerprint": print_}

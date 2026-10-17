@@ -25,6 +25,7 @@ Don't open `index.html` by double-clicking. Browsers block some features for fil
 | `js/lineart.js` | Loads a page and turns its white areas see-through |
 | `pages/pages.js` | **The list of categories and pages** |
 | `pages/<category>/<sub-category>/` | The page images |
+| `thumbs/<category>/<sub-category>/` | Small previews of each page for the library (made by the import tool) |
 | `serve.py`, `start-server.bat` | Local test server (only for your PC, not part of the app) |
 | `import-pages.bat`, `tools/import_pages.py` | The import tool (see below) |
 | `tools/import-log.json` | The import tool's record of what it has imported |
@@ -89,6 +90,9 @@ Good to know:
   ask Claude to remove those pages first. Only do this before she has colored them.
 - **Pages look a bit grey and fuzzy on the PC?** That's the browser shrinking a big page to fit a
   small window, not the page itself. On her iPad's sharper screen the lines look solid.
+- **Thumbnails:** for each page, the tool also saves a small preview (about 40 KB) in `thumbs/`,
+  so the library loads fast even with hundreds of pages. Every run also makes any missing ones,
+  for example after you add a page by hand or move a sub-category. Just run it again.
 - `tools/import-log.json` is the tool's memory of what it imported. Don't delete it.
 - If pages.js has a typo, the tool stops before changing anything and tells you the line number.
 
@@ -100,6 +104,8 @@ Good to know:
 3. Every file name must be unique across the whole library, and must not be renamed
    after she's colored it (her progress is saved under the name). Moving it to another folder is fine.
 4. If you replace a picture with a different one, give it a new file name. Otherwise the old thumbnail is still shown.
+5. Run `import-pages.bat` once (even with nothing to import). It makes the page's thumbnail.
+   Without one, the app makes a preview itself, just more slowly.
 
 New categories and sub-categories: create the folder, then copy an existing block in `pages/pages.js`.
 

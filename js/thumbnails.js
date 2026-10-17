@@ -1,6 +1,7 @@
-// thumbnails.js - small preview pictures for the library.
+// thumbnails.js - small preview pictures for the library, for pages WITHOUT a ready-made
+// thumbnail file (SVG pages, or pages added by hand without running the import tool).
 //
-// Full pages are big (about 1536 x 2048 pixels). Showing hundreds of those in a grid
+// Full pages are big (about 2048 x 2732 pixels). Showing hundreds of those in a grid
 // would make the iPad slow and run out of memory. So the first time a page's card
 // appears on screen, we load the full page ONCE, shrink it to a small picture, and
 // save that in the database. After that, only the small picture is ever loaded.

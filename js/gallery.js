@@ -85,7 +85,17 @@ function renderCards(cards) {
   for (const card of cards) {
     const el = makeCard(card);
     grid.append(el);
-    if (card.cover) observer.observe(el);
+    if (!card.cover) continue;
+    if (card.cover.thumb) {
+      // A ready-made thumbnail file: the browser loads it when the card scrolls near the screen.
+      const img = el.querySelector("img");
+      img.loading = "lazy";
+      img.onload = () => img.classList.add("loaded");
+      img.onerror = () => observer.observe(el); // missing? make one from the full page instead
+      img.src = card.cover.thumb;
+    } else {
+      observer.observe(el);
+    }
   }
 }
 
