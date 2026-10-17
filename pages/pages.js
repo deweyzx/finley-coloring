@@ -1,5 +1,9 @@
 // THE COLORING PAGE LIBRARY
 //
+// The easy way to add pages is the import tool (import-pages.bat, see README.md):
+// it cleans up the images and updates this list for you. Note: when it updates
+// this file, comments INSIDE the list below are removed (these top ones stay).
+//
 // Folders on disk match this list:   pages/<category folder>/<sub-category folder>/<file>
 //   e.g. pages/flowers/roses/red-rose.png
 //
@@ -28,6 +32,13 @@ export const LIBRARY = [
       ]},
       { name: "Tulips", folder: "tulips", pages: [
         "tulips.svg",
+      ]},
+      { name: "Daffodils", folder: "daffodils", pages: [
+        "daffodil.png",
+      ]},
+      { name: "Tiger Lilies", folder: "tiger-lilies", pages: [
+        "tiger-lily-1.png",
+        "tiger-lily-2.png",
       ]},
     ],
   },
