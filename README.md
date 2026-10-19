@@ -152,5 +152,15 @@ a brush stroke only colors inside the outlined area where it started, exactly th
 would cover there, so she can color quickly without going over the lines. It works for every
 brush, including the eraser. Turn it off to draw freely. The app remembers the choice.
 
+**Build up color:** the switch below it. On (the default), each new stroke on top deepens the
+color, for layering and shading. Off, going back over a spot in the same color keeps it even
+instead of darker, which is good for touching up missed spots. Painting a different color on top
+works normally either way.
+
+## Undo and redo
+
+The curved arrows at the top right of the coloring screen go back and forward one step (a stroke
+or a fill) at a time. On the PC: Ctrl+Z to undo, Ctrl+Y to redo.
+
 To change how a brush feels, or to add a new one, edit `js/brushes.js`. Each brush is one short
 block of settings, and the comments at the top explain each setting.

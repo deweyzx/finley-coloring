@@ -37,6 +37,21 @@
         </svg>
       </a>
       <h1 id="page-title"></h1>
+      <!-- Undo ("back") and redo ("forward"). -->
+      <div class="history-buttons">
+        <button id="undo-button" class="icon-button" type="button" aria-label="Undo" disabled>
+          <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
+            <path d="M9 14 L4 9 L9 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 9 H14 a6 6 0 0 1 0 12 H10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button id="redo-button" class="icon-button" type="button" aria-label="Redo" disabled>
+          <svg viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
+            <path d="M15 14 L20 9 L15 4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M20 9 H10 a6 6 0 0 0 0 12 H14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
     </header>
 
     <!-- The picture and the tool panel. The panel sits below the picture when the iPad
@@ -71,15 +86,26 @@
             </div>
 
             <!-- Line-lock: when on, brush strokes stay inside the area where they start. -->
-            <button id="line-lock" class="lock-toggle" type="button" role="switch" aria-checked="true">
+            <button id="line-lock" class="toggle-switch" type="button" role="switch" aria-checked="true">
               <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
                 <rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
                 <path class="shackle-closed" d="M8.5 10.5 V8 a3.5 3.5 0 0 1 7 0 V10.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
                 <path class="shackle-open" d="M8.5 10.5 V7 a3.5 3.5 0 0 1 6.8 -1.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
                 <circle cx="12" cy="15.5" r="1.5" fill="currentColor"/>
               </svg>
-              <span class="lock-label">Stay inside lines</span>
-              <span class="lock-state">On</span>
+              <span class="toggle-label">Stay inside lines</span>
+              <span class="toggle-state">On</span>
+            </button>
+
+            <!-- Build up color: when on, a new stroke over color deepens it (layering and
+                 shading); when off, going over the same color again keeps it even. -->
+            <button id="build-up" class="toggle-switch" type="button" role="switch" aria-checked="true">
+              <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                <circle cx="9.5" cy="12" r="5.5" fill="currentColor" fill-opacity="0.4" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="14.5" cy="12" r="5.5" fill="currentColor" fill-opacity="0.4" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              <span class="toggle-label">Build up color</span>
+              <span class="toggle-state">On</span>
             </button>
           </div>
 

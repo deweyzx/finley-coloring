@@ -35,7 +35,7 @@
   --preview-height: 76px;
   --slider-height: 40px;    /* touch area of a slider */
   --slider-thumb: 30px;     /* the round knob */
-  --toggle-height: 44px;    /* the line-lock switch */
+  --toggle-height: 40px;    /* the on/off switches */
 }
 
 * { box-sizing: border-box; }
@@ -300,14 +300,14 @@ a.page-card { text-decoration: none; }
 }
 .tool-button:active { transform: scale(0.94); }
 
-/* ---------- Line-lock toggle ---------- */
+/* ---------- On/off switches (Stay inside lines, Build up color) ---------- */
 .tool-column {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   flex: none;
 }
-.lock-toggle {
+.toggle-switch {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -323,8 +323,8 @@ a.page-card { text-decoration: none; }
   box-shadow: var(--shadow);
   transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
-.lock-toggle .lock-label { flex: 1; text-align: left; white-space: nowrap; }
-.lock-toggle .lock-state {
+.toggle-switch .toggle-label { flex: 1; text-align: left; white-space: nowrap; }
+.toggle-switch .toggle-state {
   min-width: 40px;
   padding: 3px 8px;
   border-radius: 999px;
@@ -333,21 +333,34 @@ a.page-card { text-decoration: none; }
   font-weight: 600;
   text-align: center;
 }
-.lock-toggle .shackle-closed { display: none; }
-.lock-toggle.on {
+.toggle-switch .shackle-closed { display: none; }
+.toggle-switch.on {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--surface);
 }
-.lock-toggle.on .lock-state {
+.toggle-switch.on .toggle-state {
   background: var(--surface);
   color: var(--accent);
 }
-.lock-toggle.on .shackle-closed { display: inline; }
-.lock-toggle.on .shackle-open { display: none; }
-.lock-toggle:active { transform: scale(0.97); }
-/* Fill doesn't use line-lock, so it fades while Fill is selected (still tappable). */
-.lock-toggle.faded { opacity: 0.45; }
+.toggle-switch.on .shackle-closed { display: inline; }
+.toggle-switch.on .shackle-open { display: none; }
+.toggle-switch:active { transform: scale(0.97); }
+/* Fill doesn't use these, so they fade while Fill is selected (still tappable). */
+.toggle-switch.faded { opacity: 0.45; }
+
+/* ---------- Undo / redo (top right of the coloring screen) ---------- */
+.history-buttons {
+  margin-left: auto;
+  display: flex;
+  gap: 12px;
+  flex: none;
+}
+.icon-button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.icon-button:disabled:active { transform: none; }
 
 /* ---------- Brush controls: preview + sliders ---------- */
 .brush-controls {

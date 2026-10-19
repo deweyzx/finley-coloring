@@ -9,6 +9,10 @@
 //   3. While she draws, the stroke is shown on its own see-through layer.
 //   4. When she lifts the Pencil, the stroke is laid onto the picture. A new stroke over an
 //      old one adds up, so she can build up color and shading in layers.
+//   5. "Build up color" OFF: going over a spot already painted in the SAME color only adds
+//      what's missing to reach this stroke's opacity, so touch-ups stay even instead of
+//      getting darker. To know that, the engine remembers for every pixel the last color
+//      painted there and how strongly ("paint memory", 4 numbers per pixel).
 //
 // The brushes themselves are described in brushes.js.
 
@@ -19,15 +23,20 @@ export class StrokeEngine {
     this.width = width;
     this.height = height;
     this.coverage = new Uint8Array(width * height);
+    // Paint memory: for every pixel, the red, green, blue of the last paint there and how
+    // strongly it was laid on (0-255). 0 strength = never painted.
+    this.memory = new Uint8Array(width * height * 4);
     this.box = null;   // the area the whole stroke has touched
     this.dirty = null; // the area changed since the screen was last updated
   }
 
-  // Starts a stroke. settings = { size, opacity } from the sliders; rgb = { r, g, b }.
-  begin(brush, settings, rgb) {
+  // Starts a stroke. settings = { size, opacity } from the sliders; rgb = { r, g, b };
+  // buildUp = true: strokes on top deepen the color; false: same-color touch-ups stay even.
+  begin(brush, settings, rgb, buildUp = true) {
     this.brush = brush;
     this.settings = settings;
     this.rgb = rgb;
+    this.buildUp = buildUp;
     this.last = null;
     this.leftover = 0; // distance already travelled toward the next dab
     this.box = null;
@@ -171,12 +180,26 @@ export class StrokeEngine {
     const px = image.data;
     const { r, g, b } = this.rgb;
     const cov = this.coverage;
+    const mem = this.memory;
+    const evenOut = !this.buildUp;
     for (let row = 0; row < h; row++) {
       let i = (d.y0 + row) * this.width + d.x0;
       let p = row * w * 4;
       for (let col = 0; col < w; col++, i++, p += 4) {
-        const c = cov[i];
+        let c = cov[i];
         if (c === 0) continue;
+        if (evenOut) {
+          const m = i * 4;
+          const had = mem[m + 3];
+          if (had > 0 && mem[m] === r && mem[m + 1] === g && mem[m + 2] === b) {
+            // Already painted this color with strength `had`: only add what's missing.
+            // (Laying the color on at strength x over it brings it to `c` exactly when
+            // x = (c - had) / (1 - had).)
+            if (c <= had) continue;
+            c = had >= 255 ? 0 : Math.round(((c - had) / (255 - had)) * 255);
+            if (c === 0) continue;
+          }
+        }
         px[p] = r;
         px[p + 1] = g;
         px[p + 2] = b;
@@ -187,15 +210,18 @@ export class StrokeEngine {
   }
 
   // Lays the finished stroke onto the picture, then clears the stroke layer.
-  // Returns the area it changed (for undo, step 5), or null if nothing was drawn.
-  commit(strokeCtx, colorCtx) {
+  // beforeChange(box) is called just before the picture changes (undo saves a copy then).
+  // Returns the area it changed, or null if nothing was drawn.
+  commit(strokeCtx, colorCtx, beforeChange) {
     const box = this.box;
     if (!box) return null;
     this.render(strokeCtx);
     const w = box.x1 - box.x0 + 1;
     const h = box.y1 - box.y0 + 1;
+    if (beforeChange) beforeChange({ x: box.x0, y: box.y0, w, h });
     colorCtx.drawImage(strokeCtx.canvas, box.x0, box.y0, w, h, box.x0, box.y0, w, h);
     strokeCtx.clearRect(box.x0, box.y0, w, h);
+    this.remember(box);
     for (let y = box.y0; y <= box.y1; y++) {
       this.coverage.fill(0, y * this.width + box.x0, y * this.width + box.x1 + 1);
     }
@@ -204,6 +230,45 @@ export class StrokeEngine {
     return { x: box.x0, y: box.y0, w, h };
   }
 }
+
+// Paint memory after a stroke: each touched pixel now holds this color at this strength
+// (or, for an even-out touch-up of the same color, at the stronger of the two).
+StrokeEngine.prototype.remember = function (box) {
+  const { r, g, b } = this.rgb;
+  const cov = this.coverage;
+  const mem = this.memory;
+  for (let y = box.y0; y <= box.y1; y++) {
+    for (let i = y * this.width + box.x0, end = y * this.width + box.x1; i <= end; i++) {
+      const c = cov[i];
+      if (c === 0) continue;
+      const m = i * 4;
+      const same = mem[m + 3] > 0 && mem[m] === r && mem[m + 1] === g && mem[m + 2] === b;
+      if (!this.buildUp && same) {
+        if (c > mem[m + 3]) mem[m + 3] = c;
+      } else {
+        mem[m] = r;
+        mem[m + 1] = g;
+        mem[m + 2] = b;
+        mem[m + 3] = c;
+      }
+    }
+  }
+};
+
+// Paint memory after a fill: the filled pixels are now solid `rgb`.
+StrokeEngine.prototype.rememberFill = function (area, rgb) {
+  const mem = this.memory;
+  for (let row = 0; row < area.h; row++) {
+    for (let col = 0; col < area.w; col++) {
+      if (!area.mask[row * area.w + col]) continue;
+      const m = ((area.y + row) * this.width + area.x + col) * 4;
+      mem[m] = rgb.r;
+      mem[m + 1] = rgb.g;
+      mem[m + 2] = rgb.b;
+      mem[m + 3] = 255;
+    }
+  }
+};
 
 function growBox(box, x0, y0, x1, y1) {
   if (!box) return { x0, y0, x1, y1 };

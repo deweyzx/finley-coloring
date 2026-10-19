@@ -42,6 +42,19 @@ export function findFillArea(x, y, reach) {
   });
 }
 
+// Works out (and remembers) the areas at these page points ahead of time, while she isn't
+// waiting. Used right after a page opens for the points along the edges, which are usually
+// in the background - the biggest, slowest area.
+export function warmUp(points) {
+  return ask({
+    type: "warm", points, reach: 0,
+    gap: SETTINGS.gapClosing,
+    under: SETTINGS.fillUnderLines,
+    thinMax: SETTINGS.thinPatchLimit,
+    thinWidth: SETTINGS.thinPatchWidth,
+  });
+}
+
 // Paints the area onto the color layer in `color` ({ r, g, b }).
 export function paintFill(ctx, area, color) {
   const image = ctx.getImageData(area.x, area.y, area.w, area.h);

@@ -8,12 +8,11 @@ table, and any decisions that changed.
 
 ## Where we are
 
-- **Done and committed:** steps 1, 1b, 2, 2b, 3 (tap-to-fill; checked on the iPad), and step 4
-  (brushes + line-lock; passed Owen's PC test).
-- **Waiting:** Owen's iPad check of step 4 (pressure, tilt, textures, line-lock). Expect tuning
-  requests for brush feel (values in `js/brushes.js`). Also ask whether the ~0.5 s pause when a
-  locked stroke starts in the big background area is acceptable on the iPad.
-- **Next:** step 5, undo / redo.
+- **Done and committed:** steps 1, 1b, 2, 2b, 3, 4 and 5 (step 5 = undo/redo, committed together
+  with the step 4 follow-ups from Finley's feedback: the "Build up color" switch and the faster
+  background). All passed Owen's PC test.
+- **Waiting:** Owen and Finley's iPad check of build-up, background speed and undo/redo.
+- **Next:** step 6, zoom/pan + palm rejection.
 
 ## How to work with Owen
 
@@ -49,19 +48,17 @@ table, and any decisions that changed.
 | 2b | Python import tool for messy pages (+ ready-made thumbnails) | ✅ |
 | 3 | Tap-to-fill with gap closing + basic palette and toolbar | ✅ |
 | 4 | Brush engine: pencil, marker, eraser; size + opacity sliders, live preview; pressure + tilt; line-lock | ✅ committed, iPad check pending |
-| 5 | Undo / redo | next |
-| 6 | Pinch-zoom, two-finger pan, palm rejection (Pencil draws, fingers zoom/pan) | |
+| 5 | Undo / redo (big back/forward buttons) | ✅ committed, iPad check pending |
+| 6 | Pinch-zoom, two-finger pan, palm rejection (Pencil draws, fingers zoom/pan) | next |
 | 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails | |
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | |
 | 9 | Export the finished picture to Photos | |
 | 10 | Brush collection: colored pencil, crayon, watercolor, airbrush, glitter/sparkle | |
 | 11 | Installable + offline (manifest, service worker, icons) | |
-| 12 | Magical storybook look and polish | |
+| 12 | Magical storybook look, Themes, polish | |
 
 ### Notes for future steps
 
-- **Step 5, undo:** a fill returns its bounding box (`x, y, w, h`), and so does a brush stroke
-  (`engine.commit()` in `js/editor.js`); save the before-pixels of that box. Keep memory in mind on the iPad (each full layer is ~22 MB).
 - **Step 6:** currently a "tap" = pointer down/up within 12px and 800ms (`js/editor.js`). The
   `view` object (`scale, x, y`) and `applyView()` already position the page with a CSS transform;
   `toPagePoint()` converts screen → page coordinates. Palm rejection: when a Pencil
@@ -73,9 +70,17 @@ table, and any decisions that changed.
   bumping `DB_VERSION`). `js/palette.js` holds the 24 default swatches.
 - **Step 11:** the service worker must cache pages and thumbnails; plan for updates (version the
   cache) since GitHub Pages also caches files for ~10 minutes.
-- **Step 12, fairy-tale UI:** soft pastels with gold accents, gentle sparkle effects on taps and
-  when a page is finished, a whimsical but readable title font (`--font-title`), and a library that
-  feels like a magical book or enchanted shelf. Calm, not cluttered; keep buttons large.
+- **Step 12, fairy-tale UI + Themes:** the default theme is the magical storybook look: soft
+  pastels with gold accents, gentle sparkle effects on taps and when a page is finished, a
+  whimsical but readable title font (`--font-title`), and a library that feels like a magical book
+  or enchanted shelf. Calm, not cluttered; keep buttons large. Add a **"Themes" button on the
+  library (home) screen** that switches the look of the whole app: colors, fonts, backgrounds and
+  sparkle effects. Theme ideas: "Storybook" (default), a dark "Midnight Forest", "Ocean Dreams",
+  "Autumn Cottage", and a clean minimal one. Remember her choice (localStorage). Plan: each theme
+  is one block of CSS variables, e.g. `:root[data-theme="midnight-forest"] { ... }`, plus a small
+  JS settings object for non-CSS parts (sparkle style, background art). Keep ALL colors, fonts,
+  backgrounds and effect settings as variables so a new theme = one new block. The coloring
+  page itself always stays white paper.
 
 ## Brushes (step 4)
 
@@ -104,6 +109,14 @@ table, and any decisions that changed.
   canvas (current brush, at its on-screen size, color and opacity, drawn light → full pressure).
   With Fill selected, the sliders fade out and the preview shows the color.
 - Picking a color while the eraser is selected switches back to the last color brush.
+- **"Build up color" switch** (under "Stay inside lines"; on by default; `localStorage`
+  "build-up"; added from Finley's feedback). On: a new stroke over color deepens it. Off: going
+  over a spot already painted in the **same color** only adds what's missing to reach the
+  stroke's opacity, so touch-ups stay even; a different color paints over normally. This uses the
+  engine's **paint memory** (`engine.memory`, 4 bytes per pixel: RGB of the last paint + its
+  strength 0-255, updated by `remember()` after strokes and `rememberFill()` after fills). With
+  build-up off, `render()` shows each pixel at `(c - had) / (255 - had)` over what's there, so the
+  live stroke and the result match exactly. Works for every brush, eraser included.
 - **Line-lock** ("Stay inside lines" switch under the tool buttons; **on by default**, remembered in
   `localStorage` "line-lock"): when a stroke starts, `findLockArea()` in `js/editor.js` asks the fill
   worker for exactly the area a tap-to-fill from that point would cover (same gap closing, thin
@@ -115,6 +128,24 @@ table, and any decisions that changed.
   areas, ~190 ms (PC) for the whole-page background, so on the iPad the ink can appear a moment
   late when starting in the background. A stroke starting outside every area draws nothing.
   Fill ignores line-lock (the switch fades while Fill is selected).
+- **Faster big areas:** the fill worker remembers the last 6 areas of 20,000+ pixels (`cache`,
+  matched by the tap landing in the area's flood "core" with the same settings), and right after a
+  page opens, `warmUp()` works out the areas at 8 points along the page edges (usually the
+  background). So starting a stroke or fill in the background takes ~2 ms instead of ~190 ms.
+
+## Undo and redo (step 5)
+
+- `js/history.js`: before every stroke or fill changes the picture, `history.saveBefore(box)`
+  copies that rectangle's pixels **and its paint memory**. Undo swaps the copy back (keeping the
+  current state for redo); redo swaps forward. A new change clears the redo steps.
+- Strokes: `engine.commit(strokeCtx, colorCtx, beforeChange)` calls back with the box just before
+  drawing. Fills: `fillAt()` saves the fill's box before `paintFill`.
+- Memory cap: oldest steps are dropped past 150 MB of copies or 100 steps (a whole-background fill
+  is ~45 MB; strokes are much smaller). The history is per open page and isn't saved (step 7
+  saves the picture itself, not the history).
+- UI: big back/forward buttons at the top right of the coloring screen (greyed when unavailable).
+  PC shortcuts: Ctrl+Z, Ctrl+Y / Ctrl+Shift+Z. Undo is ignored mid-stroke.
+- Idea for step 6: two-finger tap = undo (like Procreate), if Owen wants it.
 - Defaults: pencil 8 / 90% (range 1–40), marker 30 / 70% (4–120), eraser 40 / 100% (4–200).
 - Speed (PC): one second of fast Pencil drawing costs 23 ms (pencil) to 85 ms (eraser at 200);
   screen updates are under 2 ms.
@@ -203,6 +234,7 @@ table, and any decisions that changed.
 | `js/brushes.js` | Brush definitions, saved per-brush settings, paper grain |
 | `js/stroke-engine.js` | Draws brush strokes (dabs, coverage, live layer, commit) |
 | `js/slider.js` | Pencil-friendly slider |
+| `js/history.js` | Undo and redo |
 | `js/settings.js` | Tweakable numbers |
 | `pages/pages.js` | The library list |
 | `tools/import_pages.py`, `import-pages.bat` | Import tool |

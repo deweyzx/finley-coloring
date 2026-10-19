@@ -3,11 +3,12 @@
 // taps and Pencil strokes into color.
 
 import { loadImage, drawLineArt } from "./lineart.js";
-import { prepareFill, findFillArea, paintFill } from "./fill.js";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js";
 import { renderPalette, currentColor, toRGB } from "./palette.js";
 import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js";
 import { StrokeEngine } from "./stroke-engine.js";
 import { createSlider } from "./slider.js";
+import { History } from "./history.js";
 import { SETTINGS } from "./settings.js";
 
 const area = document.getElementById("canvas-area");
@@ -51,32 +52,69 @@ for (const button of toolBar.querySelectorAll("[data-tool]")) {
   button.addEventListener("click", () => selectTool(button.dataset.tool));
 }
 
-// ---------- Line-lock ----------
-// When on, a brush stroke stays inside the outlined area where it started.
-// On by default; her choice is remembered on this device.
+// ---------- On/off switches ----------
+// "Stay inside lines" (line-lock): a brush stroke stays inside the outlined area where it
+//   started. On by default.
+// "Build up color": a new stroke over color deepens it (layering, shading). When off, going
+//   over a spot already painted in the same color keeps it even. On by default.
+// Her choices are remembered on this device.
 
-let lineLock = true;
-try {
-  lineLock = localStorage.getItem("line-lock") !== "off";
-} catch {
-  // storage unavailable: just use the default
-}
-const lockButton = document.getElementById("line-lock");
-lockButton.addEventListener("click", () => {
-  lineLock = !lineLock;
+function makeSwitch(id, storageKey, startOn) {
+  const button = document.getElementById(id);
+  const state = { on: startOn, button };
   try {
-    localStorage.setItem("line-lock", lineLock ? "on" : "off");
+    const saved = localStorage.getItem(storageKey);
+    if (saved) state.on = saved === "on";
   } catch {
-    // not remembered, but still works for now
+    // storage unavailable: just use the default
   }
-  showLineLock();
-});
-function showLineLock() {
-  lockButton.setAttribute("aria-checked", String(lineLock));
-  lockButton.classList.toggle("on", lineLock);
-  lockButton.querySelector(".lock-state").textContent = lineLock ? "On" : "Off";
+  const show = () => {
+    button.setAttribute("aria-checked", String(state.on));
+    button.classList.toggle("on", state.on);
+    button.querySelector(".toggle-state").textContent = state.on ? "On" : "Off";
+  };
+  button.addEventListener("click", () => {
+    state.on = !state.on;
+    try {
+      localStorage.setItem(storageKey, state.on ? "on" : "off");
+    } catch {
+      // not remembered, but still works for now
+    }
+    show();
+  });
+  show();
+  return state;
 }
-showLineLock();
+const lineLock = makeSwitch("line-lock", "line-lock", true);
+const buildUp = makeSwitch("build-up", "build-up", true);
+
+// ---------- Undo and redo ----------
+
+const undoButton = document.getElementById("undo-button");
+const redoButton = document.getElementById("redo-button");
+let history = null; // one history per open page
+
+function updateHistoryButtons() {
+  undoButton.disabled = !history || !history.canUndo();
+  redoButton.disabled = !history || !history.canRedo();
+}
+function undo() {
+  if (history && !stroke) history.undo(); // not in the middle of a stroke
+}
+function redo() {
+  if (history && !stroke) history.redo();
+}
+undoButton.addEventListener("click", undo);
+redoButton.addEventListener("click", redo);
+// Keyboard shortcuts for testing on the PC: Ctrl+Z, and Ctrl+Y or Ctrl+Shift+Z.
+window.addEventListener("keydown", (e) => {
+  if (!(e.ctrlKey || e.metaKey) || paper.hidden) return;
+  const key = e.key.toLowerCase();
+  if (key === "z" && !e.shiftKey) undo();
+  else if (key === "y" || (key === "z" && e.shiftKey)) redo();
+  else return;
+  e.preventDefault();
+});
 
 // ---------- Size and opacity sliders, and the preview ----------
 
@@ -115,7 +153,8 @@ function selectTool(name) {
   }
   const brush = BRUSHES[name];
   controls.classList.toggle("disabled", !brush); // fill has no size or opacity
-  lockButton.classList.toggle("faded", !brush);  // line-lock is for brushes
+  lineLock.button.classList.toggle("faded", !brush); // the switches are for brushes
+  buildUp.button.classList.toggle("faded", !brush);
   if (brush) {
     const s = brushSettings(name);
     sizeSlider.set(s.size, { min: brush.sizeRange[0], max: brush.sizeRange[1] });
@@ -226,6 +265,8 @@ export async function openEditor(page) {
   paper.style.width = w + "px";
   paper.style.height = h + "px";
   engine = new StrokeEngine(w, h);
+  history = new History(colorCtx, engine.memory, w, updateHistoryButtons);
+  updateHistoryButtons();
 
   // Bottom layer: plain white paper (colors go here).
   colorCtx.fillStyle = "#ffffff";
@@ -234,7 +275,17 @@ export async function openEditor(page) {
   // Top layer: the black lines. Tap-to-fill studies them in the background.
   const darkness = drawLineArt(lineCanvas, img);
   fillReady = prepareFill(darkness, w, h);
-  fillReady.then((r) => console.log(`Page ready for tap-to-fill in ${r.ms} ms`));
+  fillReady.then((r) => {
+    console.log(`Page ready for tap-to-fill in ${r.ms} ms`);
+    // Get the background ready in advance: points just inside the edges of the page.
+    const points = [];
+    for (const fx of [0.02, 0.5, 0.98]) {
+      for (const fy of [0.02, 0.5, 0.98]) {
+        if (fx !== 0.5 || fy !== 0.5) points.push([Math.round(w * fx), Math.round(h * fy)]);
+      }
+    }
+    warmUp(points).then((t) => console.log(`Background areas prepared in ${t.ms} ms`));
+  });
 
   messageEl.textContent = "";
   paper.hidden = false;
@@ -258,7 +309,9 @@ async function fillAt(point) {
   const reach = Math.min(SETTINGS.tapReach / view.scale, 60);
   const result = await findFillArea(point.x, point.y, reach);
   if (currentPage !== page || result.empty) return;
+  history.saveBefore({ x: result.x, y: result.y, w: result.w, h: result.h });
   paintFill(colorCtx, result, color);
+  engine.rememberFill(result, color);
   console.log(`Filled ${result.count} pixels in ${result.ms} ms (gap closing used: ${result.gapUsed})`);
 }
 
@@ -273,8 +326,8 @@ function startStroke(e) {
   const first = readPoint(e);
   const s = { pointerId: e.pointerId, page: currentPage, waiting: false, pending: [], lifted: false };
   stroke = s;
-  engine.begin(brush, brushSettings(currentTool), rgb);
-  if (!lineLock) {
+  engine.begin(brush, brushSettings(currentTool), rgb, buildUp.on);
+  if (!lineLock.on) {
     engine.addPoint(first);
     showStroke();
     return;
@@ -326,7 +379,7 @@ function endStroke() {
 }
 
 function finishStroke() {
-  engine.commit(strokeCtx, colorCtx);
+  engine.commit(strokeCtx, colorCtx, (box) => history.saveBefore(box));
   stroke = null;
 }
 

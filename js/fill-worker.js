@@ -14,6 +14,13 @@ let filled = null; // Uint8Array, scratch space marking the pixels of the curren
 let queue = null;  // Int32Array, a to-do list of pixels while a fill spreads
 let count = 0;     // how many pixels the current fill has
 
+// Big areas take the longest to work out (the background can take a fifth of a second),
+// so the last few big ones are remembered. Another tap or stroke that starts inside the
+// same area gets the answer instantly. Forgotten when a new page opens.
+let cache = [];
+const CACHE_MIN_PIXELS = 20000; // only areas at least this big are worth remembering
+const CACHE_SIZE = 6;
+
 const LINE_CUTOFF = 128; // pixels darker than middle grey count as line
 
 onmessage = (event) => {
@@ -28,6 +35,12 @@ onmessage = (event) => {
     result.ms = Math.round(performance.now() - started);
     result.id = msg.id;
     postMessage(result, result.mask ? [result.mask.buffer] : []);
+  } else if (msg.type === "warm") {
+    // Work out (and remember) the areas at these points ahead of time, e.g. the
+    // background right after a page opens, so her first stroke there starts instantly.
+    const started = performance.now();
+    for (const [x, y] of msg.points) fill({ ...msg, x, y });
+    postMessage({ id: msg.id, ms: Math.round(performance.now() - started) });
   }
 };
 
@@ -42,6 +55,7 @@ function prepare({ width, height, darkness, speckSize }) {
   dist = distanceFromLines();
   filled = new Uint8Array(W * H);
   queue = new Int32Array(W * H);
+  cache = [];
 }
 
 // Removes groups of line pixels smaller than maxArea (stray dots), so they don't block fills.
@@ -174,6 +188,14 @@ function fill({ x, y, gap, under, reach, thinMax, thinWidth }) {
   x = start % W;
   y = (start / W) | 0;
 
+  // Already worked out this area? (Same settings, and the tap is in its open middle part.)
+  const key = [g, under, thinMax, thinWidth].join("|");
+  for (const area of cache) {
+    if (area.key === key && inCore(area, x, y)) {
+      return { x: area.x, y: area.y, w: area.w, h: area.h, mask: area.mask.slice(), count: area.count, gapUsed: g, cached: true };
+    }
+  }
+
   filled.fill(0);
   count = 0;
   minX = maxX = x;
@@ -181,6 +203,7 @@ function fill({ x, y, gap, under, reach, thinMax, thinWidth }) {
 
   // 1. Flood fill everything reachable from the tap without touching the thickened lines.
   floodFill(start, limit);
+  const core = copyCore(); // the open middle part, used to recognize this area later
   // 2. Grow back out to the real lines (the thickening pulled the color away from them).
   if (g > 0) {
     growTowardLines(limit);
@@ -203,7 +226,29 @@ function fill({ x, y, gap, under, reach, thinMax, thinWidth }) {
     const from = (minY + row) * W + minX;
     mask.set(filled.subarray(from, from + w), row * w);
   }
+  if (count >= CACHE_MIN_PIXELS) {
+    cache.unshift({ key, x: minX, y: minY, w, h, mask: mask.slice(), count, core });
+    if (cache.length > CACHE_SIZE) cache.pop();
+  }
   return { x: minX, y: minY, w, h, mask, count, gapUsed: g };
+}
+
+// Copies the pixels the flood fill reached (before growing toward the lines).
+function copyCore() {
+  const w = maxX - minX + 1;
+  const h = maxY - minY + 1;
+  const bits = new Uint8Array(w * h);
+  for (let row = 0; row < h; row++) {
+    const from = (minY + row) * W + minX;
+    bits.set(filled.subarray(from, from + w), row * w);
+  }
+  return { x: minX, y: minY, w, h, bits };
+}
+
+function inCore(area, x, y) {
+  const c = area.core;
+  if (x < c.x || y < c.y || x >= c.x + c.w || y >= c.y + c.h) return false;
+  return c.bits[(y - c.y) * c.w + (x - c.x)] === 1;
 }
 
 // The closest non-line pixel to (x, y), at most `reach` pixels away, or -1 if there is none.
