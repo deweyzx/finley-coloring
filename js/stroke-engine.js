@@ -27,7 +27,7 @@
 //
 // The brushes themselves are described in brushes.js.
 
-import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE } from "./brushes.js?v=202610191607";
+import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE } from "./brushes.js?v=202610191633";
 
 export class StrokeEngine {
   constructor(width, height) {
@@ -56,6 +56,9 @@ export class StrokeEngine {
     this.direction = null; // which way the stroke is heading (for bristles)
     this.baked = false;    // watercolor: rims already worked out (when the stroke is laid on)
     this.flowScale = 1;
+    // The airbrush (soft spray that adds up, nothing else) uses the quick loop.
+    this.fastSpray = !!(brush.flow && brush.soft && !brush.grain && !brush.wash && !brush.bristles && !brush.scatter);
+    this.speckle = this.fastSpray ? speckleTable(brush.noise || 0) : null;
     // Every stroke gets its own random pattern (its own bristles, droplets, watercolor blooms).
     this.seed = (Math.random() * 4294967296) >>> 0 || 1;
     this.rand = makeRandom(this.seed);
@@ -208,11 +211,22 @@ export class StrokeEngine {
     // An oval: `stretch` times wider across the tilt direction (side of the lead).
     const rLong = s.radius * s.stretch;
     const rShort = s.radius;
-    const reach = Math.ceil(rLong + 1);
-    let x0 = Math.max(0, Math.floor(cx - reach));
-    let x1 = Math.min(W - 1, Math.ceil(cx + reach));
-    let y0 = Math.max(0, Math.floor(cy - reach));
-    let y1 = Math.min(H - 1, Math.ceil(cy + reach));
+    // the oval's long side runs across the direction the Pencil leans
+    const cos = Math.cos(s.angle + Math.PI / 2);
+    const sin = Math.sin(s.angle + Math.PI / 2);
+    // Only visit pixels the oval can reach: the box that tightly fits the (turned) oval, and on
+    // each row just the stretch the oval covers - not a whole square around it. A long tilted
+    // oval fills only a third of that square, so this saves a lot of work.
+    // (Watercolor's wandering edge can reach a little past the oval.)
+    const grow = brush.wash ? 1 / (1 - brush.wash.wobble / 2) : 1;
+    const A = rLong * grow;
+    const B = rShort * grow;
+    const halfW = Math.sqrt(A * A * cos * cos + B * B * sin * sin) + 1;
+    const halfH = Math.sqrt(A * A * sin * sin + B * B * cos * cos) + 1;
+    let x0 = Math.max(0, Math.floor(cx - halfW));
+    let x1 = Math.min(W - 1, Math.ceil(cx + halfW));
+    let y0 = Math.max(0, Math.floor(cy - halfH));
+    let y1 = Math.min(H - 1, Math.ceil(cy + halfH));
     const clip = this.clip;
     if (clip) {
       // Line-lock: only the part of the dab inside the stencil's box can paint.
@@ -223,9 +237,10 @@ export class StrokeEngine {
     }
     if (x0 > x1 || y0 > y1) return;
 
-    // the oval's long side runs across the direction the Pencil leans
-    const cos = Math.cos(s.angle + Math.PI / 2);
-    const sin = Math.sin(s.angle + Math.PI / 2);
+    // For the row spans: the oval's edge on row dy is where qa*dx^2 + qb*dx + qc = 0.
+    const qa = (cos * cos) / (A * A) + (sin * sin) / (B * B);
+    const qbRow = 2 * cos * sin * (1 / (A * A) - 1 / (B * B));
+    const qcRow = (sin * sin) / (A * A) + (cos * cos) / (B * B);
     const hard = s.hardness !== undefined ? s.hardness : brush.hardness;
     const peak = s.opacity * 255;
     // Small dabs get a softer edge so thin lines stay smooth instead of jagged.
@@ -256,13 +271,29 @@ export class StrokeEngine {
     let rng = this.seed ^ ((x0 * 73856093) ^ (y0 * 19349663)); // quick random numbers for speckle
     if (rng === 0) rng = 1;
 
+    if (this.fastSpray) {
+      // Airbrush: the same soft, speckled spray, worked out the quick way (see sprayRows).
+      sprayRows(this, cx, cy, x0, y0, x1, y1, cos, sin, rLong, rShort, qa, qbRow, qcRow, cap, rate, rng);
+      this.box = growBox(this.box, x0, y0, x1, y1);
+      this.dirty = growBox(this.dirty, x0, y0, x1, y1);
+      return;
+    }
+
     for (let y = y0; y <= y1; y++) {
       const dy = y + 0.5 - cy;
+      // where this row crosses the oval (skip the row if it doesn't)
+      const qb = qbRow * dy;
+      const qc = qcRow * dy * dy - 1;
+      const disc = qb * qb - 4 * qa * qc;
+      if (disc < 0) continue;
+      const root = Math.sqrt(disc);
+      const xs = Math.max(x0, Math.floor(cx + (-qb - root) / (2 * qa) - 0.5));
+      const xe = Math.min(x1, Math.ceil(cx + (-qb + root) / (2 * qa) - 0.5));
       const row = y * W;
       const grainRow = (y & (GRAIN_SIZE - 1)) * GRAIN_SIZE;
       const washRow = ((y + sy) & (WASH_SIZE - 1)) * WASH_SIZE;
       const clipRow = clip ? (y - clip.y) * clip.w - clip.x : 0;
-      for (let x = x0; x <= x1; x++) {
+      for (let x = xs; x <= xe; x++) {
         if (clip && clip.mask[clipRow + x] === 0) continue; // outside the locked area
         const dx = x + 0.5 - cx;
         const u = (dx * cos + dy * sin) / rLong;
@@ -348,18 +379,42 @@ export class StrokeEngine {
       srcStart = 0;
       srcStride = w;
     }
-    const image = ctx.createImageData(w, h);
+    // One block of pixels is reused for every update (making a new one ~100 times a second
+    // made the iPad stop now and then to clean up memory). Only its top-left w x h part is used.
+    let image = this.scratch;
+    if (!image || image.width < w || image.height < h) {
+      image = new ImageData(Math.max(w, image ? image.width : 0), Math.max(h, image ? image.height : 0));
+      this.scratch = image;
+    }
+    const stride = image.width;
     const px = image.data;
     const { r, g, b } = this.rgb;
     const mem = this.memory;
     // (The eraser always just rubs out; "build up" only changes how colors go on.)
     const evenOut = !this.buildUp && this.brush.paint !== "paper";
+    if (!evenOut && LITTLE_ENDIAN) {
+      // The usual case, done the quick way: each pixel is written as one number (red, green,
+      // blue and strength together) instead of four separate ones.
+      const px32 = this.scratch32 && this.scratch32.buffer === px.buffer ? this.scratch32 : (this.scratch32 = new Uint32Array(px.buffer));
+      const color = (b << 16) | (g << 8) | r;
+      for (let row = 0; row < h; row++) {
+        let si = srcStart + row * srcStride;
+        let p = row * stride;
+        for (let col = 0; col < w; col++, si++, p++) {
+          const c = src[si];
+          px32[p] = c === 0 ? 0 : color | (c << 24);
+        }
+      }
+      ctx.putImageData(image, x0, y0, 0, 0, w, h);
+      return;
+    }
     for (let row = 0; row < h; row++) {
       let i = (y0 + row) * this.width + x0;
       let si = srcStart + row * srcStride;
-      let p = row * w * 4;
+      let p = row * stride * 4;
       for (let col = 0; col < w; col++, i++, si++, p += 4) {
         let c = src[si];
+        px[p + 3] = 0; // (the reused block may still hold an older update here)
         if (c === 0) continue;
         if (evenOut) {
           const m = i * 4;
@@ -379,7 +434,7 @@ export class StrokeEngine {
         px[p + 3] = c;
       }
     }
-    ctx.putImageData(image, x0, y0);
+    ctx.putImageData(image, x0, y0, 0, 0, w, h);
   }
 
   // Watercolor: the stroke's strength in an area, with the pooled darker rims worked in.
@@ -518,6 +573,80 @@ StrokeEngine.prototype.cancel = function (strokeCtx) {
   this.dirty = null;
   this.last = null;
 };
+
+// Most computers and every iPad store a number's smallest byte first; render()'s quick path
+// relies on that (and falls back to the slower path otherwise).
+const LITTLE_ENDIAN = new Uint8Array(new Uint32Array([1]).buffer)[0] === 1;
+
+// ---------- The quick airbrush ----------
+// The airbrush stamps big, soft dabs many times a second, so its inner loop is kept as simple
+// as possible. It gives the same result as the general loop in stamp(), but:
+//   - the bell-shaped fade is looked up in a table by the squared distance (no square roots),
+//   - the oval's position is stepped along each row (no multiplying per pixel),
+//   - the random speckle and the fair rounding come from ready-made tables of random numbers.
+
+const BELL_STEPS = 1024;
+// Strength at squared distance q (0 = middle, 1 = edge): a bell-shaped fade, like `soft` in stamp().
+const SPRAY_BELL = new Float32Array(BELL_STEPS + 1);
+for (let j = 0; j <= BELL_STEPS; j++) {
+  const a = 1 - Math.sqrt(Math.min(1, (j + 0.5) / BELL_STEPS));
+  SPRAY_BELL[j] = a * a * (3 - 2 * a);
+}
+const RANDOM_SIZE = 16384; // (a power of 2)
+const RANDOM_TABLE = new Float32Array(RANDOM_SIZE);
+{
+  const rand = makeRandom(12345);
+  for (let k = 0; k < RANDOM_SIZE; k++) RANDOM_TABLE[k] = rand();
+}
+const speckleTables = new Map(); // noise amount -> table of (1 - noise * random)
+function speckleTable(noise) {
+  if (!speckleTables.has(noise)) {
+    const t = new Float32Array(RANDOM_SIZE);
+    const rand = makeRandom(67890);
+    for (let k = 0; k < RANDOM_SIZE; k++) t[k] = 1 - noise * rand();
+    speckleTables.set(noise, t);
+  }
+  return speckleTables.get(noise);
+}
+
+function sprayRows(engine, cx, cy, x0, y0, x1, y1, cos, sin, rLong, rShort, qa, qbRow, qcRow, cap, rate, rng) {
+  const W = engine.width;
+  const cov = engine.coverage;
+  const clip = engine.clip;
+  const speckle = engine.speckle;
+  const rounding = RANDOM_TABLE;
+  const mask = RANDOM_SIZE - 1;
+  const ua = cos / rLong; // how u and v change from one pixel to the next along a row
+  const va = -sin / rShort;
+  let k = (rng >>> 0) & mask; // where in the random tables this dab starts
+  const k2 = ((rng >>> 14) | 1) & mask; // (a different place for the rounding numbers)
+  for (let y = y0; y <= y1; y++) {
+    const dy = y + 0.5 - cy;
+    const qb = qbRow * dy;
+    const qc = qcRow * dy * dy - 1;
+    const disc = qb * qb - 4 * qa * qc;
+    if (disc < 0) continue;
+    const root = Math.sqrt(disc);
+    const xs = Math.max(x0, Math.floor(cx + (-qb - root) / (2 * qa) - 0.5));
+    const xe = Math.min(x1, Math.ceil(cx + (-qb + root) / (2 * qa) - 0.5));
+    const dx0 = xs + 0.5 - cx;
+    let u = (dx0 * cos + dy * sin) / rLong;
+    let v = (-dx0 * sin + dy * cos) / rShort;
+    const row = y * W;
+    const clipRow = clip ? (y - clip.y) * clip.w - clip.x : 0;
+    for (let x = xs; x <= xe; x++, u += ua, v += va) {
+      k = (k + 1) & mask;
+      if (clip && clip.mask[clipRow + x] === 0) continue; // outside the locked area
+      const q = u * u + v * v;
+      if (q >= 1) continue;
+      const i = row + x;
+      const c = cov[i];
+      if (c >= cap) continue;
+      const next = Math.floor(c + (cap - c) * rate * SPRAY_BELL[(q * BELL_STEPS) | 0] * speckle[k] + rounding[(k + k2) & mask]);
+      if (next > c) cov[i] = next > cap ? cap : next;
+    }
+  }
+}
 
 // Averages each pixel with its neighbours up to `r` pixels away (twice, for a smooth result).
 // Reads a w x h area of `src` (a full-page map, `stride` wide) starting at x0, y0.

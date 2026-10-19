@@ -21,7 +21,10 @@ table, and any decisions that changed.
   batch: build, Owen tests on PC, commit + push, iPad test, and only then the next batch.
   **Batch 1 (airbrush, smooth hair, watercolor, splatter) is committed** (passed Owen's PC test:
   Brushes window, line-lock, sliders/preview, hold-to-spray, watercolor glaze, undo/redo,
-  auto-save). **Waiting:** iPad check (Pencil feel, live drawing, speed). Batch 2 only after that.
+  auto-save). iPad: smooth hair, watercolor, splatter feel good; **airbrush lagged** (ink trailing
+  the Pencil) and smooth hair needed a bigger maximum. **Committed:** a faster airbrush (2-4x, see
+  "Airbrush speed") and smooth hair up to 200 (passed Owen's PC test). **Waiting:** iPad check,
+  ideally with the `?debug` speed lines from a few fast, big airbrush strokes. **Batch 2 only after Owen has tested these on her iPad.**
 
 ## How to work with Owen
 
@@ -176,10 +179,11 @@ table, and any decisions that changed.
   - **Airbrush** (10-300, default 80 / 60%): bell-shaped soft dab with fine speckle; dabs ADD up
     (`flow`) toward the opacity slider's value instead of MAX, with random rounding so light
     spray still builds. Pressure = flow (12%-100%). **Holding the Pencil still keeps spraying**
-    (`sprayWhileHeld()` in editor.js calls `engine.hold(frames)` each animation frame when no new
-    dab was made): middle strength 17 -> 87 -> 120 -> 143 of 153 at 0 / 0.5 / 1 / 2 s.
-    One pass at full pressure reaches ~60% of the slider value. Tilt = longer, lighter oval.
-  - **Smooth hair** (2-100, default 24 / 85%): soft round dab, tip starts at 35% size and grows
+    (`sprayWhileHeld()` in editor.js calls `engine.hold(frames)` about 30 times a second when no
+    new dab was made): middle strength 24 -> 87 -> 118 -> 133 -> 140 of 153 at 0 / 0.5 / 1 /
+    1.5 / 2 s. One pass at full pressure reaches ~60% of the slider value. Tilt = longer,
+    lighter oval. Spacing 0.2 with flow 0.49 (was 0.12 / 0.3; same look within ~3%).
+  - **Smooth hair** (2-200, default 24 / 85%; max was 100, doubled at Owen's request): soft round dab, tip starts at 35% size and grows
     over 0.9 brush sizes (`taper`; it was 15% over 1.6 sizes but that left a white sawtooth where
     strokes start at a line-locked edge); pressure size 12%-100% so a light lift tapers the end
     (finger/mouse strokes end blunt). Hair streaks: a 64-entry random strength table sampled by
@@ -202,10 +206,38 @@ table, and any decisions that changed.
 - Tested (browser pane, real daffodil page, app's own pointer path): line-lock (0 pixels outside
   the locked area for all four), undo/redo exact, build-up off (2nd same-color pass darkens
   ~1-3 levels vs 7-29 with build-up on), auto-save restores the exact pixels, sideways + upright
-  layouts, previews. Speed (PC, one second of very fast scribbling at page size): airbrush 300
-  ~400 ms (80: ~120 ms), smooth hair 100 ~230 ms, watercolor 160 ~260 ms + screen updates ~3 ms
-  each, lift ~90 ms; splatter, pencil, marker small. **Not testable here:** real Pencil feel,
-  live drawing (the pane doesn't run animation frames), hold-to-spray timing, iPad speed.
+  layouts, previews. **Not testable here:** real Pencil feel, live drawing (the pane doesn't run
+  animation frames), hold-to-spray timing, iPad speed.
+- **Airbrush speed** (Finley's iPad: "very delayed, the ink trails behind the Pencil"). Measured
+  on the PC, one second of fast drawing at page size (240 Pencil samples + 120 screen updates):
+  75-85% of the time was stamping dabs, the rest redrawing the stroke layer. Tilt was the big
+  multiplier: a tilted dab is a long oval but every pixel of a square around it was visited (a
+  natural grip already counts as tilted). Fixes, all in `stroke-engine.js` unless noted:
+  1. `stamp()` visits only the oval: a tight box around the turned oval, and on each row only the
+     span between the oval's edges (`qa/qbRow/qcRow`). Helps every brush; pencil, marker and
+     eraser are still pixel-identical (12 fingerprints).
+  2. `sprayRows()`: the airbrush's own inner loop - bell fade from a table by squared distance
+     (`SPRAY_BELL`, no square roots), oval position stepped along each row, speckle and fair
+     rounding from ready-made random tables (`RANDOM_TABLE`, `speckleTable()`). Used when a brush
+     has flow + soft and no grain/wash/bristles/scatter (`engine.fastSpray`).
+  3. Spacing 0.12 -> 0.2 (flow 0.3 -> 0.49, hold 0.22 -> 0.135): 40% fewer dabs, same strength.
+  4. Holding still: ~30 sprays a second (each a bit stronger) instead of one per screen refresh
+     (up to 120 on her iPad).
+  5. `render()`: writes each pixel as one 32-bit number, and reuses one `ImageData` block
+     (`engine.scratch`) instead of making a new one every update.
+  Results (PC, before -> after, ms of work per second of fast drawing): size 80: upright 79 -> 34,
+  natural grip 113 -> 46, tilted 251 -> 68; size 160: 150 -> 77, 227 -> 96, 513 -> 127;
+  size 300: 268 -> 97, 435 -> 137, 1021 -> 240 (2-4.3x); held still 1 s: 310 -> 35 (size 300).
+  Other brushes also got faster from (1) and (5): marker 120 tilted 152 -> 83, smooth hair 100
+  tilted 236 -> 171, watercolor 160 tilted 721 -> 559.
+  **Unknown:** how much slower her iPad is than this PC; even before, size 80 used only ~10% of
+  the time here, so the iPad may be much slower at this work, or something only happens there.
+- **Speed line in the touch log** (`?debug`): after every stroke, e.g. "Airbrush 80: stroke 1.4
+  s, drawing work 310 ms (22%), slowest 12 ms, most behind 30 ms, lift 8 ms, stay-inside wait 3
+  ms". *drawing work* = time spent stamping + redrawing; *slowest* = the longest single piece of
+  work; *most behind* = longest time from a Pencil movement to the app handling it (lag);
+  *stay-inside wait* = time to find the line-lock area. (`s.timing`, `noteWork()` in editor.js.)
+  Use this to measure on her iPad.
 
 ## Undo and redo (step 5)
 
@@ -294,7 +326,8 @@ table, and any decisions that changed.
   - Palm rejection by timing (ignore fingers while the Pencil is down / 500 ms after) works fully
     for her; the size filter is now only a backstop for a whole hand.
 - **Touch log:** off by default; open the app with `?debug` to turn it on, "Hide log" to turn it
-  off (remembered per device).
+  off (remembered per device). Since step 10 it also logs a speed line after every stroke (see
+  "Airbrush speed").
 
 ## Auto-save and progress (step 7)
 

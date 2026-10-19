@@ -2,20 +2,20 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610191607";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610191607";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610191607";
-import { setupColorPicker } from "./color-picker.js?v=202610191607";
-import { setupSavePicture } from "./save-picture.js?v=202610191607";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610191607";
-import { StrokeEngine } from "./stroke-engine.js?v=202610191607";
-import { createSlider } from "./slider.js?v=202610191607";
-import { History } from "./history.js?v=202610191607";
-import { Viewport } from "./viewport.js?v=202610191607";
-import { setupInput } from "./touch-input.js?v=202610191607";
-import { toggleDebug } from "./touch-debug.js?v=202610191607";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610191607";
-import { SETTINGS } from "./settings.js?v=202610191607";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610191633";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610191633";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610191633";
+import { setupColorPicker } from "./color-picker.js?v=202610191633";
+import { setupSavePicture } from "./save-picture.js?v=202610191633";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610191633";
+import { StrokeEngine } from "./stroke-engine.js?v=202610191633";
+import { createSlider } from "./slider.js?v=202610191633";
+import { History } from "./history.js?v=202610191633";
+import { Viewport } from "./viewport.js?v=202610191633";
+import { setupInput } from "./touch-input.js?v=202610191633";
+import { toggleDebug, debugOn, debugLog } from "./touch-debug.js?v=202610191633";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610191633";
+import { SETTINGS } from "./settings.js?v=202610191633";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -575,6 +575,9 @@ function startStroke(e) {
   if (brush.paint === "color") noteColorUsed(currentColor()); // remembered in "recent colors"
   const first = readPoint(e);
   const s = { pointerId: e.pointerId, page: currentPage, waiting: false, pending: [], lifted: false };
+  // Speed check for the touch log (?debug): how long the drawing work takes, and how far
+  // behind the Pencil the app falls (time from the Pencil moving to the app handling it).
+  s.timing = { start: performance.now(), work: 0, slowest: 0, behind: 0, brush: brush.name, size: brushSettings(currentTool).size };
   stroke = s;
   engine.begin(brush, brushSettings(currentTool), rgb, buildUp.on);
   // Watercolor glazes over the colors underneath; the live stroke shows it the same way.
@@ -594,6 +597,7 @@ function startStroke(e) {
     if (stroke !== s || s.page !== currentPage) return; // page closed meanwhile
     engine.setClip(area && !area.empty ? area : NOWHERE);
     s.waiting = false;
+    s.timing.lockWait = performance.now() - s.timing.start; // finding the area to stay inside
     for (const p of s.pending) engine.addPoint(p);
     s.pending = [];
     showStroke();
@@ -612,6 +616,7 @@ async function findLockArea(point) {
 }
 
 function continueStroke(e) {
+  const t0 = performance.now();
   // The iPad records the Pencil up to 240 times a second but only sends some of those
   // as events; getCoalescedEvents() gives us all of them for smoother strokes.
   const samples = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
@@ -621,6 +626,16 @@ function continueStroke(e) {
     else engine.addPoint(p);
   }
   showStroke();
+  noteWork(stroke, t0, e.timeStamp);
+}
+
+// Adds up drawing work for the speed check (see startStroke).
+function noteWork(s, t0, eventTime) {
+  if (!s || !s.timing) return;
+  const now = performance.now();
+  s.timing.work += now - t0;
+  s.timing.slowest = Math.max(s.timing.slowest, now - t0);
+  if (eventTime) s.timing.behind = Math.max(s.timing.behind, now - eventTime);
 }
 
 function endStroke() {
@@ -632,7 +647,19 @@ function endStroke() {
 }
 
 function finishStroke() {
+  const t0 = performance.now();
   const changed = engine.commit(strokeCtx, colorCtx, (box) => history.saveBefore(box));
+  const t = stroke && stroke.timing;
+  if (t && debugOn()) {
+    const lift = performance.now() - t0;
+    const length = t0 - t.start;
+    debugLog(
+      `${t.brush} ${Math.round(t.size)}: stroke ${(length / 1000).toFixed(1)} s, drawing work ` +
+        `${Math.round(t.work)} ms (${Math.round((100 * t.work) / Math.max(1, length))}%), slowest ` +
+        `${Math.round(t.slowest)} ms, most behind ${Math.round(t.behind)} ms, lift ${Math.round(lift)} ms` +
+        (t.lockWait !== undefined ? `, stay-inside wait ${Math.round(t.lockWait)} ms` : "")
+    );
+  }
   stroke = null;
   strokeCanvas.style.mixBlendMode = "";
   if (changed) markChanged();
@@ -646,19 +673,29 @@ function cancelStroke() {
   strokeCanvas.style.mixBlendMode = "";
 }
 
-// Airbrush: while the Pencil is held still, keep spraying (once per screen refresh), so the
-// color slowly builds up, like a real airbrush.
+// Airbrush: while the Pencil is held still, keep spraying, so the color slowly builds up, like
+// a real airbrush. It sprays about 30 times a second (each spray a bit stronger), not on every
+// screen refresh (up to 120 a second on her iPad): the same amount of paint for far less work.
 function sprayWhileHeld(s) {
   let lastTime = performance.now();
   let lastDabs = -1;
+  let waited = 0; // time since the last spray, in 1/60 s
   const tick = (now) => {
     if (stroke !== s || s.lifted) return;
     const frames = Math.min(4, (now - lastTime) / (1000 / 60));
     lastTime = now;
     // Only when no new dabs were made since the last refresh (she isn't moving).
     if (!s.waiting && engine.dabCount === lastDabs) {
-      engine.hold(frames);
-      showStroke();
+      waited += frames;
+      if (waited >= 2) {
+        const t0 = performance.now();
+        engine.hold(Math.min(waited, 4));
+        noteWork(s, t0);
+        waited = 0;
+        showStroke();
+      }
+    } else {
+      waited = 0;
     }
     lastDabs = engine.dabCount;
     requestAnimationFrame(tick);
@@ -672,7 +709,10 @@ function showStroke() {
   frameRequested = true;
   requestAnimationFrame(() => {
     frameRequested = false;
-    if (stroke) engine.render(strokeCtx);
+    if (!stroke) return;
+    const t0 = performance.now();
+    engine.render(strokeCtx);
+    noteWork(stroke, t0);
   });
 }
 
