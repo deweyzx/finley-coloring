@@ -13,9 +13,11 @@ table, and any decisions that changed.
   and no interference from her hand resting on the screen while using the Pencil.
 - **Done and committed:** step 7, auto-save + progress in the library, plus the "Start over"
   button - both checked on the iPad and working.
-- **Done and committed:** step 8, the full color picker (passed Owen's PC test).
-  **Waiting:** iPad check - especially dragging the ring and square with the Pencil and with
-  Finley's flat finger pad.
+- **Done and committed:** step 8, the full color picker - checked on the iPad: ring and square
+  smooth with Pencil and finger, recents and palettes work, both layouts good, survives closing Safari.
+- **Done and committed:** step 9, export to Photos (passed Owen's PC test: Download picture saves
+  straight to Downloads). **Waiting:** iPad check of the real share sheet, "Save Image" -> Photos,
+  and the picture in Photos.
 - **Next:** step 9, export to Photos.
 
 ## How to work with Owen
@@ -58,9 +60,9 @@ table, and any decisions that changed.
 | 5 | Undo / redo (big back/forward buttons) | ✅ |
 | 6 | Pinch-zoom, two-finger pan, palm rejection; 2-finger tap undo, 3-finger tap redo | ✅ |
 | 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails; Start over | ✅ |
-| 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | ✅ committed, iPad check pending |
-| 9 | Export the finished picture to Photos | next |
-| 10 | Brush collection: colored pencil, crayon, watercolor, airbrush, glitter/sparkle | |
+| 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | ✅ |
+| 9 | Export the finished picture to Photos | ✅ committed, iPad check pending |
+| 10 | Brush collection: colored pencil, crayon, watercolor, airbrush, glitter/sparkle | next |
 | 11 | Installable + offline (manifest, service worker, icons) | |
 | 12 | Magical storybook look, Themes, polish | |
 
@@ -295,6 +297,37 @@ table, and any decisions that changed.
   box on top of the picker. Screenshot tool was flaky for the final visuals.
 - Not built: typing a hex code; lightness slider; reordering palette colors.
 
+## Export to Photos (step 9)
+
+- **`js/save-picture.js`**, button `#export-button` ("Save", accent-colored, top bar left of Start
+  over) and window `#export-dialog`. Flow: tap Save -> window opens, picture is made ("Getting your
+  picture ready...", ~1 s on a PC) -> preview + one big button -> **second tap** calls
+  `navigator.share({ files: [File] })` (iPad share sheet; "Save Image" puts it in Photos). Two taps
+  on purpose: Safari only allows `share()` right after a tap, and building a 2048x2732 PNG takes
+  a moment, so the picture is prepared first and shared on a fresh tap.
+- **The picture:** a temporary canvas = white + color layer + line-art layer (lines on top), full
+  page size (2048x2732, or 2732x2048), PNG (~1.1 MB for a lightly colored daffodil), opaque.
+  File name `finleys-coloring-<page title>.png`.
+- **The share sheet is used only on iPad / iPhone** (`isAppleTouchDevice()`: "iPad|iPhone|iPod" in
+  the user agent, or `platform === "MacIntel"` with `maxTouchPoints > 1`, since iPadOS Safari
+  reports itself as a Mac). Found on Owen's PC: Chrome on Windows reports `canShare({files})` true
+  and opened the Windows share panel (My Phone, OneNote...) instead of saving. Tested six cases
+  (Windows, Windows touchscreen, real Mac, iPad as Mac, iPad, iPhone).
+- **Fallback (everything else):** the button is "Download picture" and downloads the file; the preview `<img>` re-enables the iOS touch-and-hold
+  menu (`-webkit-touch-callout: default`, normally off app-wide) so "Add to Photos" always works.
+  Cancelling the share sheet (`AbortError`) is silent; other errors show a message pointing to
+  touch-and-hold.
+- **"Download instead"** link (`#export-download`, under the main button, **iPad/iPhone only**): a
+  backup in case the share sheet ever fails; saves the PNG to the Files app (Downloads). Hidden
+  while the picture is prepared and on computers.
+- Closing releases the picture's object URL; closing while it's still being made and reopening is
+  handled. Export is blocked mid-stroke (`isReady`).
+- Tested here: exact pixel contents (every line pixel black, every colored pixel kept, white paper,
+  no transparency), share path with a stubbed `navigator.share` (file name/type/size, cancel, failure),
+  download path, tap outside / Close, both orientations (fits, no scrolling).
+  **Not testable here: the real share sheet** - Owen checks on the iPad.
+- Not built: exporting the colors without lines, a share/export from the library, JPEG option.
+
 ## Key decisions
 
 - **Device:** iPad Pro 11" (screen 1668 × 2388), Apple Pencil 2, Safari.
@@ -389,6 +422,7 @@ table, and any decisions that changed.
 | `js/color.js` | Color conversions (hex / rgb / hsv) |
 | `js/color-picker.js` | The full color picker window (hue ring, shade square, palettes) |
 | `js/dialogs.js` | Small question boxes: ask for a name, ask "are you sure?" |
+| `js/save-picture.js` | Save button: makes the finished picture, shares it to Photos / downloads it |
 | `js/brushes.js` | Brush definitions, saved per-brush settings, paper grain |
 | `js/stroke-engine.js` | Draws brush strokes (dabs, coverage, live layer, commit) |
 | `js/slider.js` | Pencil-friendly slider |

@@ -214,3 +214,12 @@ coloring book and open the page again. Nothing is lost.
   and Delete palette do what they say. The Classic palette can't be changed.
 - Palettes and recent colors are saved on this device (they follow the same Safari rule as
   her coloring: open the app at least once a week until it's on the Home Screen).
+
+## Saving a finished picture to Photos
+
+Tap **Save** at the top of the coloring screen. The app makes a picture of her coloring (with the
+black lines on top, full size), shows a preview, and offers a big **Save to Photos** button. Tap it,
+then choose **Save Image** in the sheet that opens, and the picture is in her Photos. (She can also
+touch and hold the preview and choose **Add to Photos**, or tap **Download instead** to save the
+file to the Files app if the share sheet ever doesn't open.) On a PC the button says **Download
+picture** and saves a PNG file instead.

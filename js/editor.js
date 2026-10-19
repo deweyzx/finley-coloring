@@ -2,19 +2,20 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610191452";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610191452";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610191452";
-import { setupColorPicker } from "./color-picker.js?v=202610191452";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610191452";
-import { StrokeEngine } from "./stroke-engine.js?v=202610191452";
-import { createSlider } from "./slider.js?v=202610191452";
-import { History } from "./history.js?v=202610191452";
-import { Viewport } from "./viewport.js?v=202610191452";
-import { setupInput } from "./touch-input.js?v=202610191452";
-import { toggleDebug } from "./touch-debug.js?v=202610191452";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610191452";
-import { SETTINGS } from "./settings.js?v=202610191452";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610191524";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610191524";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610191524";
+import { setupColorPicker } from "./color-picker.js?v=202610191524";
+import { setupSavePicture } from "./save-picture.js?v=202610191524";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610191524";
+import { StrokeEngine } from "./stroke-engine.js?v=202610191524";
+import { createSlider } from "./slider.js?v=202610191524";
+import { History } from "./history.js?v=202610191524";
+import { Viewport } from "./viewport.js?v=202610191524";
+import { setupInput } from "./touch-input.js?v=202610191524";
+import { toggleDebug } from "./touch-debug.js?v=202610191524";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610191524";
+import { SETTINGS } from "./settings.js?v=202610191524";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -400,6 +401,9 @@ function saveNow() {
 // ---------- Start over ----------
 // Erases all her coloring on this page after she confirms. It can still be undone until she
 // leaves the page; if she leaves, the page is blank again (and blank in the library).
+
+// Save: the finished picture to Photos (or a download on a PC).
+setupSavePicture({ isReady: () => !paper.hidden && !stroke });
 
 const startOverButton = document.getElementById("start-over");
 const startOverDialog = document.getElementById("start-over-dialog");

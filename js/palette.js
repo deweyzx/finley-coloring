@@ -9,7 +9,7 @@
 //   "palettes"       - { active: "<palette id>", list: [{ id, name, colors: ["#rrggbb", ...] }] }
 // The built-in "Classic" palette is always there and can't be changed.
 
-import { hexToRgb, normalizeHex } from "./color.js?v=202610191452";
+import { hexToRgb, normalizeHex } from "./color.js?v=202610191524";
 
 export const DEFAULT_COLORS = [
   // reds and pinks

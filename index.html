@@ -5,9 +5,9 @@
   <!-- "user-scalable=no" stops Safari's own pinch-zoom; the app will do its own zooming on the picture. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Finley's Coloring Book</title>
-  <link rel="stylesheet" href="css/styles.css?v=202610191452">
+  <link rel="stylesheet" href="css/styles.css?v=202610191524">
   <!-- type="module" lets our JavaScript files import from each other. -->
-  <script type="module" src="js/app.js?v=202610191452"></script>
+  <script type="module" src="js/app.js?v=202610191524"></script>
 </head>
 <body>
 
@@ -37,6 +37,14 @@
         </svg>
       </a>
       <h1 id="page-title"></h1>
+      <!-- Save: makes the finished picture and saves it to Photos. -->
+      <button id="export-button" class="text-button primary" type="button" aria-label="Save the picture to Photos">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <path d="M12 15 V4 M8 8 L12 4 L16 8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5 12 V19 a1 1 0 0 0 1 1 H18 a1 1 0 0 0 1 -1 V12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Save
+      </button>
       <!-- Start over: erases this page's coloring (asks first). -->
       <button id="start-over" class="text-button" type="button">Start over</button>
       <!-- Undo ("back") and redo ("forward"). -->
@@ -186,6 +194,24 @@
         <div class="dialog-buttons">
           <button id="picker-done" class="dialog-button" type="button">Done</button>
         </div>
+      </div>
+    </div>
+
+    <!-- The "Save your picture" window (hidden until she taps Save). -->
+    <div id="export-dialog" class="dialog-backdrop picker-backdrop" hidden>
+      <div class="dialog export" role="dialog" aria-labelledby="export-title" aria-describedby="export-text">
+        <h2 id="export-title">Save your picture</h2>
+        <p id="export-text">Getting your picture ready…</p>
+        <div id="export-preview" class="export-preview" hidden>
+          <img id="export-image" alt="Your finished picture">
+        </div>
+        <p id="export-hint" class="export-hint" hidden></p>
+        <div class="dialog-buttons">
+          <button id="export-close" class="dialog-button secondary" type="button">Close</button>
+          <button id="export-save" class="dialog-button" type="button" disabled>Save to Photos</button>
+        </div>
+        <!-- A backup on iPad and iPhone, in case the share sheet ever doesn't open. -->
+        <button id="export-download" class="link-button" type="button" hidden>Download instead</button>
       </div>
     </div>
 

@@ -434,6 +434,62 @@ a.page-card { text-decoration: none; }
 }
 .text-button:active { transform: scale(0.96); }
 .text-button + .history-buttons { margin-left: 12px; }
+.text-button + .text-button { margin-left: 12px; }
+.text-button.primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: var(--surface);
+  font-weight: 600;
+}
+
+/* ---------- The "Save your picture" window ---------- */
+.dialog.export {
+  width: min(520px, 100%);
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+}
+.export-preview {
+  margin: 0 0 14px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--desk);
+  text-align: center;
+}
+.export-preview img {
+  max-width: 100%;
+  max-height: min(46vh, 420px);
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  /* The picture can be touched and held to "Add to Photos" (the app turns that menu off elsewhere). */
+  -webkit-touch-callout: default;
+  -webkit-user-select: auto;
+  user-select: auto;
+  touch-action: manipulation;
+}
+.dialog .export-hint {
+  margin: 0 0 16px;
+  font-size: var(--text-small);
+}
+.link-button {
+  display: block;
+  min-height: var(--button-size);
+  margin: 6px auto 0;
+  padding: 0 16px;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: var(--text-normal);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.dialog-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
 
 .dialog-backdrop {
   position: fixed;
@@ -652,7 +708,7 @@ a.page-card { text-decoration: none; }
 .recent-colors .swatch { flex: none; }
 
 /* ---------- The color picker window ---------- */
-.dialog-backdrop.picker-backdrop { touch-action: manipulation; }
+.dialog-backdrop.picker-backdrop { touch-action: manipulation; } /* windows that can scroll */
 .dialog-top { z-index: 20; }
 
 .dialog.picker {
