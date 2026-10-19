@@ -8,16 +8,10 @@ table, and any decisions that changed.
 
 ## Where we are
 
-- **Done and committed:** steps 1–6 (lighter pencil + eraser-edge fix included).
-- **In testing on the iPad:** the touch debug log (open the link with `?debug`) and **fingers
-  drawing by default with automatic palm rejection** (replaced the "Draw with finger" switch).
-  Finley finds pinch/pan and two/three-finger taps hard to trigger. Owen will send log
-  screenshots; then **loosen the gesture thresholds in `js/settings.js` based on that real data**
-  (keep: a tap never leaves a mark). Suspects shown possible in simulation: her touches reported
-  wider than `palmSize` 60 (ignored as palm, which would also stop finger drawing), a resting hand
-  counted as an extra finger, taps slower than 350 ms, wobble over 12 px. Then remove or hide the
-  debug log for good.
-- **Not started (Owen said wait):** step 7, auto-save + progress thumbnails.
+- **Done and committed:** steps 1–6, including gesture tuning for Finley. Everything works on her
+  iPad: one-finger coloring, 2-finger tap undo, 3-finger tap redo, pinch zoom, two-finger drag,
+  and no interference from her hand resting on the screen while using the Pencil.
+- **In progress:** step 7, auto-save + progress in the library.
 
 ## How to work with Owen
 
@@ -57,8 +51,8 @@ table, and any decisions that changed.
 | 3 | Tap-to-fill with gap closing + basic palette and toolbar | ✅ |
 | 4 | Brush engine: pencil, marker, eraser; size + opacity sliders, live preview; pressure + tilt; line-lock | ✅ |
 | 5 | Undo / redo (big back/forward buttons) | ✅ |
-| 6 | Pinch-zoom, two-finger pan, palm rejection; 2-finger tap undo, 3-finger tap redo | ✅ committed; gesture tuning in progress |
-| 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails | next |
+| 6 | Pinch-zoom, two-finger pan, palm rejection; 2-finger tap undo, 3-finger tap redo | ✅ |
+| 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails | in progress |
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | |
 | 9 | Export the finished picture to Photos | |
 | 10 | Brush collection: colored pencil, crayon, watercolor, airbrush, glitter/sparkle | |
@@ -212,6 +206,19 @@ table, and any decisions that changed.
   two-finger tap leaves no mark. **The browser pane doesn't run requestAnimationFrame**, so live
   stroke rendering and animations can't be watched there; the real iPad check matters.
 - The brush preview updates 120 ms after zooming stops (it shows the on-screen brush size).
+- **What we learned from Finley's real touches** (touch log on her iPad, 2026-10-18):
+  - She has **long nails**, so she touches with the flat finger pad. The iPad reports her touches as
+    **42–83 px wide (usually 63)**, versus roughly 20–40 for a fingertip. With `palmSize` 60 almost
+    all her finger input was ignored as a palm - that was the cause of "fingers don't register" and
+    most of "gestures are hard to trigger". **`palmSize` is 120** (~45% headroom over her largest).
+    Don't lower it below ~100 without new data.
+  - Her taps: fingers land 0–25 ms apart, all lift after 57–108 ms, movement 0 px. The defaults
+    (`tapGestureMaxMs` 350, `tapGestureMoveLimit` 12) already fit her with a wide margin, so they
+    were kept.
+  - Palm rejection by timing (ignore fingers while the Pencil is down / 500 ms after) works fully
+    for her; the size filter is now only a backstop for a whole hand.
+- **Touch log:** off by default; open the app with `?debug` to turn it on, "Hide log" to turn it
+  off (remembered per device).
 
 ## Key decisions
 
@@ -271,6 +278,10 @@ table, and any decisions that changed.
 - **Live:** https://deweyzx.github.io/finley-coloring/ (repo `deweyzx/finley-coloring`, public,
   Pages from `main` / root, `.nojekyll` present). It updates ~1 minute after a push, and Safari may
   show the old version for a few minutes.
+- **Browser caching lesson:** GitHub Pages lets Safari reuse files for ~10 min. Without version
+  stamps, Finley's iPad ran the new HTML with old cached JS (a new switch appeared but did
+  nothing). Fixed with version stamps (below). After any upload, tell Owen to **wait ~10 minutes
+  and reopen the tab** before testing.
 - **Before every commit that will be pushed, run `python tools/stamp_version.py`.** It stamps
   `?v=<yyyymmddHHMM>` onto every reference (index.html's CSS/JS, every `import ... from "./x.js"`,
   the fill worker URL). GitHub Pages lets browsers cache files ~10 min, and without stamps Safari
