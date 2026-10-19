@@ -160,7 +160,18 @@ works normally either way.
 ## Undo and redo
 
 The curved arrows at the top right of the coloring screen go back and forward one step (a stroke
-or a fill) at a time. On the PC: Ctrl+Z to undo, Ctrl+Y to redo.
+or a fill) at a time. On the iPad: tap with **two fingers** to undo, **three fingers** to redo.
+On the PC: Ctrl+Z to undo, Ctrl+Y to redo.
+
+## Zoom, pan and the Pencil
+
+- **On the iPad:** pinch with two fingers to zoom, drag with two fingers to move around. Pinch
+  smaller than the page and it springs back to show the whole page.
+- **The Apple Pencil draws; fingers don't.** Once the iPad has seen the Pencil, fingers only
+  zoom, move and tap, so her hand can rest on the screen while she colors. While the Pencil
+  is touching the screen, other touches are ignored.
+- **On the PC:** the mouse wheel zooms, dragging with the middle mouse button (or holding the
+  space bar and dragging) moves around, and Ctrl+0 shows the whole page again.
 
 To change how a brush feels, or to add a new one, edit `js/brushes.js`. Each brush is one short
 block of settings, and the comments at the top explain each setting.

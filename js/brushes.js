@@ -10,7 +10,8 @@
 //   spacing         - distance between "dabs" along the stroke, as a share of the size
 //   pressure        - how lighter pressure changes the stroke. Each [min, 1] pair says what
 //                     share of the slider's value you get at the lightest touch (min) and at
-//                     full pressure (1). curve > 1 makes light pressure stay lighter longer.
+//                     full pressure (1). curve > 1 makes light pressure stay lighter longer;
+//                     curve < 1 makes a light touch show up sooner.
 //   tilt            - what happens when the Pencil is tilted over, like shading with the side
 //                     of a pencil lead: widen (how much wider), opacity (share kept),
 //                     grainFill (share of grain filled in)
@@ -27,9 +28,10 @@ export const BRUSHES = {
     defaults: { size: 8, opacity: 0.9 },
     hardness: 0.75,
     spacing: 0.12,
-    pressure: { size: [0.45, 1], opacity: [0.3, 1], curve: 1.2 },
+    // curve below 1 = a light touch already shows (faint), building smoothly to full.
+    pressure: { size: [0.6, 1], opacity: [0.5, 1], curve: 0.5 },
     tilt: { widen: 2.6, opacity: 0.78, grainFill: 0.72 },
-    grain: { strength: 1, fill: [0.3, 0.8] },
+    grain: { strength: 1, fill: [0.45, 0.85] },
     paint: "color",
   },
 

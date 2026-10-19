@@ -181,7 +181,8 @@ export class StrokeEngine {
     const { r, g, b } = this.rgb;
     const cov = this.coverage;
     const mem = this.memory;
-    const evenOut = !this.buildUp;
+    // (The eraser always just rubs out; "build up" only changes how colors go on.)
+    const evenOut = !this.buildUp && this.brush.paint !== "paper";
     for (let row = 0; row < h; row++) {
       let i = (d.y0 + row) * this.width + d.x0;
       let p = row * w * 4;
@@ -233,15 +234,26 @@ export class StrokeEngine {
 
 // Paint memory after a stroke: each touched pixel now holds this color at this strength
 // (or, for an even-out touch-up of the same color, at the stronger of the two).
+// The eraser is different: it doesn't paint "white", it weakens what's there. A pixel
+// erased by 30% keeps its color in the memory at 70% of its old strength, so painting the
+// same color over it later adds exactly what's missing (no darker edges where the eraser's
+// soft edge only partly erased). Fully erased pixels are forgotten.
 StrokeEngine.prototype.remember = function (box) {
   const { r, g, b } = this.rgb;
   const cov = this.coverage;
   const mem = this.memory;
+  const erasing = this.brush.paint === "paper";
   for (let y = box.y0; y <= box.y1; y++) {
     for (let i = y * this.width + box.x0, end = y * this.width + box.x1; i <= end; i++) {
       const c = cov[i];
       if (c === 0) continue;
       const m = i * 4;
+      if (erasing) {
+        const left = Math.round((mem[m + 3] * (255 - c)) / 255);
+        if (left === 0) mem[m] = mem[m + 1] = mem[m + 2] = mem[m + 3] = 0;
+        else mem[m + 3] = left;
+        continue;
+      }
       const same = mem[m + 3] > 0 && mem[m] === r && mem[m + 1] === g && mem[m + 2] === b;
       if (!this.buildUp && same) {
         if (c > mem[m + 3]) mem[m + 3] = c;
@@ -268,6 +280,21 @@ StrokeEngine.prototype.rememberFill = function (area, rgb) {
       mem[m + 3] = 255;
     }
   }
+};
+
+// Takes the current stroke back without leaving any mark (e.g. a finger stroke that turned
+// out to be the start of a two-finger gesture).
+StrokeEngine.prototype.cancel = function (strokeCtx) {
+  const box = this.box;
+  if (box) {
+    strokeCtx.clearRect(box.x0, box.y0, box.x1 - box.x0 + 1, box.y1 - box.y0 + 1);
+    for (let y = box.y0; y <= box.y1; y++) {
+      this.coverage.fill(0, y * this.width + box.x0, y * this.width + box.x1 + 1);
+    }
+  }
+  this.box = null;
+  this.dirty = null;
+  this.last = null;
 };
 
 function growBox(box, x0, y0, x1, y1) {

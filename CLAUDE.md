@@ -8,11 +8,12 @@ table, and any decisions that changed.
 
 ## Where we are
 
-- **Done and committed:** steps 1, 1b, 2, 2b, 3, 4 and 5 (step 5 = undo/redo, committed together
-  with the step 4 follow-ups from Finley's feedback: the "Build up color" switch and the faster
-  background). All passed Owen's PC test.
-- **Waiting:** Owen and Finley's iPad check of build-up, background speed and undo/redo.
-- **Next:** step 6, zoom/pan + palm rejection.
+- **Done and committed:** steps 1–6, plus the lighter pencil and the eraser-edge fix (all passed
+  Owen's PC test).
+- **Waiting:** iPad check of step 6 (pinch/pan feel, palm rejection, two/three-finger tap
+  undo/redo) and of the lighter pencil. These can only be judged on the iPad; expect tuning
+  (thresholds are constants at the top of `js/touch-input.js`, pencil values in `js/brushes.js`).
+- **Next:** step 7, auto-save + progress thumbnails.
 
 ## How to work with Owen
 
@@ -47,10 +48,10 @@ table, and any decisions that changed.
 | 2 | Online via GitHub Pages | ✅ |
 | 2b | Python import tool for messy pages (+ ready-made thumbnails) | ✅ |
 | 3 | Tap-to-fill with gap closing + basic palette and toolbar | ✅ |
-| 4 | Brush engine: pencil, marker, eraser; size + opacity sliders, live preview; pressure + tilt; line-lock | ✅ committed, iPad check pending |
-| 5 | Undo / redo (big back/forward buttons) | ✅ committed, iPad check pending |
-| 6 | Pinch-zoom, two-finger pan, palm rejection (Pencil draws, fingers zoom/pan) | next |
-| 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails | |
+| 4 | Brush engine: pencil, marker, eraser; size + opacity sliders, live preview; pressure + tilt; line-lock | ✅ |
+| 5 | Undo / redo (big back/forward buttons) | ✅ |
+| 6 | Pinch-zoom, two-finger pan, palm rejection; 2-finger tap undo, 3-finger tap redo | ✅ committed, iPad check pending |
+| 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails | next |
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | |
 | 9 | Export the finished picture to Photos | |
 | 10 | Brush collection: colored pencil, crayon, watercolor, airbrush, glitter/sparkle | |
@@ -59,10 +60,6 @@ table, and any decisions that changed.
 
 ### Notes for future steps
 
-- **Step 6:** currently a "tap" = pointer down/up within 12px and 800ms (`js/editor.js`). The
-  `view` object (`scale, x, y`) and `applyView()` already position the page with a CSS transform;
-  `toPagePoint()` converts screen → page coordinates. Palm rejection: when a Pencil
-  (`pointerType === "pen"`) is in use, ignore touches for drawing.
 - **Step 7:** IndexedDB already has an `artwork` store (unused) in `js/storage.js`. Save per page
   id. Library cards should then show her colored version instead of the blank thumbnail.
 - **Step 8:** Pencil-friendly hue ring + saturation/brightness square, recently used colors,
@@ -145,12 +142,52 @@ table, and any decisions that changed.
   saves the picture itself, not the history).
 - UI: big back/forward buttons at the top right of the coloring screen (greyed when unavailable).
   PC shortcuts: Ctrl+Z, Ctrl+Y / Ctrl+Shift+Z. Undo is ignored mid-stroke.
-- Idea for step 6: two-finger tap = undo (like Procreate), if Owen wants it.
+- Gestures: two-finger tap = undo, three-finger tap = redo (step 6; a small "Undo"/"Redo" label flashes).
 - Defaults: pencil 8 / 90% (range 1–40), marker 30 / 70% (4–120), eraser 40 / 100% (4–200).
+- **Pencil pressure tuned for Finley** (she had to press too hard): `pressure.curve` 0.5 (a light
+  touch counts for more), opacity min 0.5, size min 0.6, grain fill [0.45, 0.85]. Measured darkness
+  of an 8 px stroke: 3% pressure → 13%, 15% → 24%, 40% → 42%, 80% → 64%, 100% → 73% (before:
+  invisible below ~40%). Texture unchanged. Further tuning = these numbers in `js/brushes.js`.
+- **Eraser and paint memory:** the eraser doesn't record "white"; it weakens the remembered
+  strength of what's there (`strength × (1 − erased)`), forgetting fully erased pixels. Recording
+  white made partly-erased soft-edge pixels count as "a different color", so repainting with
+  build-up off laid a double layer there: dark lines along the eraser's edges (fixed; tested with
+  marker and pencil, build-up on/off, with undo/redo in between). Build-up never applies to the
+  eraser itself (repeated erasing keeps erasing).
 - Speed (PC): one second of fast Pencil drawing costs 23 ms (pencil) to 85 ms (eraser at 200);
   screen updates are under 2 ms.
 - Input: Pencil samples come from `getCoalescedEvents()` when available. One pointer at a time;
   real palm rejection and finger zoom/pan are step 6.
+
+## Zoom, pan, palm rejection and gestures (step 6)
+
+- `js/viewport.js` (`view` in editor.js): scale + position, applied as a CSS transform on
+  `#paper`. `zoomAt()`, `panBy()`, `pinch(start, cx, cy, dist)`, `fit()`, `toPage()`. Zoom range:
+  half of "fit" while pinching (springs back to fit on release, with a 300 ms safety snap if the
+  animation can't run) up to 4 screen px per page px. The middle of the drawing area always stays
+  over the page, so it can't be lost.
+- `js/touch-input.js` decides what every pointer means:
+  - **Pencil** (`pointerType "pen"`) always draws / taps to fill. The first Pencil touch sets
+    `localStorage "pencil-seen"`; from then on **fingers never draw or fill** (only zoom/pan/taps).
+  - **Palm rejection:** while the Pencil is down, all touches are ignored; touches already on the
+    screen when the Pencil lands are ignored until lifted (and cancel any gesture); touches wider
+    than 60 px are treated as palms.
+  - **Two fingers moving** = pinch-zoom + pan, measured from where the fingers first touched (the
+    iPad reports each finger separately, so measuring "right now" at the start was lopsided and
+    made a plain drag zoom a bit - fixed).
+  - **Taps:** all fingers up within 350 ms, none moved more than 12 px → 2 fingers = undo,
+    3 = redo, with a small "Undo"/"Redo" toast. Anything moving or longer is zoom/pan.
+  - **Finger mode** (device never saw a Pencil, e.g. PC touchscreen): one finger draws; a second
+    finger within 250 ms cancels that stroke with no mark (`engine.cancel()`), then it's a gesture.
+  - **PC:** mouse draws; wheel / trackpad pinch zooms at the pointer; middle-button drag or
+    Space + drag pans; Ctrl+0 fits the page.
+  - Not yet: a setting to let fingers draw again after a Pencil was used (could add if needed).
+- Tested with simulated touches (real timing): pinch 100→300 px = exactly 3×, two-finger drag
+  moves exactly with the fingers, 2/3-finger taps undo/redo without moving the page, a held
+  two-finger touch does nothing, palms before/during a Pencil stroke change nothing, finger-mode
+  two-finger tap leaves no mark. **The browser pane doesn't run requestAnimationFrame**, so live
+  stroke rendering and animations can't be watched there; the real iPad check matters.
+- The brush preview updates 120 ms after zooming stops (it shows the on-screen brush size).
 
 ## Key decisions
 
@@ -235,6 +272,8 @@ table, and any decisions that changed.
 | `js/stroke-engine.js` | Draws brush strokes (dabs, coverage, live layer, commit) |
 | `js/slider.js` | Pencil-friendly slider |
 | `js/history.js` | Undo and redo |
+| `js/viewport.js` | Zoom and pan (where the page sits on screen) |
+| `js/touch-input.js` | What each Pencil / finger / mouse action means; palm rejection; gestures |
 | `js/settings.js` | Tweakable numbers |
 | `pages/pages.js` | The library list |
 | `tools/import_pages.py`, `import-pages.bat` | Import tool |

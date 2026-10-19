@@ -9,6 +9,8 @@ import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js";
 import { StrokeEngine } from "./stroke-engine.js";
 import { createSlider } from "./slider.js";
 import { History } from "./history.js";
+import { Viewport } from "./viewport.js";
+import { setupInput } from "./touch-input.js";
 import { SETTINGS } from "./settings.js";
 
 const area = document.getElementById("canvas-area");
@@ -27,9 +29,9 @@ let currentPage = null;
 let fillReady = null; // a promise: done when the fill helper has studied the current page
 let engine = null;    // draws brush strokes for the current page
 
-// The "view" says where the paper sits on screen:
-// how much it is zoomed (scale) and how far it is moved from the top-left (x, y).
-const view = { scale: 1, x: 0, y: 0 };
+// The "view" says where the paper sits on screen: how much it is zoomed (view.scale) and
+// how far it is moved (view.x, view.y). Pinch, pan and mouse-wheel zoom change it.
+const view = new Viewport(area, paper, () => schedulePreview());
 
 // ---------- Tools ----------
 // Fill reacts to taps; every brush in brushes.js draws strokes.
@@ -98,14 +100,27 @@ function updateHistoryButtons() {
   undoButton.disabled = !history || !history.canUndo();
   redoButton.disabled = !history || !history.canRedo();
 }
-function undo() {
-  if (history && !stroke) history.undo(); // not in the middle of a stroke
+function undo(fromGesture) {
+  if (!history || stroke || !history.canUndo()) return; // not in the middle of a stroke
+  history.undo();
+  if (fromGesture) showToast("Undo");
 }
-function redo() {
-  if (history && !stroke) history.redo();
+function redo(fromGesture) {
+  if (!history || stroke || !history.canRedo()) return;
+  history.redo();
+  if (fromGesture) showToast("Redo");
 }
-undoButton.addEventListener("click", undo);
-redoButton.addEventListener("click", redo);
+undoButton.addEventListener("click", () => undo());
+redoButton.addEventListener("click", () => redo());
+
+// A small label that flashes in the middle of the page, so she knows a gesture worked.
+const toast = document.getElementById("toast");
+function showToast(text) {
+  toast.textContent = text;
+  toast.classList.remove("show");
+  void toast.offsetWidth; // restart the fade animation
+  toast.classList.add("show");
+}
 // Keyboard shortcuts for testing on the PC: Ctrl+Z, and Ctrl+Y or Ctrl+Shift+Z.
 window.addEventListener("keydown", (e) => {
   if (!(e.ctrlKey || e.metaKey) || paper.hidden) return;
@@ -225,6 +240,14 @@ function drawPreview() {
   ctx.drawImage(layer, 0, 0);
 }
 
+// While she's zooming, update the preview a moment after the page stops moving
+// (redrawing it on every frame of a pinch would waste time).
+let previewTimer = null;
+function schedulePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(drawPreview, 120);
+}
+
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -289,7 +312,7 @@ export async function openEditor(page) {
 
   messageEl.textContent = "";
   paper.hidden = false;
-  fitToScreen();
+  view.setPage(w, h);
 }
 
 export function closeEditor() {
@@ -383,6 +406,13 @@ function finishStroke() {
   stroke = null;
 }
 
+// Takes the stroke back with no mark at all (a finger that turned into a gesture).
+function cancelStroke() {
+  if (!stroke) return;
+  stroke = null;
+  engine.cancel(strokeCtx);
+}
+
 // Redraws the stroke once per screen refresh (not once per Pencil sample).
 function showStroke() {
   if (frameRequested) return;
@@ -395,7 +425,7 @@ function showStroke() {
 
 // Reads position, pressure and tilt from a pointer event.
 function readPoint(e) {
-  const p = toPagePoint(e.clientX, e.clientY);
+  const p = view.toPage(e.clientX, e.clientY);
   const pen = e.pointerType === "pen";
   // Mouse and finger have no pressure: they draw at the slider's full size and opacity.
   p.pressure = pen ? e.pressure : 1;
@@ -418,82 +448,29 @@ function readPoint(e) {
 }
 
 // ---------- Pointer input ----------
-// A brush draws while the pointer is down. Fill reacts to a tap: the pointer goes down
-// and comes back up quickly without moving much.
-// (Step 6 adds two-finger zoom and pan, and ignoring her palm while drawing.)
+// touch-input.js decides what each touch, Pencil or mouse movement means (draw, fill tap,
+// zoom/pan, undo/redo gestures, or a palm to ignore) and calls these.
 
-let press = null;
-
-area.addEventListener("pointerdown", (e) => {
-  if (e.button > 0 || paper.hidden || stroke || press) return; // one pointer at a time
-  if (tools[currentTool].brush) {
-    // Keep receiving this pointer even if it slides off the drawing area.
-    try {
-      area.setPointerCapture(e.pointerId);
-    } catch {
-      // not available for this pointer; the stroke still works
-    }
-    startStroke(e);
-  } else {
-    press = { id: e.pointerId, x: e.clientX, y: e.clientY, time: e.timeStamp };
-  }
+setupInput(area, view, {
+  ready: () => !paper.hidden && !!engine,
+  isBrush: () => !!tools[currentTool].brush,
+  strokeStart: (e) => {
+    if (!stroke) startStroke(e);
+  },
+  strokeMove: (e) => {
+    if (stroke && !stroke.lifted) continueStroke(e);
+  },
+  strokeEnd: () => {
+    if (stroke && !stroke.lifted) endStroke();
+  },
+  strokeCancel: () => cancelStroke(),
+  tap: (e) => tools[currentTool].tap && tools[currentTool].tap(view.toPage(e.clientX, e.clientY)),
+  undo: () => undo(true),
+  redo: () => redo(true),
 });
 
-area.addEventListener("pointermove", (e) => {
-  if (stroke && !stroke.lifted && e.pointerId === stroke.pointerId) continueStroke(e);
-});
-
-area.addEventListener("pointerup", (e) => {
-  if (stroke && e.pointerId === stroke.pointerId) {
-    if (!stroke.lifted) endStroke();
-    return;
-  }
-  if (!press || e.pointerId !== press.id) return;
-  const moved = Math.hypot(e.clientX - press.x, e.clientY - press.y);
-  const quick = e.timeStamp - press.time < 800;
-  press = null;
-  if (moved < 12 && quick && tools[currentTool].tap) {
-    tools[currentTool].tap(toPagePoint(e.clientX, e.clientY));
-  }
-});
-
-area.addEventListener("pointercancel", (e) => {
-  if (stroke && !stroke.lifted && e.pointerId === stroke.pointerId) endStroke(); // keep what was drawn
-  if (press && e.pointerId === press.id) press = null;
-});
-
-// Converts a point on the screen to a point on the page (in page pixels).
-function toPagePoint(clientX, clientY) {
-  const box = area.getBoundingClientRect();
-  return {
-    x: (clientX - box.left - view.x) / view.scale,
-    y: (clientY - box.top - view.y) / view.scale,
-  };
-}
-
-// ---------- Fitting the page on screen ----------
-
-// Shrinks (or grows) the paper so the whole picture fits in the area, centered.
-function fitToScreen() {
-  const margin = 20;
-  const areaW = area.clientWidth;
-  const areaH = area.clientHeight;
-  const w = lineCanvas.width;
-  const h = lineCanvas.height;
-
-  view.scale = Math.min((areaW - margin * 2) / w, (areaH - margin * 2) / h);
-  view.x = (areaW - w * view.scale) / 2;
-  view.y = (areaH - h * view.scale) / 2;
-  applyView();
-}
-
-function applyView() {
-  paper.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.scale})`;
-  drawPreview(); // the preview shows the brush at its on-screen size
-}
-
-// When the iPad rotates (or the browser window is resized), re-fit the picture.
+// When the iPad rotates (or the browser window is resized), show the whole page again.
 window.addEventListener("resize", () => {
-  if (currentPage && !paper.hidden) fitToScreen();
+  if (currentPage && !paper.hidden) view.fit();
   else drawPreview();
 });

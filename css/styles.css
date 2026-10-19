@@ -228,6 +228,7 @@ a.page-card { text-decoration: none; }
   left: 0;
   /* We zoom and move the paper with a CSS transform, measured from its top-left corner. */
   transform-origin: 0 0;
+  will-change: transform; /* smooth pinch-zoom */
   background: var(--paper);
   box-shadow: var(--shadow-paper);
 }
@@ -348,6 +349,27 @@ a.page-card { text-decoration: none; }
 .toggle-switch:active { transform: scale(0.97); }
 /* Fill doesn't use these, so they fade while Fill is selected (still tappable). */
 .toggle-switch.faded { opacity: 0.45; }
+
+/* ---------- "Undo" / "Redo" label after a finger-tap gesture ---------- */
+.toast {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: var(--text-normal);
+  pointer-events: none;
+  opacity: 0;
+}
+.toast.show { animation: toast 0.9s ease forwards; }
+@keyframes toast {
+  0% { opacity: 0; transform: translate(-50%, -6px); }
+  15%, 70% { opacity: 0.9; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, 0); }
+}
 
 /* ---------- Undo / redo (top right of the coloring screen) ---------- */
 .history-buttons {
