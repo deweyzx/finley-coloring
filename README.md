@@ -31,6 +31,7 @@ Don't open `index.html` by double-clicking. Browsers block some features for fil
 | `thumbs/<category>/<sub-category>/` | Small previews of each page for the library (made by the import tool) |
 | `serve.py`, `start-server.bat` | Local test server (only for your PC, not part of the app) |
 | `import-pages.bat`, `tools/import_pages.py` | The import tool (see below) |
+| `tools/stamp_version.py` | Gives every file a version stamp before an upload, so the iPad never mixes old and new files |
 | `tools/import-log.json` | The import tool's record of what it has imported |
 
 ## Importing coloring pages (the easy way)

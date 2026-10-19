@@ -269,6 +269,14 @@ table, and any decisions that changed.
 - **Live:** https://deweyzx.github.io/finley-coloring/ (repo `deweyzx/finley-coloring`, public,
   Pages from `main` / root, `.nojekyll` present). It updates ~1 minute after a push, and Safari may
   show the old version for a few minutes.
+- **Before every commit that will be pushed, run `python tools/stamp_version.py`.** It stamps
+  `?v=<yyyymmddHHMM>` onto every reference (index.html's CSS/JS, every `import ... from "./x.js"`,
+  the fill worker URL). GitHub Pages lets browsers cache files ~10 min, and without stamps Safari
+  ran new HTML with old cached JS (the "Draw with finger" switch appeared but did nothing). With
+  stamps a page always gets matching code; only the HTML itself can be up to ~10 min stale, so
+  tell Owen to wait ~10 minutes after an upload (or until step 11's service worker). New imports
+  must use plain `"./x.js"` (the tool adds the stamp). In browser-pane tests, import modules with
+  the same `?v=` the page uses, or you get a separate copy of the module (separate worker/state).
 - **Git:** identity is repo-local: `deweyzx` / `343752721+deweyzx@users.noreply.github.com` (keeps
   his real email private). Pushing works through the saved Git Credential Manager sign-in.
   Commit messages are "Step N: …" with a short explanation.
@@ -296,7 +304,8 @@ table, and any decisions that changed.
 | `js/history.js` | Undo and redo |
 | `js/viewport.js` | Zoom and pan (where the page sits on screen) |
 | `js/touch-input.js` | What each Pencil / finger / mouse action means; palm rejection; gestures |
-| `js/touch-debug.js` | Temporary on-screen touch log (tap the page title 5 times) |
+| `js/touch-debug.js` | Temporary on-screen touch log (`?debug` link or 5 title taps; "Hide log") |
+| `tools/stamp_version.py` | Stamps a version on every file reference (run before each upload) |
 | `js/settings.js` | Tweakable numbers |
 | `pages/pages.js` | The library list |
 | `tools/import_pages.py`, `import-pages.bat` | Import tool |

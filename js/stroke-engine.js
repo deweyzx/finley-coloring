@@ -16,7 +16,7 @@
 //
 // The brushes themselves are described in brushes.js.
 
-import { GRAIN, GRAIN_SIZE } from "./brushes.js";
+import { GRAIN, GRAIN_SIZE } from "./brushes.js?v=202610182234";
 
 export class StrokeEngine {
   constructor(width, height) {
