@@ -48,21 +48,47 @@
              so coloring can never cover the black lines. -->
         <div id="paper" class="paper" hidden>
           <canvas id="color-canvas"></canvas>
+          <!-- The brush stroke being drawn right now. It joins the color layer when the Pencil lifts. -->
+          <canvas id="stroke-canvas"></canvas>
           <canvas id="line-canvas"></canvas>
         </div>
         <p id="canvas-message" class="canvas-message"></p>
       </div>
 
       <aside class="tool-panel">
-        <!-- Tools. Step 4 adds brushes and the eraser; step 5 adds undo and redo. -->
-        <div class="tools">
-          <button class="tool-button" type="button" data-tool="fill" aria-label="Fill">
-            <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
-              <path d="M5 11 L11 5 L18 12 L12 18 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
-              <path d="M5 11 L18 12" fill="none" stroke="currentColor" stroke-width="1.8"/>
-              <path d="M20 15 C 21.5 17 21.5 18.5 20 19.2 C 18.5 18.5 18.5 17 20 15 Z" fill="currentColor"/>
-            </svg>
-          </button>
+        <div class="panel-top">
+          <!-- Tools: fill, then one button per brush (added by editor.js from brushes.js).
+               Step 5 adds undo and redo. -->
+          <div class="tool-column">
+            <div id="tools" class="tools">
+              <button class="tool-button" type="button" data-tool="fill" aria-label="Fill">
+                <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+                  <path d="M5 11 L11 5 L18 12 L12 18 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                  <path d="M5 11 L18 12" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                  <path d="M20 15 C 21.5 17 21.5 18.5 20 19.2 C 18.5 18.5 18.5 17 20 15 Z" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Line-lock: when on, brush strokes stay inside the area where they start. -->
+            <button id="line-lock" class="lock-toggle" type="button" role="switch" aria-checked="true">
+              <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                <rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                <path class="shackle-closed" d="M8.5 10.5 V8 a3.5 3.5 0 0 1 7 0 V10.5" fill="none" stroke="currentColor" stroke-width="1.8"/>
+                <path class="shackle-open" d="M8.5 10.5 V7 a3.5 3.5 0 0 1 6.8 -1.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                <circle cx="12" cy="15.5" r="1.5" fill="currentColor"/>
+              </svg>
+              <span class="lock-label">Stay inside lines</span>
+              <span class="lock-state">On</span>
+            </button>
+          </div>
+
+          <!-- Brush controls: a live preview and the size and opacity sliders. -->
+          <div id="brush-controls" class="brush-controls">
+            <canvas id="brush-preview" class="brush-preview" aria-label="Brush preview"></canvas>
+            <div id="size-slider"></div>
+            <div id="opacity-slider"></div>
+          </div>
         </div>
         <!-- Color swatches (filled in by palette.js) -->
         <div id="palette" class="palette"></div>

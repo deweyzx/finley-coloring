@@ -30,7 +30,12 @@
   --radius: 18px;
   --button-size: 52px;      /* big enough for a finger or Pencil */
   --swatch-size: 44px;      /* color circles */
-  --panel-width: 236px;     /* tool panel when the iPad is sideways */
+  --panel-width: 262px;     /* tool panel when the iPad is sideways */
+  --preview-width: 128px;   /* brush preview (upright iPad) */
+  --preview-height: 76px;
+  --slider-height: 40px;    /* touch area of a slider */
+  --slider-thumb: 30px;     /* the round knob */
+  --toggle-height: 44px;    /* the line-lock switch */
 }
 
 * { box-sizing: border-box; }
@@ -228,6 +233,7 @@ a.page-card { text-decoration: none; }
 }
 
 .paper canvas {
+  pointer-events: none;
   position: absolute;
   inset: 0;
   width: 100%;
@@ -253,19 +259,26 @@ a.page-card { text-decoration: none; }
   flex-direction: column;   /* upright iPad: panel below the picture */
 }
 
+/* Upright: tools, preview and sliders in one row, swatches in the row below. */
 .tool-panel {
   flex: none;
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-direction: column;
+  gap: 10px;
   padding: 10px calc(16px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
   background: var(--bg);
   border-top: 1px solid var(--hairline);
 }
 
+.panel-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .tools {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex: none;
 }
 
@@ -287,9 +300,136 @@ a.page-card { text-decoration: none; }
 }
 .tool-button:active { transform: scale(0.94); }
 
+/* ---------- Line-lock toggle ---------- */
+.tool-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: none;
+}
+.lock-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--toggle-height);
+  padding: 0 10px 0 12px;
+  border: 2px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-small);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.lock-toggle .lock-label { flex: 1; text-align: left; white-space: nowrap; }
+.lock-toggle .lock-state {
+  min-width: 40px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--desk);
+  color: var(--ink);
+  font-weight: 600;
+  text-align: center;
+}
+.lock-toggle .shackle-closed { display: none; }
+.lock-toggle.on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--surface);
+}
+.lock-toggle.on .lock-state {
+  background: var(--surface);
+  color: var(--accent);
+}
+.lock-toggle.on .shackle-closed { display: inline; }
+.lock-toggle.on .shackle-open { display: none; }
+.lock-toggle:active { transform: scale(0.97); }
+/* Fill doesn't use line-lock, so it fades while Fill is selected (still tappable). */
+.lock-toggle.faded { opacity: 0.45; }
+
+/* ---------- Brush controls: preview + sliders ---------- */
+.brush-controls {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: var(--preview-width) 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 14px;
+  align-items: center;
+  transition: opacity 0.15s ease;
+}
+.brush-preview {
+  grid-row: 1 / 3;
+  width: var(--preview-width);
+  height: var(--preview-height);
+  border-radius: 12px;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--shadow);
+}
+/* Fill has no size or opacity: the sliders fade out but the preview shows the color. */
+.brush-controls.disabled .slider {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.slider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.slider-label {
+  width: 58px;
+  flex: none;
+  font-size: var(--text-small);
+  color: var(--muted);
+}
+.slider-track {
+  position: relative;
+  flex: 1;
+  min-width: 80px;
+  height: var(--slider-height);   /* tall touch area, thin bar inside */
+  touch-action: none;
+  cursor: pointer;
+  outline: none;
+}
+.slider-track::before,
+.slider-fill {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 4px;
+}
+.slider-track::before {
+  right: 0;
+  background: var(--desk);
+}
+.slider-fill { background: var(--accent); }
+.slider-thumb {
+  position: absolute;
+  top: 50%;
+  width: var(--slider-thumb);
+  height: var(--slider-thumb);
+  margin: calc(var(--slider-thumb) / -2) 0 0 calc(var(--slider-thumb) / -2);
+  border-radius: 50%;
+  background: var(--surface);
+  box-shadow: 0 0 0 1px var(--hairline), var(--shadow);
+}
+.slider-value {
+  width: 42px;
+  flex: none;
+  text-align: right;
+  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Swatches: two rows that scroll sideways when the iPad is upright. */
 .palette {
-  flex: 1;
   min-width: 0;
   display: grid;
   grid-auto-flow: column;
@@ -320,20 +460,35 @@ a.page-card { text-decoration: none; }
   box-shadow: 0 0 0 3px var(--accent), var(--shadow);
 }
 
-/* Sideways iPad (or a wide window): panel on the right, swatches in a grid. */
+/* Sideways iPad (or a wide window): panel on the right, everything stacked. */
 @media (orientation: landscape) {
   .workspace { flex-direction: row; }
   .tool-panel {
     width: calc(var(--panel-width) + env(safe-area-inset-right));
-    flex-direction: column;
-    align-items: stretch;
+    gap: 14px;
     padding: 16px calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) 16px;
     border-top: none;
     border-left: 1px solid var(--hairline);
     overflow-y: auto;
   }
+  .panel-top {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .tools { justify-content: space-between; }
+  .brush-controls {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    row-gap: 2px;
+  }
+  .brush-preview {
+    grid-row: auto;
+    width: 100%;
+    margin-bottom: 6px;
+  }
+  .slider-label { width: 54px; }
   .palette {
-    flex: none;
     grid-auto-flow: row;
     grid-template-rows: none;
     grid-template-columns: repeat(4, var(--swatch-size));

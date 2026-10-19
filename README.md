@@ -137,3 +137,20 @@ Open `js/settings.js` to adjust how tap-to-fill behaves:
 - `fillUnderLines` (default 2): how far the color tucks in under the lines so no white rim shows.
 
 After changing a setting, refresh the page in the browser (or upload it for the iPad).
+
+## Brushes
+
+Pick **Pencil**, **Marker** or **Eraser** in the tool panel. The **Size** and **Opacity** sliders
+set the brush's strongest stroke: pressing lightly with the Pencil makes it thinner and lighter
+than that. Tilting the Pencil over makes the pencil shade with the side of its lead. Each brush
+remembers its own size and opacity. The preview shows the brush at the size it appears on screen.
+
+A single stroke never gets darker where it crosses itself; a new stroke on top builds up color.
+
+**Stay inside lines (line-lock):** the switch under the tool buttons. When it's on (the default),
+a brush stroke only colors inside the outlined area where it started, exactly the area a fill
+would cover there, so she can color quickly without going over the lines. It works for every
+brush, including the eraser. Turn it off to draw freely. The app remembers the choice.
+
+To change how a brush feels, or to add a new one, edit `js/brushes.js`. Each brush is one short
+block of settings, and the comments at the top explain each setting.

@@ -8,9 +8,12 @@ table, and any decisions that changed.
 
 ## Where we are
 
-- **Done:** steps 1, 1b, 2, 2b and 3 (latest: step 3, tap-to-fill with gap closing).
-- **Next:** step 4, the brush engine. See the step plan below.
-- Step 3 still needs Owen's check on the iPad with the Pencil (he tested on PC first).
+- **Done and committed:** steps 1, 1b, 2, 2b, 3 (tap-to-fill; checked on the iPad), and step 4
+  (brushes + line-lock; passed Owen's PC test).
+- **Waiting:** Owen's iPad check of step 4 (pressure, tilt, textures, line-lock). Expect tuning
+  requests for brush feel (values in `js/brushes.js`). Also ask whether the ~0.5 s pause when a
+  locked stroke starts in the big background area is acceptable on the iPad.
+- **Next:** step 5, undo / redo.
 
 ## How to work with Owen
 
@@ -44,9 +47,9 @@ table, and any decisions that changed.
 | 1b | Library: categories → sub-categories → pages, cached thumbnails | ✅ |
 | 2 | Online via GitHub Pages | ✅ |
 | 2b | Python import tool for messy pages (+ ready-made thumbnails) | ✅ |
-| 3 | Tap-to-fill with gap closing + basic palette and toolbar | ✅ committed, iPad check pending |
-| 4 | **Brush engine** + first brushes (pencil, marker), eraser, brush size; Pencil pressure + tilt | next |
-| 5 | Undo / redo | |
+| 3 | Tap-to-fill with gap closing + basic palette and toolbar | ✅ |
+| 4 | Brush engine: pencil, marker, eraser; size + opacity sliders, live preview; pressure + tilt; line-lock | ✅ committed, iPad check pending |
+| 5 | Undo / redo | next |
 | 6 | Pinch-zoom, two-finger pan, palm rejection (Pencil draws, fingers zoom/pan) | |
 | 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails | |
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | |
@@ -57,14 +60,8 @@ table, and any decisions that changed.
 
 ### Notes for future steps
 
-- **Step 4, brush engine:** design brushes as **definition objects** (name, icon, size range,
-  opacity, texture/stamp, how pressure and tilt change size/opacity/shading, blend mode) so adding
-  a brush in step 10 means adding one definition. Pressure → thinner **and** lighter when pressed
-  lightly (Owen's choice). Use tilt for shading. Brushes paint on the color canvas (under the line
-  art). Tools are registered in the `tools` object in `js/editor.js` (fill is the first). The
-  eraser should erase color only, never the lines.
-- **Step 5, undo:** a fill returns its bounding box (`x, y, w, h`); save the before-pixels of
-  that box. Keep memory in mind on the iPad (each full layer is ~22 MB).
+- **Step 5, undo:** a fill returns its bounding box (`x, y, w, h`), and so does a brush stroke
+  (`engine.commit()` in `js/editor.js`); save the before-pixels of that box. Keep memory in mind on the iPad (each full layer is ~22 MB).
 - **Step 6:** currently a "tap" = pointer down/up within 12px and 800ms (`js/editor.js`). The
   `view` object (`scale, x, y`) and `applyView()` already position the page with a CSS transform;
   `toPagePoint()` converts screen → page coordinates. Palm rejection: when a Pencil
@@ -80,11 +77,55 @@ table, and any decisions that changed.
   when a page is finished, a whimsical but readable title font (`--font-title`), and a library that
   feels like a magical book or enchanted shelf. Calm, not cluttered; keep buttons large.
 
+## Brushes (step 4)
+
+- **Brush = a definition object** in `js/brushes.js` (`BRUSHES`): name, icon (inner SVG markup),
+  `sizeRange`, `defaults` {size, opacity}, `hardness`, `spacing`, `pressure` {size:[min,1],
+  opacity:[min,1], curve}, `tilt` {widen, opacity, grainFill}, `grain` {strength, fill:[light,full]}
+  or null, `paint` "color" | "paper". **Adding a brush (step 10) = adding one entry**; the tool
+  button is created automatically. Step 10 brushes (watercolor, airbrush, glitter) may need new
+  engine features (e.g. wet edges, scatter, sparkle color) - add them as new optional fields.
+- **Stroke engine** (`js/stroke-engine.js`): stamps evenly spaced dabs, interpolating pressure and
+  tilt. Each stroke writes into a per-stroke coverage map using **MAX**, so a stroke never darkens
+  where it overlaps itself (no blotches). It's shown live on `#stroke-canvas` (between color and
+  line art) once per animation frame, and on Pencil-up is drawn onto the color canvas
+  (source-over), so **separate strokes build up** for layered shading.
+- **Pressure works under the sliders:** the slider value is the maximum; lighter pressure scales
+  size and opacity down to the `pressure` minimums. Mouse and finger draw at full value.
+- **Tilt** (from `altitudeAngle`, or computed from `tiltX/tiltY`): past ~30° of lean the dab
+  becomes an oval across the lean direction, wider, lighter and grainier (side-of-the-lead shading).
+- **Pencil grain:** an original procedural paper-tooth texture (256² tile, fixed to the page so
+  layered strokes share the same tooth). Light pressure only reaches grain peaks; heavy pressure
+  fills ~80%. Marker and eraser have no grain (smooth).
+- **Eraser** paints the paper color (white) back onto the color layer; the line art is untouched.
+- **Each brush remembers its own size and opacity** in `localStorage` ("brush-settings").
+- **UI:** custom Pencil-friendly sliders (`js/slider.js`, tap or drag anywhere on the 40px-tall
+  track; the size slider has a squared curve for fine control at small sizes) and a live preview
+  canvas (current brush, at its on-screen size, color and opacity, drawn light → full pressure).
+  With Fill selected, the sliders fade out and the preview shows the color.
+- Picking a color while the eraser is selected switches back to the last color brush.
+- **Line-lock** ("Stay inside lines" switch under the tool buttons; **on by default**, remembered in
+  `localStorage` "line-lock"): when a stroke starts, `findLockArea()` in `js/editor.js` asks the fill
+  worker for exactly the area a tap-to-fill from that point would cover (same gap closing, thin
+  slivers, tuck under lines, and snapping to the nearest area within `tapReach` when starting on a
+  line). The engine then paints only inside that mask (`engine.setClip(area)`; checked per pixel in
+  `dab()`), so it works for every brush, eraser included, and any future brush automatically.
+  Pencil samples that arrive before the area is ready wait in `stroke.pending` and are drawn when it
+  arrives; a stroke lifted before then finishes as soon as it does. Lookup: 3–8 ms for typical
+  areas, ~190 ms (PC) for the whole-page background, so on the iPad the ink can appear a moment
+  late when starting in the background. A stroke starting outside every area draws nothing.
+  Fill ignores line-lock (the switch fades while Fill is selected).
+- Defaults: pencil 8 / 90% (range 1–40), marker 30 / 70% (4–120), eraser 40 / 100% (4–200).
+- Speed (PC): one second of fast Pencil drawing costs 23 ms (pencil) to 85 ms (eraser at 200);
+  screen updates are under 2 ms.
+- Input: Pencil samples come from `getCoalescedEvents()` when available. One pointer at a time;
+  real palm rejection and finger zoom/pan are step 6.
+
 ## Key decisions
 
 - **Device:** iPad Pro 11" (screen 1668 × 2388), Apple Pencil 2, Safari.
 - **Page size:** 2048 × 2732 (3:4, wide pictures 2732 × 2048). Each canvas layer is ~22 MB.
-- **Layers:** a white color canvas with the line-art canvas on top. The line art has its white
+- **Layers:** a white color canvas, the live stroke canvas, then the line-art canvas on top. The line art has its white
   made transparent, so color can never cover the lines.
 - **Line art from the import tool:** solid black lines with a thin smooth edge (`EDGE_SOFTNESS`
   0.7); every line pixel is darker than 50% grey and every paper pixel lighter. The app treats
@@ -155,10 +196,13 @@ table, and any decisions that changed.
 | `js/gallery.js` | Library screens and cards |
 | `js/thumbnails.js` | Browser-made thumbnails (fallback) |
 | `js/storage.js` | IndexedDB (`thumbnails`, `artwork` stores) |
-| `js/editor.js` | Coloring screen: layers, tools, taps, fitting the page |
+| `js/editor.js` | Coloring screen: layers, tools, taps, strokes, sliders, preview, fitting the page |
 | `js/lineart.js` | Loads a page, makes white see-through, returns the darkness map |
 | `js/fill.js`, `js/fill-worker.js` | Tap-to-fill |
 | `js/palette.js` | Default swatches |
+| `js/brushes.js` | Brush definitions, saved per-brush settings, paper grain |
+| `js/stroke-engine.js` | Draws brush strokes (dabs, coverage, live layer, commit) |
+| `js/slider.js` | Pencil-friendly slider |
 | `js/settings.js` | Tweakable numbers |
 | `pages/pages.js` | The library list |
 | `tools/import_pages.py`, `import-pages.bat` | Import tool |
