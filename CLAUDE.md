@@ -15,10 +15,13 @@ table, and any decisions that changed.
   button - both checked on the iPad and working.
 - **Done and committed:** step 8, the full color picker - checked on the iPad: ring and square
   smooth with Pencil and finger, recents and palettes work, both layouts good, survives closing Safari.
-- **Done and committed:** step 9, export to Photos (passed Owen's PC test: Download picture saves
-  straight to Downloads). **Waiting:** iPad check of the real share sheet, "Save Image" -> Photos,
-  and the picture in Photos.
-- **Next:** step 9, export to Photos.
+- **Done and committed:** step 9, export to Photos - checked on the iPad: share sheet, "Save
+  Image", "Download instead" and touch-and-hold all work, upright and sideways.
+- **In progress:** step 10, the brush collection, in three batches (see the plan below). Each
+  batch: build, Owen tests on PC, commit + push, iPad test, and only then the next batch.
+  **Batch 1 (airbrush, smooth hair, watercolor, splatter) is committed** (passed Owen's PC test:
+  Brushes window, line-lock, sliders/preview, hold-to-spray, watercolor glaze, undo/redo,
+  auto-save). **Waiting:** iPad check (Pencil feel, live drawing, speed). Batch 2 only after that.
 
 ## How to work with Owen
 
@@ -61,12 +64,33 @@ table, and any decisions that changed.
 | 6 | Pinch-zoom, two-finger pan, palm rejection; 2-finger tap undo, 3-finger tap redo | ✅ |
 | 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails; Start over | ✅ |
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | ✅ |
-| 9 | Export the finished picture to Photos | ✅ committed, iPad check pending |
-| 10 | Brush collection: colored pencil, crayon, watercolor, airbrush, glitter/sparkle | next |
+| 9 | Export the finished picture to Photos | ✅ |
+| 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | batch 1 committed, iPad check pending |
 | 11 | Installable + offline (manifest, service worker, icons) | |
 | 12 | Magical storybook look, Themes, polish | |
 
 ### Notes for future steps
+
+- **Step 10, the brush collection (Finley's picks).** Marker stays as it is. Build in three
+  batches; **Owen tests each batch on her iPad before the next one starts.** For every batch:
+  show close-up samples of each brush, then tell Owen how to test it. Every brush must work with
+  pressure, tilt (where it makes sense), line-lock, build-up, undo, auto-save, and the size and
+  opacity sliders, and each must feel clearly different.
+  - **Batch 1, paint brushes:**
+    - **Airbrush:** soft spray that builds up gradually; pressure controls the flow.
+    - **Smooth hair:** soft-bristle paintbrush with smooth, tapered strokes.
+    - **Watercolor:** see-through, slightly uneven, soft darker edges where color pools; layers
+      like real watercolor.
+    - **Splatter:** scattered droplets of different sizes; pressure controls how many and how far.
+  - **Batch 2, effect brushes:** **Glitter** (sparkly texture, tiny bright flecks) and
+    **Metallic** (shiny, a sheen like metallic ink). The effect must be part of the picture
+    itself (not an animation) so it looks right in a saved picture.
+  - **Batch 3, blending tools:** **Blender** (smudges and mixes colors already on the page, like a
+    finger or blending stump) and **Blur** (softens and smooths colors already there). They change
+    existing color instead of adding new color, so they must work with line-lock, undo and
+    auto-save, and never touch the black lines.
+  - With this many brushes the tool bar can't hold them all: the bar keeps Fill, Pencil, Marker,
+    Eraser and a **Brushes** button that opens a window of all brushes, each with a sample stroke.
 
 - **Step 11:** the service worker must cache pages and thumbnails; plan for updates (version the
   cache) since GitHub Pages also caches files for ~10 minutes.
@@ -132,6 +156,56 @@ table, and any decisions that changed.
   matched by the tap landing in the area's flood "core" with the same settings), and right after a
   page opens, `warmUp()` works out the areas at 8 points along the page edges (usually the
   background). So starting a stroke or fill in the background takes ~2 ms instead of ~190 ms.
+
+## Brush collection (step 10)
+
+- **Tool bar:** Fill, Pencil, Marker, Eraser (`inBar: true` in brushes.js) and a **Brushes**
+  button (`.brushes-button`) that opens `#brushes-dialog`: a card per brush (every brush, bar
+  ones too) with a sample stroke in the current color. The button shows the last brush picked
+  from the window (`localStorage` "extra-brush") with a small grid badge, highlighted while that
+  brush is in use. Sideways, the 5 buttons just fit the 272 px panel (`.tools` gap 0).
+- `drawSample(canvas, toolId, pickSize)` in editor.js draws both the panel preview and the cards.
+- **New optional brush fields** (all in `stroke-engine.js`, all off for pencil/marker/eraser, which
+  were checked to draw pixel-for-pixel the same as before - 12 fingerprints incl. tilt, line-lock
+  and build-up off): `soft`, `flow` {amount, hold}, `noise`, `taper` {start, length}, `bristles`
+  {strength, width}, `wash` {wobble, uneven, rimWidth, rimGain, middle, rim}, `scatter` {count,
+  reach, spread, drop, hardness}, `blend: "multiply"`. The engine's per-mark function is now
+  `stamp(cx, cy, shape)`; `dab()` calls it once, or many times for splatter. Each stroke gets a
+  random `seed` (own bristles, droplets, watercolor blooms).
+- **Batch 1:**
+  - **Airbrush** (10-300, default 80 / 60%): bell-shaped soft dab with fine speckle; dabs ADD up
+    (`flow`) toward the opacity slider's value instead of MAX, with random rounding so light
+    spray still builds. Pressure = flow (12%-100%). **Holding the Pencil still keeps spraying**
+    (`sprayWhileHeld()` in editor.js calls `engine.hold(frames)` each animation frame when no new
+    dab was made): middle strength 17 -> 87 -> 120 -> 143 of 153 at 0 / 0.5 / 1 / 2 s.
+    One pass at full pressure reaches ~60% of the slider value. Tilt = longer, lighter oval.
+  - **Smooth hair** (2-100, default 24 / 85%): soft round dab, tip starts at 35% size and grows
+    over 0.9 brush sizes (`taper`; it was 15% over 1.6 sizes but that left a white sawtooth where
+    strokes start at a line-locked edge); pressure size 12%-100% so a light lift tapers the end
+    (finger/mouse strokes end blunt). Hair streaks: a 64-entry random strength table sampled by
+    the distance ACROSS the stroke direction (smoothed `engine.direction`), so each hair leaves a
+    streak along the stroke.
+  - **Watercolor** (6-160, default 50 / 45%): MAX coverage with an edge that wanders and patchy
+    pigment (`WASH`, a 256 px low-frequency noise tile in brushes.js, shifted randomly per
+    stroke); darker **rims** where pigment pools: `washAlpha()` compares each pixel with a
+    double box-blur of the coverage (radius `rimRadius` = 12% of size, 3-18 px); weaker
+    surroundings = rim. Rims also form along line-locked edges. Drawn live over the changed area
+    plus the rim radius; at lift the rims are baked into the coverage so the paint memory matches.
+    **Glazes**: committed with `multiply` (yellow over blue = green), and `#stroke-canvas` gets
+    CSS `mix-blend-mode: multiply` during the stroke so the live view matches. With build-up OFF
+    it's laid on normally (even-out math needs normal painting), so it covers instead of glazing.
+    White watercolor shows nothing (as with real watercolor).
+  - **Splatter** (10-240, default 70 / 90%): each dab (every 30% of the size) throws 1.2-6
+    droplets (pressure) out to 0.35-1.25 brush radii (pressure); sizes 1.2%-12% of the brush, mostly
+    tiny; far ones smaller. Tilt shifts the spray away from the Pencil and stretches far droplets
+    into streaks.
+- Tested (browser pane, real daffodil page, app's own pointer path): line-lock (0 pixels outside
+  the locked area for all four), undo/redo exact, build-up off (2nd same-color pass darkens
+  ~1-3 levels vs 7-29 with build-up on), auto-save restores the exact pixels, sideways + upright
+  layouts, previews. Speed (PC, one second of very fast scribbling at page size): airbrush 300
+  ~400 ms (80: ~120 ms), smooth hair 100 ~230 ms, watercolor 160 ~260 ms + screen updates ~3 ms
+  each, lift ~90 ms; splatter, pencil, marker small. **Not testable here:** real Pencil feel,
+  live drawing (the pane doesn't run animation frames), hold-to-spray timing, iPad speed.
 
 ## Undo and redo (step 5)
 
@@ -424,7 +498,7 @@ table, and any decisions that changed.
 | `js/dialogs.js` | Small question boxes: ask for a name, ask "are you sure?" |
 | `js/save-picture.js` | Save button: makes the finished picture, shares it to Photos / downloads it |
 | `js/brushes.js` | Brush definitions, saved per-brush settings, paper grain |
-| `js/stroke-engine.js` | Draws brush strokes (dabs, coverage, live layer, commit) |
+| `js/stroke-engine.js` | Draws brush strokes (dabs, coverage, live layer, commit; spray, bristles, watercolor rims, splatter) |
 | `js/slider.js` | Pencil-friendly slider |
 | `js/history.js` | Undo and redo |
 | `js/autosave.js` | Saves/loads/forgets her coloring per page; colored previews for the library |

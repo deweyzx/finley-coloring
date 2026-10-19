@@ -2,20 +2,20 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610191524";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610191524";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610191524";
-import { setupColorPicker } from "./color-picker.js?v=202610191524";
-import { setupSavePicture } from "./save-picture.js?v=202610191524";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610191524";
-import { StrokeEngine } from "./stroke-engine.js?v=202610191524";
-import { createSlider } from "./slider.js?v=202610191524";
-import { History } from "./history.js?v=202610191524";
-import { Viewport } from "./viewport.js?v=202610191524";
-import { setupInput } from "./touch-input.js?v=202610191524";
-import { toggleDebug } from "./touch-debug.js?v=202610191524";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610191524";
-import { SETTINGS } from "./settings.js?v=202610191524";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610191607";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610191607";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610191607";
+import { setupColorPicker } from "./color-picker.js?v=202610191607";
+import { setupSavePicture } from "./save-picture.js?v=202610191607";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610191607";
+import { StrokeEngine } from "./stroke-engine.js?v=202610191607";
+import { createSlider } from "./slider.js?v=202610191607";
+import { History } from "./history.js?v=202610191607";
+import { Viewport } from "./viewport.js?v=202610191607";
+import { setupInput } from "./touch-input.js?v=202610191607";
+import { toggleDebug } from "./touch-debug.js?v=202610191607";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610191607";
+import { SETTINGS } from "./settings.js?v=202610191607";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -44,18 +44,92 @@ const tools = { fill: { tap: (point) => fillAt(point) } };
 for (const id of Object.keys(BRUSHES)) tools[id] = { brush: BRUSHES[id] };
 let currentTool = "fill";
 
+// The tool bar has Fill, the everyday brushes (inBar in brushes.js) and a "Brushes" button
+// that opens a window with every brush.
 const toolBar = document.getElementById("tools");
 for (const [id, brush] of Object.entries(BRUSHES)) {
+  if (!brush.inBar) continue;
   const button = document.createElement("button");
   button.type = "button";
   button.className = "tool-button";
   button.dataset.tool = id;
   button.setAttribute("aria-label", brush.name);
-  button.innerHTML = `<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">${brush.icon}</svg>`;
+  button.innerHTML = iconSVG(brush.icon, 28);
   toolBar.append(button);
 }
 for (const button of toolBar.querySelectorAll("[data-tool]")) {
   button.addEventListener("click", () => selectTool(button.dataset.tool));
+}
+const brushesButton = document.createElement("button");
+brushesButton.type = "button";
+brushesButton.className = "tool-button brushes-button";
+brushesButton.setAttribute("aria-label", "More brushes");
+toolBar.append(brushesButton);
+
+function iconSVG(icon, size) {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true">${icon}</svg>`;
+}
+
+// The Brushes button shows the last brush she picked from the window (remembered on this
+// device), or a grid of four shapes before she has picked one.
+const GRID_ICON = `<rect x="3.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="3.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="3.5" y="13.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="13.5" y="13.5" width="7" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>`;
+let extraBrush = null;
+try {
+  extraBrush = localStorage.getItem("extra-brush");
+} catch {
+  // storage unavailable
+}
+if (!BRUSHES[extraBrush] || BRUSHES[extraBrush].inBar) extraBrush = null;
+function showBrushesButton() {
+  if (!extraBrush) {
+    brushesButton.innerHTML = iconSVG(GRID_ICON, 26);
+    return;
+  }
+  brushesButton.innerHTML =
+    iconSVG(BRUSHES[extraBrush].icon, 28) + `<svg class="badge" viewBox="0 0 24 24" aria-hidden="true">${GRID_ICON}</svg>`;
+}
+showBrushesButton();
+
+// ---------- The Brushes window ----------
+
+const brushesDialog = document.getElementById("brushes-dialog");
+const brushGrid = document.getElementById("brush-grid");
+brushesButton.addEventListener("click", openBrushes);
+document.getElementById("brushes-done").addEventListener("click", closeBrushes);
+brushesDialog.addEventListener("click", (e) => {
+  if (e.target === brushesDialog) closeBrushes(); // tapped outside the window
+});
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !brushesDialog.hidden) closeBrushes();
+});
+
+function openBrushes() {
+  brushesDialog.hidden = false;
+  brushGrid.replaceChildren();
+  for (const [id, brush] of Object.entries(BRUSHES)) {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "brush-card" + (id === currentTool ? " selected" : "");
+    const sample = document.createElement("canvas");
+    const name = document.createElement("span");
+    name.className = "brush-name";
+    name.innerHTML = iconSVG(brush.icon, 22);
+    name.append(brush.name);
+    card.append(sample, name);
+    card.addEventListener("click", () => {
+      selectTool(id);
+      closeBrushes();
+    });
+    brushGrid.append(card);
+    // A sample stroke in the current color, at a size that shows off the brush.
+    const range = brush.sizeRange;
+    drawSample(sample, id, (box) => Math.min(box.height * 0.55, Math.max(range[0], brush.defaults.size * 0.5)));
+  }
+  brushGrid.querySelector(".selected")?.focus();
+}
+
+function closeBrushes() {
+  brushesDialog.hidden = true;
 }
 
 // ---------- On/off switches ----------
@@ -187,6 +261,16 @@ function selectTool(name) {
     button.classList.toggle("selected", button.dataset.tool === name);
   }
   const brush = BRUSHES[name];
+  if (brush && !brush.inBar && extraBrush !== name) {
+    extraBrush = name; // the Brushes button now shows this brush
+    try {
+      localStorage.setItem("extra-brush", name);
+    } catch {
+      // not remembered, but still works for now
+    }
+    showBrushesButton();
+  }
+  brushesButton.classList.toggle("selected", !!brush && !brush.inBar);
   controls.classList.toggle("disabled", !brush); // fill has no size or opacity
   lineLock.button.classList.toggle("faded", !brush); // these switches are for brushes
   buildUp.button.classList.toggle("faded", !brush);
@@ -218,18 +302,30 @@ selectTool(currentTool);
 // The preview shows the current brush at the size it will appear on screen, with its
 // opacity, texture and color, drawn from light pressure (left) to full pressure (right).
 function drawPreview() {
-  const box = preview.getBoundingClientRect();
+  const brush = BRUSHES[currentTool];
+  if (brush && brush.paint === "color") lastColorTool = currentTool;
+  // Size as it looks on screen right now (capped so it fits in the preview).
+  drawSample(preview, currentTool, (box, ratio) => {
+    const onScreen = brushSettings(currentTool).size * (view.scale || 1) * ratio;
+    return Math.min(Math.max(onScreen, 1.5), box.height * 0.62);
+  });
+}
+
+// Draws a sample stroke of a brush on a little canvas (the preview, and the cards in the
+// Brushes window). pickSize(box, ratio) says how big the brush should be, in canvas pixels.
+function drawSample(canvas, toolId, pickSize) {
+  const box = canvas.getBoundingClientRect();
   if (!box.width) return;
   const ratio = window.devicePixelRatio || 1;
   const w = Math.round(box.width * ratio);
   const h = Math.round(box.height * ratio);
-  preview.width = w;
-  preview.height = h;
-  const ctx = preview.getContext("2d");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, w, h);
 
-  const brush = BRUSHES[currentTool];
+  const brush = BRUSHES[toolId];
   if (!brush) {
     // Fill: just a swatch of the color.
     ctx.fillStyle = currentColor();
@@ -237,12 +333,9 @@ function drawPreview() {
     ctx.fill();
     return;
   }
-  if (brush.paint === "color") lastColorTool = currentTool;
 
-  const settings = brushSettings(currentTool);
-  // Size as it looks on screen right now (capped so it fits in the preview).
-  const onScreen = settings.size * (view.scale || 1) * ratio;
-  const size = Math.min(Math.max(onScreen, 1.5), h * 0.62);
+  const settings = brushSettings(toolId);
+  const size = pickSize({ width: w, height: h }, ratio);
   const sample = new StrokeEngine(w, h);
   const paperBand = brush.paint === "paper";
   if (paperBand) {
@@ -268,6 +361,8 @@ function drawPreview() {
   sample.render(layer.getContext("2d"));
   ctx.drawImage(layer, 0, 0);
 }
+// (A splatter or airbrush sample is random; the preview stays still because it's only
+// redrawn when something changes.)
 
 // While she's zooming, update the preview a moment after the page stops moving
 // (redrawing it on every frame of a pinch would waste time).
@@ -482,6 +577,9 @@ function startStroke(e) {
   const s = { pointerId: e.pointerId, page: currentPage, waiting: false, pending: [], lifted: false };
   stroke = s;
   engine.begin(brush, brushSettings(currentTool), rgb, buildUp.on);
+  // Watercolor glazes over the colors underneath; the live stroke shows it the same way.
+  strokeCanvas.style.mixBlendMode = engine.blend === "multiply" ? "multiply" : "";
+  if (brush.flow) sprayWhileHeld(s);
   if (!lineLock.on) {
     engine.addPoint(first);
     showStroke();
@@ -536,6 +634,7 @@ function endStroke() {
 function finishStroke() {
   const changed = engine.commit(strokeCtx, colorCtx, (box) => history.saveBefore(box));
   stroke = null;
+  strokeCanvas.style.mixBlendMode = "";
   if (changed) markChanged();
 }
 
@@ -544,6 +643,27 @@ function cancelStroke() {
   if (!stroke) return;
   stroke = null;
   engine.cancel(strokeCtx);
+  strokeCanvas.style.mixBlendMode = "";
+}
+
+// Airbrush: while the Pencil is held still, keep spraying (once per screen refresh), so the
+// color slowly builds up, like a real airbrush.
+function sprayWhileHeld(s) {
+  let lastTime = performance.now();
+  let lastDabs = -1;
+  const tick = (now) => {
+    if (stroke !== s || s.lifted) return;
+    const frames = Math.min(4, (now - lastTime) / (1000 / 60));
+    lastTime = now;
+    // Only when no new dabs were made since the last refresh (she isn't moving).
+    if (!s.waiting && engine.dabCount === lastDabs) {
+      engine.hold(frames);
+      showStroke();
+    }
+    lastDabs = engine.dabCount;
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
 // Redraws the stroke once per screen refresh (not once per Pencil sample).

@@ -5,9 +5,9 @@
   <!-- "user-scalable=no" stops Safari's own pinch-zoom; the app will do its own zooming on the picture. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Finley's Coloring Book</title>
-  <link rel="stylesheet" href="css/styles.css?v=202610191524">
+  <link rel="stylesheet" href="css/styles.css?v=202610191607">
   <!-- type="module" lets our JavaScript files import from each other. -->
-  <script type="module" src="js/app.js?v=202610191524"></script>
+  <script type="module" src="js/app.js?v=202610191607"></script>
 </head>
 <body>
 
@@ -193,6 +193,18 @@
 
         <div class="dialog-buttons">
           <button id="picker-done" class="dialog-button" type="button">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- The "Brushes" window: every brush, each with a sample stroke (hidden until she taps
+         the Brushes button in the tool bar). The cards are made by editor.js. -->
+    <div id="brushes-dialog" class="dialog-backdrop picker-backdrop" hidden>
+      <div class="dialog brushes" role="dialog" aria-labelledby="brushes-title">
+        <h2 id="brushes-title">Brushes</h2>
+        <div id="brush-grid" class="brush-grid"></div>
+        <div class="dialog-buttons">
+          <button id="brushes-done" class="dialog-button" type="button">Done</button>
         </div>
       </div>
     </div>

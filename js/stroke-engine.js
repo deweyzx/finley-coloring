@@ -6,6 +6,8 @@
 //   2. Every dab writes into a "coverage" map for this stroke: how strongly each pixel is
 //      covered (0-255). A pixel keeps the STRONGEST coverage any dab gave it, never the sum,
 //      so a stroke that crosses itself doesn't get darker blotches.
+//      (The airbrush is the exception: its dabs ADD up, like spray paint, up to the opacity
+//      slider's value - see "flow" in brushes.js.)
 //   3. While she draws, the stroke is shown on its own see-through layer.
 //   4. When she lifts the Pencil, the stroke is laid onto the picture. A new stroke over an
 //      old one adds up, so she can build up color and shading in layers.
@@ -14,9 +16,18 @@
 //      getting darker. To know that, the engine remembers for every pixel the last color
 //      painted there and how strongly ("paint memory", 4 numbers per pixel).
 //
+// Extra brush features (each one is switched on by a setting in brushes.js):
+//   flow      - airbrush: dabs add up gradually; holding the Pencil still keeps spraying
+//   noise     - a fine random speckle in every dab (the droplets of a spray)
+//   taper     - the stroke starts thin and swells to full size (a paintbrush tip)
+//   bristles  - fine streaks along the stroke, like the hairs of a brush
+//   wash      - watercolor: uneven, wobbly edges, and darker rims where the color pools
+//   scatter   - splatter: each dab throws droplets of different sizes around it
+//   blend     - "multiply": the color is laid on like a see-through glaze (watercolor)
+//
 // The brushes themselves are described in brushes.js.
 
-import { GRAIN, GRAIN_SIZE } from "./brushes.js?v=202610191524";
+import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE } from "./brushes.js?v=202610191607";
 
 export class StrokeEngine {
   constructor(width, height) {
@@ -42,6 +53,19 @@ export class StrokeEngine {
     this.box = null;
     this.dirty = null;
     this.clip = null;
+    this.direction = null; // which way the stroke is heading (for bristles)
+    this.baked = false;    // watercolor: rims already worked out (when the stroke is laid on)
+    this.flowScale = 1;
+    // Every stroke gets its own random pattern (its own bristles, droplets, watercolor blooms).
+    this.seed = (Math.random() * 4294967296) >>> 0 || 1;
+    this.rand = makeRandom(this.seed);
+    this.bristleTable = brush.bristles ? makeBristles(this.rand) : null;
+    this.washShift = [Math.floor(this.rand() * WASH_SIZE), Math.floor(this.rand() * WASH_SIZE)];
+    // Watercolor rims: how far in from the edge the darker pooling reaches.
+    this.rimRadius = brush.wash ? Math.round(clamp(settings.size * brush.wash.rimWidth, 3, 18)) : 0;
+    // How this stroke is laid onto the picture. (Build-up off keeps touch-ups even, which
+    // only works with ordinary painting, so the watercolor glaze is used with build-up on.)
+    this.blend = brush.blend === "multiply" && buildUp ? "multiply" : "source-over";
   }
 
   // Line-lock: only let this stroke paint inside an area, like a stencil.
@@ -55,6 +79,7 @@ export class StrokeEngine {
   addPoint(point) {
     const p = { ...point };
     if (!this.last) {
+      p.dist = 0;
       this.dab(p);
       this.last = p;
       return;
@@ -64,6 +89,10 @@ export class StrokeEngine {
     const dy = p.y - a.y;
     const length = Math.hypot(dx, dy);
     if (length === 0) return;
+    p.dist = a.dist + length;
+    // The stroke's direction, smoothed so tiny wobbles don't twist the bristles.
+    const heading = Math.atan2(dy, dx);
+    this.direction = this.direction === null ? heading : turnToward(this.direction, heading, Math.min(1, length / 8));
     let travelled = -this.leftover;
     for (;;) {
       // spacing depends on how big the dab is right here
@@ -79,6 +108,17 @@ export class StrokeEngine {
     this.last = p;
   }
 
+  // Airbrush: the Pencil is being held still. Keeps spraying where it is, so the color slowly
+  // builds up. `frames` = how many screen refreshes (1/60 s each) have passed.
+  hold(frames = 1) {
+    if (!this.last || !this.brush.flow) return;
+    this.flowScale = this.brush.flow.hold * frames;
+    const count = this.dabCount;
+    this.dab({ ...this.last });
+    this.dabCount = count; // (spraying in place doesn't count as moving)
+    this.flowScale = 1;
+  }
+
   // How the brush responds to pressure and tilt at one point.
   shape(p) {
     const brush = this.brush;
@@ -86,13 +126,22 @@ export class StrokeEngine {
     const flat = 1 - clamp(p.altitude / (Math.PI / 2), 0, 1); // 0 = upright, 1 = lying flat
     // Tilt only counts once the Pencil leans past about 30 degrees, then grows smoothly.
     const side = smoothStep(clamp((flat - 0.33) / 0.5, 0, 1));
-    const sizeFactor = lerp(brush.pressure.size[0], brush.pressure.size[1], pressure);
+    let sizeFactor = lerp(brush.pressure.size[0], brush.pressure.size[1], pressure);
+    if (brush.taper) {
+      // A paintbrush tip: thin at the very start, swelling to full size.
+      const grown = clamp((p.dist || 0) / (brush.taper.length * this.settings.size), 0, 1);
+      sizeFactor *= lerp(brush.taper.start, 1, smoothStep(grown));
+    }
     const opacityFactor = lerp(brush.pressure.opacity[0], brush.pressure.opacity[1], pressure);
+    const strength = opacityFactor * lerp(1, brush.tilt.opacity, side);
     return {
+      pressure,
+      side,
       radius: Math.max(0.6, (this.settings.size * sizeFactor) / 2),
       stretch: 1 + brush.tilt.widen * side,
       angle: p.azimuth || 0,
-      opacity: this.settings.opacity * opacityFactor * lerp(1, brush.tilt.opacity, side),
+      strength,
+      opacity: this.settings.opacity * strength,
       grainFill: brush.grain
         ? lerp(brush.grain.fill[0], brush.grain.fill[1], pressure) * lerp(1, brush.tilt.grainFill, side)
         : 1,
@@ -104,9 +153,55 @@ export class StrokeEngine {
     return s.radius * 2;
   }
 
-  // Stamps one dab into the coverage map.
+  // One dab: a single mark, or (splatter) a handful of droplets.
   dab(p) {
+    this.dabCount = (this.dabCount || 0) + 1;
     const s = this.shape(p);
+    if (this.brush.scatter) this.splatter(p, s);
+    else this.stamp(p.x, p.y, s);
+  }
+
+  // Splatter: droplets of different sizes thrown around the Pencil. More pressure = more of
+  // them, thrown farther. Tilting throws them away from the Pencil, in a longer streak.
+  splatter(p, s) {
+    const sc = this.brush.scatter;
+    const rand = this.rand;
+    const size = this.settings.size;
+    const reach = (size / 2) * lerp(sc.reach[0], sc.reach[1], s.pressure);
+    const wanted = lerp(sc.count[0], sc.count[1], s.pressure);
+    // e.g. 2.4 droplets = 2, plus a 40% chance of a third
+    const count = Math.floor(wanted) + (rand() < wanted % 1 ? 1 : 0);
+    const away = s.angle + Math.PI; // the side away from the Pencil's body
+    for (let n = 0; n < count; n++) {
+      // Most droplets land near the middle; fewer far out.
+      const far = Math.pow(rand(), sc.spread);
+      const angle = rand() * Math.PI * 2;
+      let ox = Math.cos(angle) * far * reach;
+      let oy = Math.sin(angle) * far * reach;
+      if (s.side > 0) {
+        // Tilted: the spray shifts and stretches away from the Pencil.
+        const along = ox * Math.cos(away) + oy * Math.sin(away);
+        const shift = (along + reach * 0.5) * s.side;
+        ox += Math.cos(away) * shift;
+        oy += Math.sin(away) * shift;
+      }
+      // Mostly tiny droplets, a few big ones; the far ones are smaller.
+      const big = Math.pow(rand(), 3);
+      const radius = Math.max(0.7, size * lerp(sc.drop[0], sc.drop[1], big) * (1 - 0.45 * far));
+      this.stamp(p.x + ox, p.y + oy, {
+        radius,
+        stretch: 1 + s.side * 0.9 * far, // far droplets of a tilted spray are streaks
+        angle: away - Math.PI / 2,
+        opacity: s.opacity * (0.8 + 0.2 * rand()),
+        strength: s.strength,
+        grainFill: 1,
+        hardness: sc.hardness,
+      });
+    }
+  }
+
+  // Stamps one round (or oval) mark into the coverage map.
+  stamp(cx, cy, s) {
     const brush = this.brush;
     const W = this.width;
     const H = this.height;
@@ -114,10 +209,10 @@ export class StrokeEngine {
     const rLong = s.radius * s.stretch;
     const rShort = s.radius;
     const reach = Math.ceil(rLong + 1);
-    let x0 = Math.max(0, Math.floor(p.x - reach));
-    let x1 = Math.min(W - 1, Math.ceil(p.x + reach));
-    let y0 = Math.max(0, Math.floor(p.y - reach));
-    let y1 = Math.min(H - 1, Math.ceil(p.y + reach));
+    let x0 = Math.max(0, Math.floor(cx - reach));
+    let x1 = Math.min(W - 1, Math.ceil(cx + reach));
+    let y0 = Math.max(0, Math.floor(cy - reach));
+    let y1 = Math.min(H - 1, Math.ceil(cy + reach));
     const clip = this.clip;
     if (clip) {
       // Line-lock: only the part of the dab inside the stencil's box can paint.
@@ -131,7 +226,7 @@ export class StrokeEngine {
     // the oval's long side runs across the direction the Pencil leans
     const cos = Math.cos(s.angle + Math.PI / 2);
     const sin = Math.sin(s.angle + Math.PI / 2);
-    const hard = brush.hardness;
+    const hard = s.hardness !== undefined ? s.hardness : brush.hardness;
     const peak = s.opacity * 255;
     // Small dabs get a softer edge so thin lines stay smooth instead of jagged.
     const edge = Math.max(1 - hard, 1 / Math.max(1, rShort));
@@ -141,27 +236,84 @@ export class StrokeEngine {
     const grainSoft = 0.3; // how gradually the grain fills in
     const cov = this.coverage;
 
+    // Extra features (see the top of this file); all off for pencil, marker and eraser.
+    const soft = !!brush.soft; // a rounded "bell" fade instead of a straight one (airbrush)
+    const flow = brush.flow;
+    const cap = this.settings.opacity * 255;         // airbrush: never more than the slider
+    const rate = flow ? flow.amount * s.strength * this.flowScale : 0;
+    const noise = brush.noise || 0;
+    const bristles = this.bristleTable;
+    const bristleStrength = bristles ? brush.bristles.strength : 0;
+    const bristleWidth = bristles ? Math.max(1.4, this.settings.size * brush.bristles.width) : 1;
+    const dir = this.direction || 0;
+    const nx = -Math.sin(dir); // across the stroke
+    const ny = Math.cos(dir);
+    const wash = brush.wash;
+    const wobble = wash ? wash.wobble : 0;
+    const uneven = wash ? wash.uneven : 0;
+    const sx = this.washShift[0];
+    const sy = this.washShift[1];
+    let rng = this.seed ^ ((x0 * 73856093) ^ (y0 * 19349663)); // quick random numbers for speckle
+    if (rng === 0) rng = 1;
+
     for (let y = y0; y <= y1; y++) {
-      const dy = y + 0.5 - p.y;
+      const dy = y + 0.5 - cy;
       const row = y * W;
       const grainRow = (y & (GRAIN_SIZE - 1)) * GRAIN_SIZE;
+      const washRow = ((y + sy) & (WASH_SIZE - 1)) * WASH_SIZE;
       const clipRow = clip ? (y - clip.y) * clip.w - clip.x : 0;
       for (let x = x0; x <= x1; x++) {
         if (clip && clip.mask[clipRow + x] === 0) continue; // outside the locked area
-        const dx = x + 0.5 - p.x;
+        const dx = x + 0.5 - cx;
         const u = (dx * cos + dy * sin) / rLong;
         const v = (-dx * sin + dy * cos) / rShort;
-        const d = Math.sqrt(u * u + v * v);
+        let d = Math.sqrt(u * u + v * v);
+        let w = 0;
+        if (wash) {
+          // Watercolor: the wet edge wanders in and out a little.
+          w = WASH[washRow + ((x + sx) & (WASH_SIZE - 1))] / 255;
+          d += (w - 0.5) * wobble;
+        }
         if (d >= 1) continue;
         let a = d <= inner ? 1 : (1 - d) / edge;
+        if (soft) a = a * a * (3 - 2 * a);
         if (grain) {
           // Paper tooth: pigment reaches the high points first; more pressure fills more in.
           const g = GRAIN[grainRow + (x & (GRAIN_SIZE - 1))] / 255;
           const reached = clamp((g - (1 - grainFill)) / grainSoft + 0.5, 0, 1);
           a *= 1 - grain.strength + grain.strength * reached;
         }
-        const value = a * peak;
+        if (wash) a *= 1 - uneven * w; // patchy, like pigment settling unevenly
+        if (bristles) {
+          // Brush hairs: which hair passes over this spot depends on how far it is across
+          // the stroke, so each hair leaves its own faint streak along the stroke.
+          const pos = (dx * nx + dy * ny) / bristleWidth + 32;
+          const i0 = Math.floor(pos);
+          const f = pos - i0;
+          const b0 = bristles[i0 & 63];
+          const hair = b0 + (bristles[(i0 + 1) & 63] - b0) * f * f * (3 - 2 * f);
+          a *= 1 - bristleStrength * (1 - hair);
+        }
+        if (noise) {
+          rng ^= rng << 13;
+          rng ^= rng >>> 17;
+          rng ^= rng << 5;
+          a *= 1 - noise * ((rng >>> 0) / 4294967296);
+        }
         const i = row + x;
+        if (flow) {
+          // Airbrush: add a little more each time, getting closer to the slider's opacity.
+          const c = cov[i];
+          if (c >= cap) continue;
+          rng ^= rng << 13;
+          rng ^= rng >>> 17;
+          rng ^= rng << 5;
+          // (the random part rounds tiny amounts up or down fairly, so light spray still adds up)
+          const next = Math.floor(c + (cap - c) * rate * a + (rng >>> 0) / 4294967296);
+          if (next > c) cov[i] = next > cap ? cap : next;
+          continue;
+        }
+        const value = a * peak;
         if (value > cov[i]) cov[i] = value;
       }
     }
@@ -174,20 +326,40 @@ export class StrokeEngine {
     const d = this.dirty;
     if (!d) return;
     this.dirty = null;
-    const w = d.x1 - d.x0 + 1;
-    const h = d.y1 - d.y0 + 1;
+    let { x0, y0, x1, y1 } = d;
+    // Watercolor: a change also changes the rims around it, so redraw a bit more.
+    const rims = this.brush.wash && !this.baked;
+    if (rims) {
+      const r = this.rimRadius;
+      x0 = Math.max(0, x0 - r);
+      y0 = Math.max(0, y0 - r);
+      x1 = Math.min(this.width - 1, x1 + r);
+      y1 = Math.min(this.height - 1, y1 + r);
+    }
+    const w = x1 - x0 + 1;
+    const h = y1 - y0 + 1;
+    // Where the strength of each pixel comes from: the coverage map itself, or (watercolor)
+    // the coverage with darker rims worked in.
+    let src = this.coverage;
+    let srcStart = y0 * this.width + x0;
+    let srcStride = this.width;
+    if (rims) {
+      src = this.washAlpha(x0, y0, x1, y1);
+      srcStart = 0;
+      srcStride = w;
+    }
     const image = ctx.createImageData(w, h);
     const px = image.data;
     const { r, g, b } = this.rgb;
-    const cov = this.coverage;
     const mem = this.memory;
     // (The eraser always just rubs out; "build up" only changes how colors go on.)
     const evenOut = !this.buildUp && this.brush.paint !== "paper";
     for (let row = 0; row < h; row++) {
-      let i = (d.y0 + row) * this.width + d.x0;
+      let i = (y0 + row) * this.width + x0;
+      let si = srcStart + row * srcStride;
       let p = row * w * 4;
-      for (let col = 0; col < w; col++, i++, p += 4) {
-        let c = cov[i];
+      for (let col = 0; col < w; col++, i++, si++, p += 4) {
+        let c = src[si];
         if (c === 0) continue;
         if (evenOut) {
           const m = i * 4;
@@ -207,7 +379,43 @@ export class StrokeEngine {
         px[p + 3] = c;
       }
     }
-    ctx.putImageData(image, d.x0, d.y0);
+    ctx.putImageData(image, x0, y0);
+  }
+
+  // Watercolor: the stroke's strength in an area, with the pooled darker rims worked in.
+  // A pixel is "near the rim" when its blurred neighbourhood is weaker than itself (it sits
+  // just inside the edge of the wet patch, or against a line when line-lock is on).
+  washAlpha(x0, y0, x1, y1) {
+    const W = this.width;
+    const H = this.height;
+    const r = this.rimRadius;
+    const wash = this.brush.wash;
+    // Blur a slightly bigger area, so pixels near the border still see their neighbours.
+    const bx0 = Math.max(0, x0 - r);
+    const by0 = Math.max(0, y0 - r);
+    const bx1 = Math.min(W - 1, x1 + r);
+    const by1 = Math.min(H - 1, y1 + r);
+    const bw = bx1 - bx0 + 1;
+    const bh = by1 - by0 + 1;
+    const blur = boxBlur(this.coverage, W, bx0, by0, bw, bh, r);
+    const w = x1 - x0 + 1;
+    const h = y1 - y0 + 1;
+    const out = new Uint8Array(w * h);
+    const cov = this.coverage;
+    for (let row = 0; row < h; row++) {
+      const y = y0 + row;
+      let i = y * W + x0;
+      let bi = (y - by0) * bw + (x0 - bx0);
+      let o = row * w;
+      for (let col = 0; col < w; col++, i++, bi++, o++) {
+        const c = cov[i];
+        if (c === 0) continue;
+        const rim = clamp(((c - blur[bi]) / c) * wash.rimGain, 0, 1);
+        const value = c * (wash.middle + wash.rim * rim);
+        out[o] = value > 255 ? 255 : value;
+      }
+    }
+    return out;
   }
 
   // Lays the finished stroke onto the picture, then clears the stroke layer.
@@ -216,11 +424,23 @@ export class StrokeEngine {
   commit(strokeCtx, colorCtx, beforeChange) {
     const box = this.box;
     if (!box) return null;
-    this.render(strokeCtx);
     const w = box.x1 - box.x0 + 1;
     const h = box.y1 - box.y0 + 1;
+    if (this.brush.wash && !this.baked) {
+      // Work the rims into the coverage once and for all, so the paint memory matches what's
+      // on the page, and draw the whole stroke one last time.
+      const shaped = this.washAlpha(box.x0, box.y0, box.x1, box.y1);
+      for (let row = 0; row < h; row++) {
+        this.coverage.set(shaped.subarray(row * w, row * w + w), (box.y0 + row) * this.width + box.x0);
+      }
+      this.baked = true;
+      this.dirty = { ...box };
+    }
+    this.render(strokeCtx);
     if (beforeChange) beforeChange({ x: box.x0, y: box.y0, w, h });
+    colorCtx.globalCompositeOperation = this.blend;
     colorCtx.drawImage(strokeCtx.canvas, box.x0, box.y0, w, h, box.x0, box.y0, w, h);
+    colorCtx.globalCompositeOperation = "source-over";
     strokeCtx.clearRect(box.x0, box.y0, w, h);
     this.remember(box);
     for (let y = box.y0; y <= box.y1; y++) {
@@ -287,7 +507,9 @@ StrokeEngine.prototype.rememberFill = function (area, rgb) {
 StrokeEngine.prototype.cancel = function (strokeCtx) {
   const box = this.box;
   if (box) {
-    strokeCtx.clearRect(box.x0, box.y0, box.x1 - box.x0 + 1, box.y1 - box.y0 + 1);
+    // (watercolor rims can reach a little past the stroke's own box)
+    const r = this.rimRadius || 0;
+    strokeCtx.clearRect(box.x0 - r, box.y0 - r, box.x1 - box.x0 + 1 + 2 * r, box.y1 - box.y0 + 1 + 2 * r);
     for (let y = box.y0; y <= box.y1; y++) {
       this.coverage.fill(0, y * this.width + box.x0, y * this.width + box.x1 + 1);
     }
@@ -296,6 +518,64 @@ StrokeEngine.prototype.cancel = function (strokeCtx) {
   this.dirty = null;
   this.last = null;
 };
+
+// Averages each pixel with its neighbours up to `r` pixels away (twice, for a smooth result).
+// Reads a w x h area of `src` (a full-page map, `stride` wide) starting at x0, y0.
+function boxBlur(src, stride, x0, y0, w, h, r) {
+  const a = new Float32Array(w * h);
+  for (let row = 0; row < h; row++) {
+    const s = (y0 + row) * stride + x0;
+    for (let col = 0; col < w; col++) a[row * w + col] = src[s + col];
+  }
+  const b = new Float32Array(w * h);
+  for (let pass = 0; pass < 2; pass++) {
+    blurLine(a, b, w, h, r, 1, w); // across
+    blurLine(b, a, h, w, r, w, 1); // down
+  }
+  return a;
+}
+
+// One direction of the blur: `count` lines of `length` pixels; `step` moves along a line,
+// `next` moves to the next line. Pixels past the edges count as empty.
+function blurLine(from, to, length, count, r, step, next) {
+  const span = 2 * r + 1;
+  for (let line = 0; line < count; line++) {
+    const start = line * next;
+    let sum = 0;
+    for (let k = 0; k <= r && k < length; k++) sum += from[start + k * step];
+    for (let k = 0; k < length; k++) {
+      to[start + k * step] = sum / span;
+      const add = k + r + 1;
+      const drop = k - r;
+      if (add < length) sum += from[start + add * step];
+      if (drop >= 0) sum -= from[start + drop * step];
+    }
+  }
+}
+
+// The hairs of a brush: 64 strengths between 0.3 and 1, a few weak hairs among strong ones.
+function makeBristles(rand) {
+  const hairs = new Float32Array(64);
+  for (let k = 0; k < 64; k++) hairs[k] = 0.3 + 0.7 * Math.pow(rand(), 0.6);
+  return hairs;
+}
+
+// Small repeatable random number maker (the same seed gives the same numbers).
+function makeRandom(seed) {
+  let state = seed >>> 0;
+  return () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+}
+
+// Turns angle `from` part of the way (`t`, 0-1) toward angle `to`, the short way round.
+function turnToward(from, to, t) {
+  let diff = to - from;
+  while (diff > Math.PI) diff -= Math.PI * 2;
+  while (diff < -Math.PI) diff += Math.PI * 2;
+  return from + diff * t;
+}
 
 function growBox(box, x0, y0, x1, y1) {
   if (!box) return { x0, y0, x1, y1 };
@@ -314,6 +594,7 @@ function lerpPoint(a, b, t) {
     pressure: a.pressure + (b.pressure - a.pressure) * t,
     altitude: a.altitude + (b.altitude - a.altitude) * t,
     azimuth: b.azimuth,
+    dist: a.dist + (b.dist - a.dist) * t,
   };
 }
 

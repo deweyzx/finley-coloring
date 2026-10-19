@@ -223,3 +223,19 @@ then choose **Save Image** in the sheet that opens, and the picture is in her Ph
 touch and hold the preview and choose **Add to Photos**, or tap **Download instead** to save the
 file to the Files app if the share sheet ever doesn't open.) On a PC the button says **Download
 picture** and saves a PNG file instead.
+
+## Brushes
+
+The tool bar has Fill, Pencil, Marker and Eraser, plus a **Brushes** button (the last one) that
+opens a window with every brush and a sample of each. Pick one there; the Brushes button then
+shows that brush, so it's easy to spot. New in step 10 (batch 1):
+
+- **Airbrush** - soft spray. The color builds up the more she sprays over a spot, or if she holds
+  the Pencil still. Pressing harder lets more paint out. The opacity slider is the most it builds to.
+- **Smooth hair** - a soft paintbrush with faint hair streaks; strokes start from a fine tip.
+- **Watercolor** - see-through color with darker edges where it pools. Colors mix when layered
+  (yellow over blue looks green).
+- **Splatter** - flicked droplets. Press harder for more droplets, thrown farther; the size slider
+  sets how wide they spread.
+
+The settings for each brush are in `js/brushes.js`, with comments explaining each number.
