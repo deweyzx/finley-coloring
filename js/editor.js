@@ -2,17 +2,17 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610182234";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610182234";
-import { renderPalette, currentColor, toRGB } from "./palette.js?v=202610182234";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610182234";
-import { StrokeEngine } from "./stroke-engine.js?v=202610182234";
-import { createSlider } from "./slider.js?v=202610182234";
-import { History } from "./history.js?v=202610182234";
-import { Viewport } from "./viewport.js?v=202610182234";
-import { setupInput } from "./touch-input.js?v=202610182234";
-import { toggleDebug } from "./touch-debug.js?v=202610182234";
-import { SETTINGS } from "./settings.js?v=202610182234";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610182246";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610182246";
+import { renderPalette, currentColor, toRGB } from "./palette.js?v=202610182246";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610182246";
+import { StrokeEngine } from "./stroke-engine.js?v=202610182246";
+import { createSlider } from "./slider.js?v=202610182246";
+import { History } from "./history.js?v=202610182246";
+import { Viewport } from "./viewport.js?v=202610182246";
+import { setupInput } from "./touch-input.js?v=202610182246";
+import { toggleDebug } from "./touch-debug.js?v=202610182246";
+import { SETTINGS } from "./settings.js?v=202610182246";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");

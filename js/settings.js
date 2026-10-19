@@ -37,7 +37,11 @@ export const SETTINGS = {
   // ...and no finger may move more than this many screen pixels (more = zoom/pan).
   tapGestureMoveLimit: 12,
   // A touch the iPad reports as wider than this (screen pixels) is treated as a palm and ignored.
-  palmSize: 60,
+  // Finley has long nails, so she touches with the flat pad of her finger, which the iPad
+  // reports as much bigger than a fingertip; at 60 her fingers counted as palms. Palm rejection
+  // now relies mostly on timing (fingers are ignored while the Pencil is down and just after),
+  // so this only needs to catch a whole hand. The touch log shows each touch's size.
+  palmSize: 120,
   // One finger draws and taps to fill (true). Set to false for "Pencil only": then fingers
   // only zoom, pan and do the two/three-finger taps.
   fingersDraw: true,

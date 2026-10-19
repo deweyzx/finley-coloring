@@ -181,7 +181,9 @@ table, and any decisions that changed.
     progress is taken back with no mark (her palm landing just before the Pencil); for
     `afterPencilMs` (500) after the Pencil lifts, a new finger can't draw but can still join a
     gesture (so a quick two-finger-tap undo right after a stroke works); touches wider than
-    `palmSize` (60) are always ignored. Known trade-off: a resting hand with no Pencil nearby
+    `palmSize` (120) are always ignored. It was 60, but **Finley has long nails** and touches with
+    the flat finger pad, which the iPad reports as palm-sized at 60 - nearly all her finger input
+    was being ignored. Get her real sizes from the touch log to fine-tune. Known trade-off: a resting hand with no Pencil nearby
     can draw (palm-size filter permitting).
   - **Two fingers moving** = pinch-zoom + pan, measured from where the fingers first touched (the
     iPad reports each finger separately, so measuring "right now" at the start was lopsided and
@@ -195,7 +197,7 @@ table, and any decisions that changed.
     Space + drag pans; Ctrl+0 fits the page.
   - (A "Draw with finger" switch existed briefly; removed in favor of the automatic rules above.)
   - Gesture thresholds live in `js/settings.js`: `tapGestureMaxMs` 350, `tapGestureMoveLimit` 12,
-    `palmSize` 60, `secondFingerMs` 250, `afterPencilMs` 500, `fingersDraw` true.
+    `palmSize` 120, `secondFingerMs` 250, `afterPencilMs` 500, `fingersDraw` true.
 - **Touch debug overlay** (temporary, `js/touch-debug.js`, `#touch-debug`): turned on by opening
   **https://deweyzx.github.io/finley-coloring/?debug** (the `?debug` is then removed from the
   address so a reload doesn't re-enable it) or by tapping the coloring screen's page title 5 times;
