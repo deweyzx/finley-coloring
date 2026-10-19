@@ -2,28 +2,29 @@
 //
 // The rules:
 //   - The Apple Pencil always draws (or taps to fill).
-//   - Once this device has seen the Pencil, FINGERS NEVER DRAW. They only zoom and pan.
-//     That's what makes palm rejection reliable: her hand can rest on the screen.
+//   - Once this device has seen the Pencil, fingers don't draw - unless she turns on the
+//     "Draw with finger" switch. Then one finger draws and taps to fill.
 //   - While the Pencil is on the screen, every other touch is ignored (her palm), so nothing
 //     can interrupt or spoil the stroke.
 //   - Two fingers moving: pinch to zoom, drag to pan.
 //   - Two fingers tapped (down and up quickly, barely moving): undo.
 //     Three fingers tapped: redo. Anything that moves or lasts longer is zoom/pan instead.
-//   - On a device that has never seen a Pencil (a PC, or an iPad used with fingers only),
-//     one finger draws. If a second finger lands soon after, that stroke is taken back
-//     without leaving any mark, and it becomes a two-finger gesture.
+//   - When one finger is drawing and a second finger lands soon after, that stroke is taken
+//     back without leaving any mark, and it becomes a two-finger gesture.
 //   - On the PC: the mouse draws, the mouse wheel zooms, and dragging with the middle
 //     button (or with the space bar held) pans. Ctrl+0 shows the whole page.
+//
+// The time and distance limits are in settings.js. With the touch debug overlay turned on
+// (tap the page title 5 times), every touch and decision is shown on screen.
 
-const TAP_MAX_MS = 350;        // a tap gesture must be over within this time...
-const TAP_MOVE_PX = 12;        // ...and no finger may move more than this
-const FILL_TAP_MAX_MS = 800;   // a fill tap (one Pencil/finger/mouse tap)
-const SECOND_FINGER_MS = 250;  // finger mode: a 2nd finger this soon cancels the 1st finger's stroke
-const PALM_SIZE = 60;          // a touch reported wider than this (screen pixels) is a palm
+import { SETTINGS } from "./settings.js";
+import { debugLog, debugOn } from "./touch-debug.js";
+
+const FILL_TAP_MAX_MS = 800; // a fill tap (one Pencil/finger/mouse tap)
 
 export function setupInput(area, viewport, h) {
-  // h = what the editor does: ready(), isBrush(), strokeStart(e), strokeMove(e), strokeEnd(),
-  //     strokeCancel(), tap(e), undo(), redo()
+  // h = what the editor does: ready(), isBrush(), fingerDraws(), strokeStart(e), strokeMove(e),
+  //     strokeEnd(), strokeCancel(), tap(e), undo() -> true if it undid, redo() -> same
 
   let penSeen = false;
   try {
@@ -46,6 +47,7 @@ export function setupInput(area, viewport, h) {
       // not available for this pointer; everything still works
     }
   };
+  const size = (e) => `${Math.round(e.width || 0)}×${Math.round(e.height || 0)}`;
 
   // ---------- drawing / tapping with one pointer ----------
 
@@ -59,6 +61,7 @@ export function setupInput(area, viewport, h) {
       x0: e.clientX,
       y0: e.clientY,
       moved: 0,
+      size: size(e),
     };
     if (draw.stroke) h.strokeStart(e);
   }
@@ -77,10 +80,13 @@ export function setupInput(area, viewport, h) {
 
   // ---------- finger gestures ----------
 
-  function addToGesture(id, time) {
-    if (!gesture) gesture = { ids: [], t0: time, maxCount: 0, moved: false, base: null };
+  function addToGesture(id, time, info) {
+    if (!gesture) {
+      gesture = { ids: [], t0: time, maxCount: 0, moved: false, base: null, fingers: [], cancelled: false };
+    }
     gesture.ids.push(id);
     gesture.maxCount = Math.max(gesture.maxCount, gesture.ids.length);
+    gesture.fingers.push({ id, landed: Math.round(time - gesture.t0), size: info.size, moved: 0, up: null });
     rebase();
   }
 
@@ -101,17 +107,18 @@ export function setupInput(area, viewport, h) {
     gesture.base = { scale: viewport.scale, x: viewport.x, y: viewport.y, cx: (ax + bx) / 2, cy: (ay + by) / 2, dist: Math.max(1, Math.hypot(ax - bx, ay - by)) };
   }
 
-  function moveGesture() {
+  function moveGesture(id) {
+    const t = touches.get(id);
+    const f = gesture.fingers.find((x) => x.id === id);
+    if (t && f) f.moved = Math.max(f.moved, Math.round(Math.hypot(t.x - t.x0, t.y - t.y0)));
     if (!gesture.moved) {
-      const far = gesture.ids.some((id) => {
-        const t = touches.get(id);
-        return t && Math.hypot(t.x - t.x0, t.y - t.y0) > TAP_MOVE_PX;
-      });
+      const far = gesture.fingers.find((x) => x.moved > SETTINGS.tapGestureMoveLimit && gesture.ids.includes(x.id));
       if (!far) return; // still could be a tap: don't move the page yet
       gesture.moved = true;
+      if (gesture.ids.length >= 2) debugLog(`zoom/pan started (a finger moved ${far.moved} px)`);
       rebase(true); // the page hasn't moved yet, so measure from where the fingers went down
     }
-    const [a, b] = gesture.ids.map((id) => touches.get(id)).filter(Boolean);
+    const [a, b] = gesture.ids.map((i) => touches.get(i)).filter(Boolean);
     if (a && b && gesture.base) {
       viewport.pinch(gesture.base, (a.x + b.x) / 2, (a.y + b.y) / 2, Math.hypot(a.x - b.x, a.y - b.y));
     }
@@ -120,12 +127,25 @@ export function setupInput(area, viewport, h) {
   function endGesture(e) {
     const g = gesture;
     gesture = null;
-    const quick = e.timeStamp - g.t0 < TAP_MAX_MS;
-    if (!g.moved && quick && e.type === "pointerup") {
-      if (g.maxCount === 2) h.undo();
-      else if (g.maxCount === 3) h.redo();
-    }
+    const took = Math.round(e.timeStamp - g.t0);
+    let result;
+    if (g.cancelled) result = "nothing: the iPad cancelled the touch (pointercancel)";
+    else if (g.moved) result = g.maxCount >= 2 ? "zoom/pan" : "nothing: 1 finger moved (fingers don't pan alone)";
+    else if (g.maxCount < 2) result = "nothing: only 1 finger";
+    else if (g.maxCount > 3) result = `nothing: ${g.maxCount} fingers (2 = undo, 3 = redo)`;
+    else if (took >= SETTINGS.tapGestureMaxMs) result = `nothing: took ${took} ms (tap limit ${SETTINGS.tapGestureMaxMs} ms)`;
+    else if (g.maxCount === 2) result = h.undo() ? "UNDO" : "UNDO, but there was nothing to undo";
+    else result = h.redo() ? "REDO" : "REDO, but there was nothing to redo";
     if (g.moved) viewport.settle();
+
+    if (debugOn()) {
+      const f = g.fingers;
+      debugLog(
+        `${g.maxCount} finger${g.maxCount === 1 ? "" : "s"} · landed ${f.map((x) => "+" + x.landed).join("/")} ms` +
+        ` · all up after ${took} ms · moved ${f.map((x) => x.moved).join("/")} px` +
+        ` · size ${f.map((x) => x.size).join(", ")}\n   → ${result}`
+      );
+    }
   }
 
   // ---------- events ----------
@@ -145,12 +165,15 @@ export function setupInput(area, viewport, h) {
       if (draw && draw.type === "touch") endDraw("cancel"); // the Pencil wins over a finger
       if (draw) return;
       // Any fingers on the screen right now are her hand: ignore them until they lift.
+      const palms = touches.size;
       for (const id of touches.keys()) ignored.add(id);
       touches.clear();
       if (gesture) {
+        debugLog("Pencil touched down during a finger gesture → gesture stopped");
         gesture = null;
         viewport.settle();
       }
+      debugLog(`Pencil down${palms ? ` (${palms} finger${palms > 1 ? "s" : ""} on screen ignored as palm)` : ""}`);
       beginDraw(e);
       return;
     }
@@ -167,32 +190,44 @@ export function setupInput(area, viewport, h) {
     }
 
     // A finger (touch).
-    if ((draw && draw.type === "pen") || e.width > PALM_SIZE || e.height > PALM_SIZE) {
-      ignored.add(e.pointerId); // palm
+    if (draw && draw.type === "pen") {
+      ignored.add(e.pointerId);
+      debugLog(`finger ignored: the Pencil is touching the screen (size ${size(e)})`);
+      return;
+    }
+    if (e.width > SETTINGS.palmSize || e.height > SETTINGS.palmSize) {
+      ignored.add(e.pointerId);
+      debugLog(`finger ignored as a palm: size ${size(e)} is bigger than ${SETTINGS.palmSize}`);
       return;
     }
     capture(e);
     touches.set(e.pointerId, { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY });
 
-    if (penSeen) {
-      addToGesture(e.pointerId, e.timeStamp);
+    const fingersDraw = !penSeen || h.fingerDraws();
+    if (!fingersDraw) {
+      addToGesture(e.pointerId, e.timeStamp, { size: size(e) });
       return;
     }
-    // Finger mode (this device has never seen a Pencil).
+    // Fingers can draw: the first finger draws; a second one turns it into a gesture.
     if (!draw && !gesture) {
       beginDraw(e);
       return;
     }
     if (draw && draw.type === "touch") {
-      // A second finger: this is a gesture, not drawing.
       const first = draw;
-      const young = e.timeStamp - first.t0 < SECOND_FINGER_MS && first.moved < 20;
+      const age = Math.round(e.timeStamp - first.t0);
+      const young = age < SETTINGS.secondFingerMs && first.moved < 20;
       endDraw(young ? "cancel" : "finish");
-      addToGesture(first.id, first.t0);
-      addToGesture(e.pointerId, e.timeStamp);
+      debugLog(young
+        ? `2nd finger +${age} ms → the 1st finger's stroke was taken back (no mark)`
+        : `2nd finger +${age} ms → the 1st finger's stroke was kept (it was already ${first.moved} px / ${age} ms long)`);
+      addToGesture(first.id, first.t0, { size: first.size });
+      const f = gesture.fingers[0];
+      f.moved = Math.round(first.moved);
+      addToGesture(e.pointerId, e.timeStamp, { size: size(e) });
       return;
     }
-    if (gesture) addToGesture(e.pointerId, e.timeStamp);
+    if (gesture) addToGesture(e.pointerId, e.timeStamp, { size: size(e) });
   });
 
   area.addEventListener("pointermove", (e) => {
@@ -217,7 +252,7 @@ export function setupInput(area, viewport, h) {
     if (!t || ignored.has(e.pointerId)) return;
     t.x = e.clientX;
     t.y = e.clientY;
-    if (gesture && gesture.ids.includes(e.pointerId)) moveGesture();
+    if (gesture && gesture.ids.includes(e.pointerId)) moveGesture(e.pointerId);
   });
 
   function lift(e) {
@@ -226,10 +261,12 @@ export function setupInput(area, viewport, h) {
       viewport.settle();
       return;
     }
+    if (e.type === "pointercancel" && e.pointerType === "touch") debugLog("the iPad cancelled a touch (pointercancel)");
     if (draw && e.pointerId === draw.id) endDraw("finish", e);
     ignored.delete(e.pointerId);
     touches.delete(e.pointerId);
     if (gesture && gesture.ids.includes(e.pointerId)) {
+      if (e.type === "pointercancel") gesture.cancelled = true;
       gesture.ids = gesture.ids.filter((id) => id !== e.pointerId);
       if (gesture.ids.length === 0) endGesture(e);
       else rebase();

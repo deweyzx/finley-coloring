@@ -371,6 +371,22 @@ a.page-card { text-decoration: none; }
   100% { opacity: 0; transform: translate(-50%, 0); }
 }
 
+/* ---------- Temporary touch debug log ---------- */
+.touch-debug {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  max-width: min(620px, calc(100% - 20px));
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(20, 20, 30, 0.82);
+  color: #e8f6ff;
+  font: 13px/1.4 ui-monospace, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  pointer-events: none; /* never blocks touches */
+}
+
 /* ---------- Undo / redo (top right of the coloring screen) ---------- */
 .history-buttons {
   margin-left: auto;

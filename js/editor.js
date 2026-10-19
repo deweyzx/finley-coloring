@@ -11,6 +11,7 @@ import { createSlider } from "./slider.js";
 import { History } from "./history.js";
 import { Viewport } from "./viewport.js";
 import { setupInput } from "./touch-input.js";
+import { toggleDebug } from "./touch-debug.js";
 import { SETTINGS } from "./settings.js";
 
 const area = document.getElementById("canvas-area");
@@ -89,6 +90,20 @@ function makeSwitch(id, storageKey, startOn) {
 }
 const lineLock = makeSwitch("line-lock", "line-lock", true);
 const buildUp = makeSwitch("build-up", "build-up", true);
+// "Draw with finger": off = only the Pencil draws (fingers zoom, pan and tap); on = one finger
+// draws and taps to fill too. Two- and three-finger gestures work either way.
+const fingerDraw = makeSwitch("finger-draw", "finger-draw", false);
+
+// Hidden: tapping the page title 5 times quickly shows/hides the touch debug log.
+let titleTaps = [];
+titleEl.addEventListener("click", (e) => {
+  titleTaps = titleTaps.filter((t) => e.timeStamp - t < 2000);
+  titleTaps.push(e.timeStamp);
+  if (titleTaps.length >= 5) {
+    titleTaps = [];
+    toggleDebug();
+  }
+});
 
 // ---------- Undo and redo ----------
 
@@ -100,15 +115,18 @@ function updateHistoryButtons() {
   undoButton.disabled = !history || !history.canUndo();
   redoButton.disabled = !history || !history.canRedo();
 }
+// Each returns true if it did something.
 function undo(fromGesture) {
-  if (!history || stroke || !history.canUndo()) return; // not in the middle of a stroke
+  if (!history || stroke || !history.canUndo()) return false; // not in the middle of a stroke
   history.undo();
   if (fromGesture) showToast("Undo");
+  return true;
 }
 function redo(fromGesture) {
-  if (!history || stroke || !history.canRedo()) return;
+  if (!history || stroke || !history.canRedo()) return false;
   history.redo();
   if (fromGesture) showToast("Redo");
+  return true;
 }
 undoButton.addEventListener("click", () => undo());
 redoButton.addEventListener("click", () => redo());
@@ -168,7 +186,7 @@ function selectTool(name) {
   }
   const brush = BRUSHES[name];
   controls.classList.toggle("disabled", !brush); // fill has no size or opacity
-  lineLock.button.classList.toggle("faded", !brush); // the switches are for brushes
+  lineLock.button.classList.toggle("faded", !brush); // these switches are for brushes
   buildUp.button.classList.toggle("faded", !brush);
   if (brush) {
     const s = brushSettings(name);
@@ -454,6 +472,7 @@ function readPoint(e) {
 setupInput(area, view, {
   ready: () => !paper.hidden && !!engine,
   isBrush: () => !!tools[currentTool].brush,
+  fingerDraws: () => fingerDraw.on,
   strokeStart: (e) => {
     if (!stroke) startStroke(e);
   },

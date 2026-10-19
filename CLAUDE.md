@@ -8,12 +8,15 @@ table, and any decisions that changed.
 
 ## Where we are
 
-- **Done and committed:** steps 1–6, plus the lighter pencil and the eraser-edge fix (all passed
-  Owen's PC test).
-- **Waiting:** iPad check of step 6 (pinch/pan feel, palm rejection, two/three-finger tap
-  undo/redo) and of the lighter pencil. These can only be judged on the iPad; expect tuning
-  (thresholds are constants at the top of `js/touch-input.js`, pencil values in `js/brushes.js`).
-- **Next:** step 7, auto-save + progress thumbnails.
+- **Done and committed:** steps 1–6 (lighter pencil + eraser-edge fix included).
+- **In testing on the iPad (committed so Owen can test):** the **touch debug overlay** and the
+  **"Draw with finger"** switch. Finley finds pinch/pan and two/three-finger taps hard to trigger.
+  Owen will send screenshots of the overlay; then **loosen the gesture thresholds in
+  `js/settings.js` based on that real data** (keep: a tap never leaves a mark). Likely suspects,
+  confirmed possible in simulation: her touches reported wider than `palmSize` 60 (ignored as
+  palm), a resting hand counted as an extra finger (2-finger tap becomes "3 fingers, too slow"),
+  taps slower than 350 ms, wobble over 12 px. Then remove or hide the overlay for good.
+- **Not started (Owen said wait):** step 7, auto-save + progress thumbnails.
 
 ## How to work with Owen
 
@@ -50,7 +53,7 @@ table, and any decisions that changed.
 | 3 | Tap-to-fill with gap closing + basic palette and toolbar | ✅ |
 | 4 | Brush engine: pencil, marker, eraser; size + opacity sliders, live preview; pressure + tilt; line-lock | ✅ |
 | 5 | Undo / redo (big back/forward buttons) | ✅ |
-| 6 | Pinch-zoom, two-finger pan, palm rejection; 2-finger tap undo, 3-finger tap redo | ✅ committed, iPad check pending |
+| 6 | Pinch-zoom, two-finger pan, palm rejection; 2-finger tap undo, 3-finger tap redo | ✅ committed; gesture tuning in progress |
 | 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails | next |
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | |
 | 9 | Export the finished picture to Photos | |
@@ -181,7 +184,17 @@ table, and any decisions that changed.
     finger within 250 ms cancels that stroke with no mark (`engine.cancel()`), then it's a gesture.
   - **PC:** mouse draws; wheel / trackpad pinch zooms at the pointer; middle-button drag or
     Space + drag pans; Ctrl+0 fits the page.
-  - Not yet: a setting to let fingers draw again after a Pencil was used (could add if needed).
+  - **"Draw with finger" switch** (third switch; **off by default**; `localStorage` "finger-draw";
+    added at Finley's request): on = fingers draw and tap to fill even after the Pencil was
+    used (finger-mode rules: a second finger within `secondFingerMs` takes the stroke back with no
+    mark). Gestures work either way. With it on, a resting palm can draw (expected trade-off).
+  - Gesture thresholds live in `js/settings.js`: `tapGestureMaxMs` 350, `tapGestureMoveLimit` 12,
+    `palmSize` 60, `secondFingerMs` 250.
+- **Touch debug overlay** (temporary, `js/touch-debug.js`, `#touch-debug`): toggled by tapping the
+  coloring screen's page title 5 times (remembered in `localStorage` "touch-debug"). Logs each
+  finger ignored and why, Pencil downs, pointercancel, and per gesture: finger count, landing
+  offsets (ms), time until all lifted, max movement per finger, reported touch size, and the
+  decision (UNDO / REDO / zoom/pan / "nothing: <reason>"). `pointer-events: none`.
 - Tested with simulated touches (real timing): pinch 100→300 px = exactly 3×, two-finger drag
   moves exactly with the fingers, 2/3-finger taps undo/redo without moving the page, a held
   two-finger touch does nothing, palms before/during a Pencil stroke change nothing, finger-mode
@@ -274,6 +287,7 @@ table, and any decisions that changed.
 | `js/history.js` | Undo and redo |
 | `js/viewport.js` | Zoom and pan (where the page sits on screen) |
 | `js/touch-input.js` | What each Pencil / finger / mouse action means; palm rejection; gestures |
+| `js/touch-debug.js` | Temporary on-screen touch log (tap the page title 5 times) |
 | `js/settings.js` | Tweakable numbers |
 | `pages/pages.js` | The library list |
 | `tools/import_pages.py`, `import-pages.bat` | Import tool |

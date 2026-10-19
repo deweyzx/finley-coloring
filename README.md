@@ -167,9 +167,15 @@ On the PC: Ctrl+Z to undo, Ctrl+Y to redo.
 
 - **On the iPad:** pinch with two fingers to zoom, drag with two fingers to move around. Pinch
   smaller than the page and it springs back to show the whole page.
-- **The Apple Pencil draws; fingers don't.** Once the iPad has seen the Pencil, fingers only
-  zoom, move and tap, so her hand can rest on the screen while she colors. While the Pencil
-  is touching the screen, other touches are ignored.
+- **The Apple Pencil draws; fingers don't** (unless the **Draw with finger** switch is on).
+  Once the iPad has seen the Pencil, fingers only zoom, move and tap, so her hand can rest on the
+  screen while she colors. While the Pencil is touching the screen, other touches are ignored.
+- **Draw with finger** (switch under the tools, off by default): turn it on to color with a
+  finger too. One finger draws and taps to fill; two- and three-finger gestures still work.
+  With it on, a hand resting on the screen can draw, so turn it off when using the Pencil.
+- **Touch debug log (temporary):** tap the page title on the coloring screen 5 times to show a
+  log of every touch: how many fingers, their timing, movement and size, and what the app
+  decided. Tap the title 5 times again to hide it. The gesture limits are in `js/settings.js`.
 - **On the PC:** the mouse wheel zooms, dragging with the middle mouse button (or holding the
   space bar and dragging) moves around, and Ctrl+0 shows the whole page again.
 

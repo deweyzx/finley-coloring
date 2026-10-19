@@ -27,6 +27,21 @@ export const SETTINGS = {
   // SCREEN pixels away (about a fingertip), instead of doing nothing.
   tapReach: 10,
 
+  // ---------- Finger gestures (step 6) ----------
+  // Turn on the touch debug overlay (tap the page title 5 times) to see real numbers
+  // for her touches before changing these.
+
+  // A two-finger tap (undo) or three-finger tap (redo) must be over - all fingers up -
+  // within this many milliseconds of the first finger landing...
+  tapGestureMaxMs: 350,
+  // ...and no finger may move more than this many screen pixels (more = zoom/pan).
+  tapGestureMoveLimit: 12,
+  // A touch the iPad reports as wider than this (screen pixels) is treated as a palm and ignored.
+  palmSize: 60,
+  // When a finger is drawing and a second finger lands within this many milliseconds,
+  // the first finger's stroke is taken back (it was the start of a gesture, not drawing).
+  secondFingerMs: 250,
+
   // How far (in pixels) the color reaches in under the edge of the lines. This hides
   // any thin white rim between the color and the line. The lines sit on top, so the
   // extra color is never visible.

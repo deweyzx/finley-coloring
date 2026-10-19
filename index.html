@@ -70,6 +70,8 @@
         <p id="canvas-message" class="canvas-message"></p>
         <!-- Flashes "Undo" / "Redo" after a two- or three-finger tap. -->
         <div id="toast" class="toast" aria-live="polite"></div>
+        <!-- Temporary touch debug log (tap the page title 5 times to show/hide). -->
+        <pre id="touch-debug" class="touch-debug" hidden></pre>
       </div>
 
       <aside class="tool-panel">
@@ -97,6 +99,16 @@
               </svg>
               <span class="toggle-label">Stay inside lines</span>
               <span class="toggle-state">On</span>
+            </button>
+
+            <!-- Draw with finger: off = only the Pencil draws (fingers zoom, pan and tap);
+                 on = one finger draws and taps to fill too. -->
+            <button id="finger-draw" class="toggle-switch" type="button" role="switch" aria-checked="false">
+              <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+                <path d="M9 11 V5.5 a1.5 1.5 0 0 1 3 0 V11 M12 10 V9 a1.5 1.5 0 0 1 3 0 V11 M15 11 a1.5 1.5 0 0 1 3 0 V15 c0 3.5 -2.5 6 -6 6 c-2.5 0 -4 -1 -5.5 -3 L4.2 14.5 a1.5 1.5 0 0 1 2.4 -1.8 L9 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <span class="toggle-label">Draw with finger</span>
+              <span class="toggle-state">Off</span>
             </button>
 
             <!-- Build up color: when on, a new stroke over color deepens it (layering and
