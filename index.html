@@ -39,15 +39,34 @@
       <h1 id="page-title"></h1>
     </header>
 
-    <!-- The area the picture lives in. Later, pinch-zoom and pan happen here. -->
-    <div id="canvas-area" class="canvas-area">
-      <!-- The "paper" holds the stacked layers. The line art canvas sits ON TOP of the color canvas,
-           so coloring can never cover the black lines. -->
-      <div id="paper" class="paper" hidden>
-        <canvas id="color-canvas"></canvas>
-        <canvas id="line-canvas"></canvas>
+    <!-- The picture and the tool panel. The panel sits below the picture when the iPad
+         is upright, and to the right of it when it's sideways. -->
+    <div class="workspace">
+      <!-- The area the picture lives in. Later, pinch-zoom and pan happen here. -->
+      <div id="canvas-area" class="canvas-area">
+        <!-- The "paper" holds the stacked layers. The line art canvas sits ON TOP of the color canvas,
+             so coloring can never cover the black lines. -->
+        <div id="paper" class="paper" hidden>
+          <canvas id="color-canvas"></canvas>
+          <canvas id="line-canvas"></canvas>
+        </div>
+        <p id="canvas-message" class="canvas-message"></p>
       </div>
-      <p id="canvas-message" class="canvas-message"></p>
+
+      <aside class="tool-panel">
+        <!-- Tools. Step 4 adds brushes and the eraser; step 5 adds undo and redo. -->
+        <div class="tools">
+          <button class="tool-button" type="button" data-tool="fill" aria-label="Fill">
+            <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
+              <path d="M5 11 L11 5 L18 12 L12 18 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M5 11 L18 12" fill="none" stroke="currentColor" stroke-width="1.8"/>
+              <path d="M20 15 C 21.5 17 21.5 18.5 20 19.2 C 18.5 18.5 18.5 17 20 15 Z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+        <!-- Color swatches (filled in by palette.js) -->
+        <div id="palette" class="palette"></div>
+      </aside>
     </div>
   </section>
 

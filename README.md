@@ -21,8 +21,11 @@ Don't open `index.html` by double-clicking. Browsers block some features for fil
 | `js/gallery.js` | The library screens: categories, sub-categories, pages |
 | `js/thumbnails.js` | Makes small preview pictures once, and saves them |
 | `js/storage.js` | The IndexedDB database (thumbnails now, her coloring later) |
-| `js/editor.js` | The coloring screen |
+| `js/editor.js` | The coloring screen: tools, taps, fitting the page on screen |
 | `js/lineart.js` | Loads a page and turns its white areas see-through |
+| `js/settings.js` | **Numbers you can tweak**, like gap closing for tap-to-fill |
+| `js/fill.js`, `js/fill-worker.js` | Tap-to-fill (the heavy work runs in the background) |
+| `js/palette.js` | The color swatches |
 | `pages/pages.js` | **The list of categories and pages** |
 | `pages/<category>/<sub-category>/` | The page images |
 | `thumbs/<category>/<sub-category>/` | Small previews of each page for the library (made by the import tool) |
@@ -113,3 +116,24 @@ New categories and sub-categories: create the folder, then copy an existing bloc
 - **Size:** about 1500–2500 pixels on the long side. 1536 × 2048 (the iPad's shape) is ideal. Bigger pages use a lot of iPad memory and make fills slower.
 - **Lines:** dark and solid, at least ~6 px thick at that size, and shapes fully closed. A gap in a line lets tap-to-fill leak into the next area.
 - **Avoid:** JPG (blurry grey speckles around lines), grey shading, or textured backgrounds.
+
+## Tap-to-fill settings
+
+Open `js/settings.js` to adjust how tap-to-fill behaves:
+
+- `gapClosing` (default 4): breaks in a line up to about twice this many pixels wide are treated as
+  closed, so the color doesn't leak through. If fills still leak on a page, raise it a little.
+  If a thin area won't fill in one tap, lower it.
+- `thinPatchWidth` (default 9) and `thinPatchLimit` (default 8000): gap closing can cut off thin
+  bits of an area, like wedges where a vein meets the outline, strips between close lines, and
+  the tight curves of a ruffled edge. After each fill, white patches touching it are filled too
+  if no spot in them is more than `thinPatchWidth` pixels from a line, and they are no bigger
+  than `thinPatchLimit` pixels. Wider or bigger patches are other areas and stay white.
+  If white slivers remain, raise `thinPatchWidth` a little. If a fill spills into a thin
+  neighboring strip through a break in a line, lower it. `thinPatchLimit: 0` turns this off.
+- `ignoreSpecks` (default 30): stray dots smaller than this many pixels don't block a fill.
+- `tapReach` (default 10): a tap that lands right on a line fills the nearest open area this many
+  screen pixels away.
+- `fillUnderLines` (default 2): how far the color tucks in under the lines so no white rim shows.
+
+After changing a setting, refresh the page in the browser (or upload it for the iPad).

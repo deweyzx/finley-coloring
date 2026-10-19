@@ -29,6 +29,8 @@
   /* Shapes and sizes */
   --radius: 18px;
   --button-size: 52px;      /* big enough for a finger or Pencil */
+  --swatch-size: 44px;      /* color circles */
+  --panel-width: 236px;     /* tool panel when the iPad is sideways */
 }
 
 * { box-sizing: border-box; }
@@ -241,4 +243,102 @@ a.page-card { text-decoration: none; }
   color: var(--muted);
   font-size: var(--text-normal);
   pointer-events: none;
+}
+
+/* ---------- Tool panel ---------- */
+.workspace {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;   /* upright iPad: panel below the picture */
+}
+
+.tool-panel {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px calc(16px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+  background: var(--bg);
+  border-top: 1px solid var(--hairline);
+}
+
+.tools {
+  display: flex;
+  gap: 10px;
+  flex: none;
+}
+
+.tool-button {
+  width: var(--button-size);
+  height: var(--button-size);
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+}
+.tool-button.selected {
+  background: var(--accent);
+  color: var(--surface);
+}
+.tool-button:active { transform: scale(0.94); }
+
+/* Swatches: two rows that scroll sideways when the iPad is upright. */
+.palette {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(2, var(--swatch-size));
+  grid-auto-columns: var(--swatch-size);
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.palette::-webkit-scrollbar { display: none; }
+
+.swatch {
+  width: var(--swatch-size);
+  height: var(--swatch-size);
+  padding: 0;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: 0 0 0 1px var(--hairline), var(--shadow);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.swatch.selected {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 3px var(--accent), var(--shadow);
+}
+
+/* Sideways iPad (or a wide window): panel on the right, swatches in a grid. */
+@media (orientation: landscape) {
+  .workspace { flex-direction: row; }
+  .tool-panel {
+    width: calc(var(--panel-width) + env(safe-area-inset-right));
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) 16px;
+    border-top: none;
+    border-left: 1px solid var(--hairline);
+    overflow-y: auto;
+  }
+  .palette {
+    flex: none;
+    grid-auto-flow: row;
+    grid-template-rows: none;
+    grid-template-columns: repeat(4, var(--swatch-size));
+    grid-auto-rows: var(--swatch-size);
+    justify-content: space-between;
+    overflow: visible;
+  }
 }

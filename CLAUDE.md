@@ -1,0 +1,166 @@
+# Finley's Coloring Book: project guide for Claude
+
+A free coloring app (a replacement for "Pigment") for Finley's iPad Pro 11" with Apple Pencil 2
+(pressure + tilt). Built by Owen (GitHub: deweyzx) with Claude, one tested step at a time.
+
+**Keep this file current:** when a step is finished and committed, update "Where we are", the step
+table, and any decisions that changed.
+
+## Where we are
+
+- **Done:** steps 1, 1b, 2, 2b and 3 (latest: step 3, tap-to-fill with gap closing).
+- **Next:** step 4, the brush engine. See the step plan below.
+- Step 3 still needs Owen's check on the iPad with the Pencil (he tested on PC first).
+
+## How to work with Owen
+
+- He's a beginner (one semester of Python), on Windows 10. Explain things simply, in plain words,
+  and explain each new tool or concept before using it.
+- **One step at a time:** build a step, test it yourself (browser pane, real pages), tell Owen
+  exactly how to test it, then **wait for his report**.
+- **Commit only after Owen says a step works.** He tests on PC, then you commit + push, then he
+  checks on the iPad. Never commit before his OK.
+- Test on his **real pages** (Flowers > Daffodils, Tiger Lilies), zoomed in. He cares about leaks,
+  white gaps and halos. When fixing visual issues, show before/after crops.
+- Be honest about trade-offs and anything not verified.
+
+## Rules for the code
+
+- **Plain HTML, CSS and JavaScript.** No frameworks, no build tools, no npm. Files run as-is in a
+  browser. JavaScript uses ES modules (`<script type="module">`), plus one classic web worker.
+- Must work in **Safari on iPad** (and Chrome on Windows for testing). Large touch targets
+  (buttons 52px, swatches 44px). Works upright and sideways.
+- **All colors, fonts and sizes** are CSS variables at the top of `css/styles.css` (`:root`).
+  Never hard-code a color or font elsewhere; the storybook restyle (step 12) depends on this.
+- **Tweakable behavior numbers** live in `js/settings.js`, with plain-English comments.
+- Comments in code are written for a beginner: say what and why in plain words.
+- Paths are relative (the site lives under `/finley-coloring/` on GitHub Pages).
+
+## Step plan
+
+| Step | What | Status |
+|---|---|---|
+| 1 | App shell, gallery, open a page | ✅ |
+| 1b | Library: categories → sub-categories → pages, cached thumbnails | ✅ |
+| 2 | Online via GitHub Pages | ✅ |
+| 2b | Python import tool for messy pages (+ ready-made thumbnails) | ✅ |
+| 3 | Tap-to-fill with gap closing + basic palette and toolbar | ✅ committed, iPad check pending |
+| 4 | **Brush engine** + first brushes (pencil, marker), eraser, brush size; Pencil pressure + tilt | next |
+| 5 | Undo / redo | |
+| 6 | Pinch-zoom, two-finger pan, palm rejection (Pencil draws, fingers zoom/pan) | |
+| 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails | |
+| 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | |
+| 9 | Export the finished picture to Photos | |
+| 10 | Brush collection: colored pencil, crayon, watercolor, airbrush, glitter/sparkle | |
+| 11 | Installable + offline (manifest, service worker, icons) | |
+| 12 | Magical storybook look and polish | |
+
+### Notes for future steps
+
+- **Step 4, brush engine:** design brushes as **definition objects** (name, icon, size range,
+  opacity, texture/stamp, how pressure and tilt change size/opacity/shading, blend mode) so adding
+  a brush in step 10 means adding one definition. Pressure → thinner **and** lighter when pressed
+  lightly (Owen's choice). Use tilt for shading. Brushes paint on the color canvas (under the line
+  art). Tools are registered in the `tools` object in `js/editor.js` (fill is the first). The
+  eraser should erase color only, never the lines.
+- **Step 5, undo:** a fill returns its bounding box (`x, y, w, h`); save the before-pixels of
+  that box. Keep memory in mind on the iPad (each full layer is ~22 MB).
+- **Step 6:** currently a "tap" = pointer down/up within 12px and 800ms (`js/editor.js`). The
+  `view` object (`scale, x, y`) and `applyView()` already position the page with a CSS transform;
+  `toPagePoint()` converts screen → page coordinates. Palm rejection: when a Pencil
+  (`pointerType === "pen"`) is in use, ignore touches for drawing.
+- **Step 7:** IndexedDB already has an `artwork` store (unused) in `js/storage.js`. Save per page
+  id. Library cards should then show her colored version instead of the blank thumbnail.
+- **Step 8:** Pencil-friendly hue ring + saturation/brightness square, recently used colors,
+  saved palettes she can name and switch between (store in IndexedDB; adding a store means
+  bumping `DB_VERSION`). `js/palette.js` holds the 24 default swatches.
+- **Step 11:** the service worker must cache pages and thumbnails; plan for updates (version the
+  cache) since GitHub Pages also caches files for ~10 minutes.
+- **Step 12, fairy-tale UI:** soft pastels with gold accents, gentle sparkle effects on taps and
+  when a page is finished, a whimsical but readable title font (`--font-title`), and a library that
+  feels like a magical book or enchanted shelf. Calm, not cluttered; keep buttons large.
+
+## Key decisions
+
+- **Device:** iPad Pro 11" (screen 1668 × 2388), Apple Pencil 2, Safari.
+- **Page size:** 2048 × 2732 (3:4, wide pictures 2732 × 2048). Each canvas layer is ~22 MB.
+- **Layers:** a white color canvas with the line-art canvas on top. The line art has its white
+  made transparent, so color can never cover the lines.
+- **Line art from the import tool:** solid black lines with a thin smooth edge (`EDGE_SOFTNESS`
+  0.7); every line pixel is darker than 50% grey and every paper pixel lighter. The app treats
+  "darker than 50%" (`LINE_CUTOFF = 128`) as a line.
+- **Tap-to-fill** (`js/fill.js` + `js/fill-worker.js`, runs in a web worker), only stops at the
+  line art (never at brush strokes). When a page opens, the worker builds a line mask (minus
+  specks) and a distance-to-nearest-line map. Each tap then:
+  1. snaps a tap on a line to the nearest paper within `tapReach` screen px; if near a line,
+     steps into the open part of the area (without crossing lines) before gap closing
+  2. flood fills with every line treated as `gapClosing` px thicker (closes gaps up to ~2×)
+  3. grows back to the real lines by moving only "downhill" in distance (stops halfway
+     across a gap)
+  4. fills thin leftover patches (thin everywhere ≤ `thinPatchWidth` px from a line, ≤
+     `thinPatchLimit` px); wider patches are other areas reached through a gap
+  5. tucks `fillUnderLines` px under the lines (no white halo), then fills single pinholes
+  - Known trade-off: a real gap opening straight onto an enclosed strip under ~9px wide gets
+    that strip filled.
+  - Speed (PC): page prep ~190 ms; typical fill 2–10 ms; the biggest fill ~170 ms.
+- **Settings** (`js/settings.js`): `gapClosing` 4, `thinPatchWidth` 9, `thinPatchLimit` 8000,
+  `ignoreSpecks` 30, `tapReach` 10, `fillUnderLines` 2.
+- **Library:** `pages/pages.js` lists categories → sub-categories → page files. Folders match:
+  `pages/<category>/<sub-category>/<file>`. **Page id = file name without extension, unique
+  across the whole library; never rename it** (her saved coloring will be keyed by it). Titles
+  come from file names unless given. Addresses: `#/`, `#/flowers`, `#/flowers/tulips`,
+  `#/page/<id>`.
+- **Thumbnails:** `thumbs/<category>/<sub-category>/<id>.png`, 420 × 560, 4 grey shades (~40 KB),
+  made by the import tool. SVG pages, or pages without a thumbnail, get one made in the browser and
+  cached in IndexedDB (`js/thumbnails.js`).
+- **Placeholder pages** are SVG (sunflower, tulips, butterfly, mandalas, shapes, cottage); the real
+  pages are PNG from the import tool.
+
+## Import tool
+
+- `import-pages.bat` → `tools/import_pages.py` (needs Pillow + NumPy, installed with `--user`).
+- Owen drops raw images (PNG/JPG/WEBP from AI generators and packs) into
+  `import/<Category>/<Sub-category>/` and runs it. For each image it evens out the paper, picks a
+  line threshold, removes specks (`SPECK_AREA` 150), trims margins, resizes to the page size,
+  thickens thin lines, seals diagonal leaks, smooths edges, gives a clean unique name, writes the
+  page + thumbnail, and updates `pages/pages.js` (creating categories as needed).
+- Folder names are cleaned ("tiger-lily-coloring-page" → "Tiger Lily"); singular/plural match
+  existing groups. Skips duplicates (file hash + look-alike fingerprint) via
+  `tools/import-log.json`. Never changes the originals.
+- `import/` is git-ignored: originals stay on Owen's PC and are never published.
+- Settings are at the top of the script.
+
+## Testing and hosting
+
+- **Local:** `start-server.bat` (or `python serve.py`) → http://localhost:8000. It's a no-cache
+  server that fixes Windows MIME types. Opening `index.html` directly won't work. Owen's Wi-Fi
+  blocks testing between devices, so the iPad always tests the hosted link.
+- **Live:** https://deweyzx.github.io/finley-coloring/ (repo `deweyzx/finley-coloring`, public,
+  Pages from `main` / root, `.nojekyll` present). It updates ~1 minute after a push, and Safari may
+  show the old version for a few minutes.
+- **Git:** identity is repo-local: `deweyzx` / `343752721+deweyzx@users.noreply.github.com` (keeps
+  his real email private). Pushing works through the saved Git Credential Manager sign-in.
+  Commit messages are "Step N: …" with a short explanation.
+- The browser pane's hidden tab doesn't fire lazy loading / IntersectionObserver; library
+  thumbnails can look blank there even though they work on real screens.
+
+## Files
+
+| File | Purpose |
+|---|---|
+| `index.html` | Both screens (library, coloring) |
+| `css/styles.css` | All styling; design tokens in `:root` |
+| `js/app.js` | Router: address → screen |
+| `js/library.js` | Reads `pages/pages.js`, builds page objects |
+| `js/gallery.js` | Library screens and cards |
+| `js/thumbnails.js` | Browser-made thumbnails (fallback) |
+| `js/storage.js` | IndexedDB (`thumbnails`, `artwork` stores) |
+| `js/editor.js` | Coloring screen: layers, tools, taps, fitting the page |
+| `js/lineart.js` | Loads a page, makes white see-through, returns the darkness map |
+| `js/fill.js`, `js/fill-worker.js` | Tap-to-fill |
+| `js/palette.js` | Default swatches |
+| `js/settings.js` | Tweakable numbers |
+| `pages/pages.js` | The library list |
+| `tools/import_pages.py`, `import-pages.bat` | Import tool |
+| `serve.py`, `start-server.bat` | Local test server |
+| `README.md` | Owen's beginner guide (running, importing, settings) |
