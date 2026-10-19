@@ -13,6 +13,8 @@
   --hairline: #efe9e1;      /* thin borders */
   --warning-bg: #fbe3dc;    /* warning box */
   --warning-ink: #8a2f1c;
+  --danger: #c0392b;        /* "Erase my coloring" */
+  --backdrop: rgba(40, 32, 26, 0.45); /* dims the screen behind a question */
 
   /* Shadows */
   --shadow: 0 2px 10px rgba(60, 45, 30, 0.10);
@@ -413,9 +415,80 @@ a.page-card { text-decoration: none; }
   white-space: pre-wrap;
 }
 
+/* ---------- "Start over" button and its question ---------- */
+.text-button {
+  margin-left: auto;
+  height: 44px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  box-shadow: var(--shadow);
+  font: inherit;
+  font-size: var(--text-small);
+  cursor: pointer;
+  flex: none;
+}
+.text-button:active { transform: scale(0.96); }
+.text-button + .history-buttons { margin-left: 12px; }
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: var(--backdrop);
+  touch-action: none; /* touches here never reach the page underneath */
+}
+.dialog {
+  width: min(440px, 100%);
+  padding: 24px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-paper);
+}
+.dialog h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-title);
+  font-size: var(--text-title);
+}
+.dialog p {
+  margin: 0 0 20px;
+  color: var(--muted);
+  font-size: var(--text-normal);
+  line-height: 1.4;
+}
+.dialog-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+}
+.dialog-button {
+  min-height: var(--button-size);
+  padding: 0 20px;
+  border: none;
+  border-radius: 14px;
+  background: var(--accent);
+  color: var(--surface);
+  font: inherit;
+  font-size: var(--text-normal);
+  font-weight: 600;
+  cursor: pointer;
+}
+.dialog-button.danger {
+  background: var(--surface);
+  color: var(--danger);
+  box-shadow: inset 0 0 0 2px var(--danger);
+}
+.dialog-button:active { transform: scale(0.97); }
+
 /* ---------- Undo / redo (top right of the coloring screen) ---------- */
 .history-buttons {
-  margin-left: auto;
+  margin-left: auto; /* (when there's no Start over button before it) */
   display: flex;
   gap: 12px;
   flex: none;

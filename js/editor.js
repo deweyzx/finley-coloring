@@ -2,17 +2,18 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610182246";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610182246";
-import { renderPalette, currentColor, toRGB } from "./palette.js?v=202610182246";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610182246";
-import { StrokeEngine } from "./stroke-engine.js?v=202610182246";
-import { createSlider } from "./slider.js?v=202610182246";
-import { History } from "./history.js?v=202610182246";
-import { Viewport } from "./viewport.js?v=202610182246";
-import { setupInput } from "./touch-input.js?v=202610182246";
-import { toggleDebug } from "./touch-debug.js?v=202610182246";
-import { SETTINGS } from "./settings.js?v=202610182246";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610182317";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610182317";
+import { renderPalette, currentColor, toRGB } from "./palette.js?v=202610182317";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610182317";
+import { StrokeEngine } from "./stroke-engine.js?v=202610182317";
+import { createSlider } from "./slider.js?v=202610182317";
+import { History } from "./history.js?v=202610182317";
+import { Viewport } from "./viewport.js?v=202610182317";
+import { setupInput } from "./touch-input.js?v=202610182317";
+import { toggleDebug } from "./touch-debug.js?v=202610182317";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610182317";
+import { SETTINGS } from "./settings.js?v=202610182317";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -116,12 +117,14 @@ function updateHistoryButtons() {
 function undo(fromGesture) {
   if (!history || stroke || !history.canUndo()) return false; // not in the middle of a stroke
   history.undo();
+  markChanged();
   if (fromGesture) showToast("Undo");
   return true;
 }
 function redo(fromGesture) {
   if (!history || stroke || !history.canRedo()) return false;
   history.redo();
+  markChanged();
   if (fromGesture) showToast("Redo");
   return true;
 }
@@ -306,9 +309,24 @@ export async function openEditor(page) {
   history = new History(colorCtx, engine.memory, w, updateHistoryButtons);
   updateHistoryButtons();
 
-  // Bottom layer: plain white paper (colors go here).
+  // Bottom layer: plain white paper (colors go here)...
   colorCtx.fillStyle = "#ffffff";
   colorCtx.fillRect(0, 0, w, h);
+  // ...with her saved coloring on it, if she has colored this page before. (First wait for
+  // any save still in progress, e.g. of this same page she just left.)
+  await lastSave.catch(() => {});
+  try {
+    await loadArtwork(page.id, colorCtx, engine.memory);
+  } catch (err) {
+    // Her saved coloring is there but couldn't be read right now. Don't show a blank page she
+    // might color on - its auto-save would then replace her real work.
+    console.error("Couldn't load the saved coloring", err);
+    if (currentPage === page) {
+      messageEl.textContent = "Your saved coloring for this page couldn't be opened. Close any other tabs with the coloring book, then open this page again.";
+    }
+    return;
+  }
+  if (currentPage !== page) return;
 
   // Top layer: the black lines. Tap-to-fill studies them in the background.
   const darkness = drawLineArt(lineCanvas, img);
@@ -333,8 +351,90 @@ export async function openEditor(page) {
 export function closeEditor() {
   if (stroke && !stroke.waiting) finishStroke();
   stroke = null;
+  saveNow(); // leaving the page: save right away
   currentPage = null;
 }
+
+// ---------- Auto-save ----------
+// After each change (stroke, fill, undo, redo) the page is saved a moment later, once she
+// pauses. It's also saved right away when she leaves the page or switches away from the app.
+
+let unsaved = false;
+let saveTimer = null;
+let lastSave = Promise.resolve();
+
+function markChanged() {
+  unsaved = true;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, SETTINGS.autosaveDelayMs);
+}
+
+function saveNow() {
+  clearTimeout(saveTimer);
+  if (!unsaved || !currentPage || !engine) return;
+  if (stroke) {
+    saveTimer = setTimeout(saveNow, 500); // never in the middle of a stroke: try again soon
+    return;
+  }
+  unsaved = false;
+  const id = currentPage.id;
+  const started = performance.now();
+  lastSave = saveArtwork(id, colorCanvas, lineCanvas, engine.memory)
+    .then((info) => console.log(`Saved "${id}" in ${Math.round(performance.now() - started)} ms (colors ${Math.round(info.colorBytes / 1024)} KB, build-up memory ${Math.round(info.memoryBytes / 1024)} KB, preview ${Math.round(info.previewBytes / 1024)} KB)`))
+    .catch((err) => {
+      if (currentPage && currentPage.id === id) unsaved = true; // try again with the next change
+      console.error("Auto-save failed", err);
+    });
+}
+
+// ---------- Start over ----------
+// Erases all her coloring on this page after she confirms. It can still be undone until she
+// leaves the page; if she leaves, the page is blank again (and blank in the library).
+
+const startOverButton = document.getElementById("start-over");
+const startOverDialog = document.getElementById("start-over-dialog");
+const keepButton = document.getElementById("start-over-cancel");
+const eraseButton = document.getElementById("start-over-confirm");
+
+startOverButton.addEventListener("click", () => {
+  if (paper.hidden || stroke) return;
+  startOverDialog.hidden = false;
+  keepButton.focus(); // the safe choice is the default
+});
+keepButton.addEventListener("click", () => {
+  startOverDialog.hidden = true;
+});
+startOverDialog.addEventListener("click", (e) => {
+  if (e.target === startOverDialog) startOverDialog.hidden = true; // tapped outside the box
+});
+eraseButton.addEventListener("click", () => {
+  startOverDialog.hidden = true;
+  startOver();
+});
+
+function startOver() {
+  if (!currentPage || !engine || stroke) return;
+  const w = colorCanvas.width;
+  const h = colorCanvas.height;
+  history.saveBefore({ x: 0, y: 0, w, h }); // so Undo can bring it all back
+  colorCtx.fillStyle = "#ffffff";
+  colorCtx.fillRect(0, 0, w, h);
+  engine.memory.fill(0);
+  // Forget the saved version too (a pending auto-save is no longer needed).
+  clearTimeout(saveTimer);
+  unsaved = false;
+  const id = currentPage.id;
+  lastSave = lastSave
+    .catch(() => {})
+    .then(() => forgetArtwork(id))
+    .catch((err) => console.error("Couldn't clear the saved coloring", err));
+}
+
+// Switching to another app, locking the iPad or closing Safari: save right away.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") saveNow();
+});
+window.addEventListener("pagehide", saveNow);
 
 // ---------- Fill ----------
 
@@ -350,6 +450,7 @@ async function fillAt(point) {
   history.saveBefore({ x: result.x, y: result.y, w: result.w, h: result.h });
   paintFill(colorCtx, result, color);
   engine.rememberFill(result, color);
+  markChanged();
   console.log(`Filled ${result.count} pixels in ${result.ms} ms (gap closing used: ${result.gapUsed})`);
 }
 
@@ -417,8 +518,9 @@ function endStroke() {
 }
 
 function finishStroke() {
-  engine.commit(strokeCtx, colorCtx, (box) => history.saveBefore(box));
+  const changed = engine.commit(strokeCtx, colorCtx, (box) => history.saveBefore(box));
   stroke = null;
+  if (changed) markChanged();
 }
 
 // Takes the stroke back with no mark at all (a finger that turned into a gesture).

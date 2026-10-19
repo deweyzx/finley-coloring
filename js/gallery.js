@@ -1,8 +1,9 @@
 // gallery.js - the library screens: all categories -> one category -> one sub-category.
 // They all use the same grid of cards; only the cards and the header change.
 
-import { categories, coverPage, problems } from "./library.js?v=202610182246";
-import { getThumbnailURL } from "./thumbnails.js?v=202610182246";
+import { categories, coverPage, problems } from "./library.js?v=202610182317";
+import { getThumbnailURL } from "./thumbnails.js?v=202610182317";
+import { getPreviewURL, getProgressTimes, previewsReady } from "./autosave.js?v=202610182317";
 
 const grid = document.getElementById("gallery-grid");
 const titleEl = document.getElementById("library-title");
@@ -24,6 +25,7 @@ export function showLibrary() {
     title: cat.name,
     detail: countText(cat.pageCount),
     cover: coverPage(cat),
+    pages: cat.subcategories.flatMap((sub) => sub.pages),
     href: `#/${cat.folder}`,
     stacked: true,
   })));
@@ -35,6 +37,7 @@ export function showCategory(cat) {
     title: sub.name,
     detail: countText(sub.pages.length),
     cover: coverPage(sub),
+    pages: sub.pages,
     href: `#/${cat.folder}/${sub.folder}`,
     stacked: true,
   })));
@@ -45,6 +48,7 @@ export function showSubcategory(sub) {
   renderCards(sub.pages.map((page) => ({
     title: page.title,
     cover: page,
+    pages: [page],
     href: `#/page/${encodeURIComponent(page.id)}`,
   })));
 }
@@ -66,8 +70,22 @@ function countText(n) {
 // Watches which cards are on (or near) the screen, so thumbnails are only
 // loaded for cards she can actually see. Scrolling loads more as needed.
 let observer = null;
+let renderCount = 0;
 
-function renderCards(cards) {
+// Every card shows her coloring if she has colored it: a page card shows that page; a
+// category or sub-category card shows the page in it she colored most recently. Pages she
+// hasn't touched show the blank page.
+async function renderCards(cards) {
+  const thisRender = ++renderCount;
+  await previewsReady();
+  const times = await getProgressTimes();
+  if (thisRender !== renderCount) return; // she has already moved to another screen
+  for (const card of cards) {
+    const colored = (card.pages || []).filter((p) => times.has(p.id));
+    colored.sort((a, b) => times.get(b.id) - times.get(a.id));
+    card.colored = colored[0] || null;
+  }
+
   if (observer) observer.disconnect();
   observer = new IntersectionObserver(onCardsVisible, { root: grid, rootMargin: "400px 0px" });
 
@@ -85,6 +103,10 @@ function renderCards(cards) {
   for (const card of cards) {
     const el = makeCard(card);
     grid.append(el);
+    if (card.colored) {
+      showColoredPreview(el, card);
+      continue;
+    }
     if (!card.cover) continue;
     if (card.cover.thumb) {
       // A ready-made thumbnail file: the browser loads it when the card scrolls near the screen.
@@ -97,6 +119,21 @@ function renderCards(cards) {
       observer.observe(el);
     }
   }
+}
+
+// Shows her colored version on a card (falls back to the blank page if it can't be read).
+function showColoredPreview(el, card) {
+  const img = el.querySelector("img");
+  img.onload = () => img.classList.add("loaded");
+  getPreviewURL(card.colored.id).then((url) => {
+    if (url) {
+      img.src = url;
+    } else if (card.cover && card.cover.thumb) {
+      img.src = card.cover.thumb;
+    } else {
+      observer.observe(el);
+    }
+  });
 }
 
 function makeCard({ title, detail, cover, href, stacked }) {

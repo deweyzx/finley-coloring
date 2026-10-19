@@ -11,7 +11,9 @@ table, and any decisions that changed.
 - **Done and committed:** steps 1–6, including gesture tuning for Finley. Everything works on her
   iPad: one-finger coloring, 2-finger tap undo, 3-finger tap redo, pinch zoom, two-finger drag,
   and no interference from her hand resting on the screen while using the Pencil.
-- **In progress:** step 7, auto-save + progress in the library.
+- **Done and committed:** step 7, auto-save + progress in the library (passed Owen's PC test),
+  plus the "Start over" button. **Waiting:** iPad check of both.
+- **Next:** step 8, the full color picker.
 
 ## How to work with Owen
 
@@ -52,8 +54,8 @@ table, and any decisions that changed.
 | 4 | Brush engine: pencil, marker, eraser; size + opacity sliders, live preview; pressure + tilt; line-lock | ✅ |
 | 5 | Undo / redo (big back/forward buttons) | ✅ |
 | 6 | Pinch-zoom, two-finger pan, palm rejection; 2-finger tap undo, 3-finger tap redo | ✅ |
-| 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails | in progress |
-| 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | |
+| 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails; Start over | ✅ committed, iPad check pending |
+| 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | next |
 | 9 | Export the finished picture to Photos | |
 | 10 | Brush collection: colored pencil, crayon, watercolor, airbrush, glitter/sparkle | |
 | 11 | Installable + offline (manifest, service worker, icons) | |
@@ -61,8 +63,6 @@ table, and any decisions that changed.
 
 ### Notes for future steps
 
-- **Step 7:** IndexedDB already has an `artwork` store (unused) in `js/storage.js`. Save per page
-  id. Library cards should then show her colored version instead of the blank thumbnail.
 - **Step 8:** Pencil-friendly hue ring + saturation/brightness square, recently used colors,
   saved palettes she can name and switch between (store in IndexedDB; adding a store means
   bumping `DB_VERSION`). `js/palette.js` holds the 24 default swatches.
@@ -220,6 +220,41 @@ table, and any decisions that changed.
 - **Touch log:** off by default; open the app with `?debug` to turn it on, "Hide log" to turn it
   off (remembered per device).
 
+## Auto-save and progress (step 7)
+
+- `js/autosave.js`: `saveArtwork(id, colorCanvas, lineCanvas, memory)` stores, in one IndexedDB
+  transaction: `artwork[id] = { color: PNG Blob, memory: gzip Blob (CompressionStream; null if
+  unavailable), updated }`, `progress[id] = { updated }`, `progressThumbs[id] = JPEG preview`
+  (420×560 composite of color + lines). All three snapshots are taken synchronously at call time
+  (`toBlob` snapshots the canvas; memory is `.slice()`d) so leaving the page can't save the wrong
+  picture. Measured on the daffodil: PNG 148 KB, memory 48 KB (from 22 MB), preview 103 KB.
+- `js/editor.js`: `markChanged()` after every stroke / fill / undo / redo → `saveNow()` after
+  `SETTINGS.autosaveDelayMs` (1500) of quiet; never mid-stroke; immediately on leaving the page
+  (`closeEditor`), on `visibilitychange` → hidden, and on `pagehide`. `openEditor` waits for any
+  in-flight save (`lastSave`), then `loadArtwork()` restores colors + memory before showing the
+  page. Undo history is not saved (starts empty on each open).
+- **Database version 2** (`js/storage.js`): stores thumbnails, artwork, progress, progressThumbs.
+  Opening gives up after 4 s (an old tab with the old app version blocks the upgrade - this
+  happened in testing); connections close on `versionchange` so new versions never get stuck
+  again. **If her saved coloring can't be read, the page is NOT shown and NOT saved** (message:
+  close other tabs and reopen), so a blank page can never overwrite her real work.
+- `js/gallery.js`: before drawing cards, waits for the newest preview (`previewsReady()`) and
+  reads `progress`; a page card shows her colored preview, a category/sub-category card shows its
+  most recently colored page; untouched pages show the blank thumbnail.
+- Tested: save + library previews at all three levels, exact pixel restore after a full reload,
+  build-up memory restored (build-up off over a restored stroke stays even), stroke kept when
+  leaving immediately and reopening, old-version-tab blocking shows the message.
+- **Safari storage rule:** Safari may delete a website's stored data after 7 days without a visit,
+  but not for Home Screen web apps. `navigator.storage.persist()` is requested on first save.
+  Real protection: step 11 (install to Home Screen) and step 9 (export). Until then: open weekly.
+- **Start over** (button in the coloring screen's top bar, left of undo/redo): asks first in a
+  dialog ("Keep coloring" = highlighted default, "Erase my coloring" = red outline; tapping outside
+  cancels). Erasing saves a full-page undo step (so Undo brings it back until she leaves the page),
+  whites the color layer, clears the paint memory, cancels the pending save, and (after any
+  in-flight save) deletes the page's artwork/progress/progressThumbs (`forgetArtwork`), so the
+  page is blank in the library too. Undo afterwards re-saves normally. Tested all paths.
+- Not built (could add later): saving undo history between visits.
+
 ## Key decisions
 
 - **Device:** iPad Pro 11" (screen 1668 × 2388), Apple Pencil 2, Safari.
@@ -315,6 +350,7 @@ table, and any decisions that changed.
 | `js/stroke-engine.js` | Draws brush strokes (dabs, coverage, live layer, commit) |
 | `js/slider.js` | Pencil-friendly slider |
 | `js/history.js` | Undo and redo |
+| `js/autosave.js` | Saves/loads/forgets her coloring per page; colored previews for the library |
 | `js/viewport.js` | Zoom and pan (where the page sits on screen) |
 | `js/touch-input.js` | What each Pencil / finger / mouse action means; palm rejection; gestures |
 | `js/touch-debug.js` | Temporary on-screen touch log (`?debug` link or 5 title taps; "Hide log") |

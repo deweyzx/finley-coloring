@@ -182,3 +182,20 @@ On the PC: Ctrl+Z to undo, Ctrl+Y to redo.
 
 To change how a brush feels, or to add a new one, edit `js/brushes.js`. Each brush is one short
 block of settings, and the comments at the top explain each setting.
+
+## Saving
+
+Her coloring saves automatically: a moment after each change, when she leaves a page, and when
+she switches away from or closes Safari. Opening a page brings her coloring back, and the library
+shows her colored version of each page (a category shows the page she colored most recently).
+
+**Important:** Safari may delete a website's saved data if it isn't opened for 7 days. Apps added
+to the Home Screen are safe from this (step 11), and finished pictures can be exported (step 9).
+Until then, opening the app at least once a week keeps her work.
+
+**Start over** (top of the coloring screen) erases all the coloring on a page, after asking
+"Start this page over?". If she changes her mind right away, Undo brings it all back, as long as
+she hasn't left the page.
+
+If a page ever says its saved coloring couldn't be opened, close any other Safari tabs with the
+coloring book and open the page again. Nothing is lost.

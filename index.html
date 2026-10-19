@@ -5,9 +5,9 @@
   <!-- "user-scalable=no" stops Safari's own pinch-zoom; the app will do its own zooming on the picture. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Finley's Coloring Book</title>
-  <link rel="stylesheet" href="css/styles.css?v=202610182246">
+  <link rel="stylesheet" href="css/styles.css?v=202610182317">
   <!-- type="module" lets our JavaScript files import from each other. -->
-  <script type="module" src="js/app.js?v=202610182246"></script>
+  <script type="module" src="js/app.js?v=202610182317"></script>
 </head>
 <body>
 
@@ -37,6 +37,8 @@
         </svg>
       </a>
       <h1 id="page-title"></h1>
+      <!-- Start over: erases this page's coloring (asks first). -->
+      <button id="start-over" class="text-button" type="button">Start over</button>
       <!-- Undo ("back") and redo ("forward"). -->
       <div class="history-buttons">
         <button id="undo-button" class="icon-button" type="button" aria-label="Undo" disabled>
@@ -130,6 +132,18 @@
         <!-- Color swatches (filled in by palette.js) -->
         <div id="palette" class="palette"></div>
       </aside>
+    </div>
+
+    <!-- "Start over?" confirmation (hidden until she taps Start over). -->
+    <div id="start-over-dialog" class="dialog-backdrop" hidden>
+      <div class="dialog" role="alertdialog" aria-labelledby="start-over-title" aria-describedby="start-over-text">
+        <h2 id="start-over-title">Start this page over?</h2>
+        <p id="start-over-text">All your coloring on this page will be erased. You can still press Undo right after, until you leave the page.</p>
+        <div class="dialog-buttons">
+          <button id="start-over-cancel" class="dialog-button" type="button">Keep coloring</button>
+          <button id="start-over-confirm" class="dialog-button danger" type="button">Erase my coloring</button>
+        </div>
+      </div>
     </div>
   </section>
 

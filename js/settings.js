@@ -27,6 +27,12 @@ export const SETTINGS = {
   // SCREEN pixels away (about a fingertip), instead of doing nothing.
   tapReach: 10,
 
+  // ---------- Auto-save (step 7) ----------
+
+  // After a change, the page is saved once she has paused for this many milliseconds.
+  // (It's also saved right away when she leaves the page or switches away from the app.)
+  autosaveDelayMs: 1500,
+
   // ---------- Finger gestures (step 6) ----------
   // Turn on the touch debug overlay (tap the page title 5 times) to see real numbers
   // for her touches before changing these.
