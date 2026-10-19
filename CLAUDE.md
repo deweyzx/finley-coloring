@@ -11,8 +11,8 @@ table, and any decisions that changed.
 - **Done and committed:** steps 1–6, including gesture tuning for Finley. Everything works on her
   iPad: one-finger coloring, 2-finger tap undo, 3-finger tap redo, pinch zoom, two-finger drag,
   and no interference from her hand resting on the screen while using the Pencil.
-- **Done and committed:** step 7, auto-save + progress in the library (passed Owen's PC test),
-  plus the "Start over" button. **Waiting:** iPad check of both.
+- **Done and committed:** step 7, auto-save + progress in the library, plus the "Start over"
+  button - both checked on the iPad and working.
 - **Next:** step 8, the full color picker.
 
 ## How to work with Owen
@@ -54,7 +54,7 @@ table, and any decisions that changed.
 | 4 | Brush engine: pencil, marker, eraser; size + opacity sliders, live preview; pressure + tilt; line-lock | ✅ |
 | 5 | Undo / redo (big back/forward buttons) | ✅ |
 | 6 | Pinch-zoom, two-finger pan, palm rejection; 2-finger tap undo, 3-finger tap redo | ✅ |
-| 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails; Start over | ✅ committed, iPad check pending |
+| 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails; Start over | ✅ |
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | next |
 | 9 | Export the finished picture to Photos | |
 | 10 | Brush collection: colored pencil, crayon, watercolor, airbrush, glitter/sparkle | |
