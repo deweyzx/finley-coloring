@@ -70,8 +70,15 @@
         <p id="canvas-message" class="canvas-message"></p>
         <!-- Flashes "Undo" / "Redo" after a two- or three-finger tap. -->
         <div id="toast" class="toast" aria-live="polite"></div>
-        <!-- Temporary touch debug log (tap the page title 5 times to show/hide). -->
-        <pre id="touch-debug" class="touch-debug" hidden></pre>
+        <!-- Temporary touch debug log. Show it by opening the app with ?debug at the end of the
+             link, or by tapping the page title 5 times; hide it with its "Hide log" button. -->
+        <div id="touch-debug" class="touch-debug" hidden>
+          <div class="touch-debug-head">
+            <span>Touch log (newest at top)</span>
+            <button id="touch-debug-hide" class="touch-debug-hide" type="button">Hide log</button>
+          </div>
+          <pre id="touch-debug-lines"></pre>
+        </div>
       </div>
 
       <aside class="tool-panel">

@@ -38,7 +38,12 @@
   --toggle-height: 40px;    /* the on/off switches */
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+  /* Taps are just taps: no double-tap-to-zoom by Safari (the app has its own zoom), and no
+     tap delay. The drawing area overrides this with "none" (the app handles every touch). */
+  touch-action: manipulation;
+}
 
 html, body {
   margin: 0;
@@ -377,14 +382,35 @@ a.page-card { text-decoration: none; }
   left: 10px;
   bottom: 10px;
   max-width: min(620px, calc(100% - 20px));
-  margin: 0;
-  padding: 10px 12px;
+  padding: 8px 12px 10px;
   border-radius: 10px;
   background: rgba(20, 20, 30, 0.82);
   color: #e8f6ff;
+  pointer-events: none; /* the log never blocks touches... */
+}
+.touch-debug-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+.touch-debug-hide {
+  pointer-events: auto; /* ...except its own "Hide log" button */
+  padding: 8px 14px;
+  border: none;
+  border-radius: 999px;
+  background: #e8f6ff;
+  color: #14141e;
+  font: inherit;
+  cursor: pointer;
+}
+.touch-debug pre {
+  margin: 0;
   font: 13px/1.4 ui-monospace, Menlo, Consolas, monospace;
   white-space: pre-wrap;
-  pointer-events: none; /* never blocks touches */
 }
 
 /* ---------- Undo / redo (top right of the coloring screen) ---------- */

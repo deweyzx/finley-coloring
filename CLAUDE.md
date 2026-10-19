@@ -40,6 +40,9 @@ table, and any decisions that changed.
   Never hard-code a color or font elsewhere; the storybook restyle (step 12) depends on this.
 - **Tweakable behavior numbers** live in `js/settings.js`, with plain-English comments.
 - Comments in code are written for a beginner: say what and why in plain words.
+- Every element has `touch-action: manipulation` (no Safari double-tap zoom, no tap delay); the
+  drawing area and slider tracks use `touch-action: none` because the app handles those touches.
+  Safari ignores `user-scalable=no` for double-tap zoom, so don't rely on the viewport tag.
 - Paths are relative (the site lives under `/finley-coloring/` on GitHub Pages).
 
 ## Step plan
@@ -190,8 +193,11 @@ table, and any decisions that changed.
     mark). Gestures work either way. With it on, a resting palm can draw (expected trade-off).
   - Gesture thresholds live in `js/settings.js`: `tapGestureMaxMs` 350, `tapGestureMoveLimit` 12,
     `palmSize` 60, `secondFingerMs` 250.
-- **Touch debug overlay** (temporary, `js/touch-debug.js`, `#touch-debug`): toggled by tapping the
-  coloring screen's page title 5 times (remembered in `localStorage` "touch-debug"). Logs each
+- **Touch debug overlay** (temporary, `js/touch-debug.js`, `#touch-debug`): turned on by opening
+  **https://deweyzx.github.io/finley-coloring/?debug** (the `?debug` is then removed from the
+  address so a reload doesn't re-enable it) or by tapping the coloring screen's page title 5 times;
+  turned off by its **"Hide log"** button (which stops its own pointer events so it can't draw or
+  count as a gesture) or 5 title taps. Remembered in `localStorage` "touch-debug". Logs each
   finger ignored and why, Pencil downs, pointercancel, and per gesture: finger count, landing
   offsets (ms), time until all lifted, max movement per finger, reported touch size, and the
   decision (UNDO / REDO / zoom/pan / "nothing: <reason>"). `pointer-events: none`.

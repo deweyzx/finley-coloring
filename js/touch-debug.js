@@ -1,12 +1,18 @@
 // touch-debug.js - a TEMPORARY on-screen log of touches and gestures, for tuning the
 // gesture settings to how Finley actually touches the screen.
 //
-// Turn it on or off by tapping the page title (on the coloring screen) 5 times quickly.
+// Turn it ON by opening the app with ?debug at the end of the link
+// (https://deweyzx.github.io/finley-coloring/?debug), or by tapping the page title on the
+// coloring screen 5 times quickly. Turn it OFF with the log's "Hide log" button (or 5 taps).
+// The choice is remembered on the device.
+//
 // It shows, for each gesture: how many fingers, when each finger landed (milliseconds after
 // the first), how long until all fingers lifted, how far each moved, the touch size the
 // iPad reported, and what the app decided - or why it did nothing.
 
 const box = document.getElementById("touch-debug");
+const linesEl = document.getElementById("touch-debug-lines");
+const hideButton = document.getElementById("touch-debug-hide");
 const lines = [];
 let on = false;
 try {
@@ -14,6 +20,25 @@ try {
 } catch {
   on = false;
 }
+
+// ?debug in the link turns it on. Then the ?debug is removed from the address bar, so
+// reloading after "Hide log" doesn't turn it straight back on.
+const params = new URLSearchParams(location.search);
+if (params.has("debug")) {
+  params.delete("debug");
+  const rest = params.toString();
+  history.replaceState(null, "", location.pathname + (rest ? "?" + rest : "") + location.hash);
+  if (!on) toggleDebug();
+}
+
+// The "Hide log" button sits on top of the drawing area: keep its touches to itself so
+// tapping it can never draw, fill or count as a gesture.
+for (const type of ["pointerdown", "pointermove", "pointerup", "pointercancel"]) {
+  hideButton.addEventListener(type, (e) => e.stopPropagation());
+}
+hideButton.addEventListener("click", () => {
+  if (on) toggleDebug();
+});
 show();
 
 export function debugOn() {
@@ -28,7 +53,7 @@ export function toggleDebug() {
     // just for this visit
   }
   lines.length = 0;
-  if (on) debugLog("touch debug ON (tap the title 5 times to turn off)");
+  if (on) debugLog("touch log ON - try the gestures; newest entries appear at the top");
   show();
 }
 
@@ -43,5 +68,5 @@ export function debugLog(text) {
 
 function show() {
   box.hidden = !on;
-  box.textContent = lines.join("\n");
+  linesEl.textContent = lines.join("\n");
 }

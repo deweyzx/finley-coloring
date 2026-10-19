@@ -173,9 +173,10 @@ On the PC: Ctrl+Z to undo, Ctrl+Y to redo.
 - **Draw with finger** (switch under the tools, off by default): turn it on to color with a
   finger too. One finger draws and taps to fill; two- and three-finger gestures still work.
   With it on, a hand resting on the screen can draw, so turn it off when using the Pencil.
-- **Touch debug log (temporary):** tap the page title on the coloring screen 5 times to show a
-  log of every touch: how many fingers, their timing, movement and size, and what the app
-  decided. Tap the title 5 times again to hide it. The gesture limits are in `js/settings.js`.
+- **Touch debug log (temporary):** open **https://deweyzx.github.io/finley-coloring/?debug**
+  (or tap the page title on the coloring screen 5 times) to show a log of every touch: how many
+  fingers, their timing, movement and size, and what the app decided. The log's **Hide log**
+  button turns it off. The gesture limits are in `js/settings.js`.
 - **On the PC:** the mouse wheel zooms, dragging with the middle mouse button (or holding the
   space bar and dragging) moves around, and Ctrl+0 shows the whole page again.
 
