@@ -15,6 +15,7 @@
   --warning-ink: #8a2f1c;
   --danger: #c0392b;        /* "Erase my coloring" */
   --backdrop: rgba(40, 32, 26, 0.45); /* dims the screen behind a question */
+  --rainbow: conic-gradient(#ff4d4d, #ffb703, #ffe066, #57cc99, #3a86ff, #7b2cbf, #f7a1c4, #ff4d4d); /* the "more colors" ring */
 
   /* Shadows */
   --shadow: 0 2px 10px rgba(60, 45, 30, 0.10);
@@ -32,12 +33,13 @@
   --radius: 18px;
   --button-size: 52px;      /* big enough for a finger or Pencil */
   --swatch-size: 44px;      /* color circles */
-  --panel-width: 262px;     /* tool panel when the iPad is sideways */
+  --panel-width: 304px;     /* tool panel when the iPad is sideways (fits 5 swatches across) */
   --preview-width: 128px;   /* brush preview (upright iPad) */
   --preview-height: 76px;
   --slider-height: 40px;    /* touch area of a slider */
   --slider-thumb: 30px;     /* the round knob */
   --toggle-height: 40px;    /* the on/off switches */
+  --wheel-size: min(340px, 100%); /* the color picker's hue ring */
 }
 
 * {
@@ -610,13 +612,243 @@ a.page-card { text-decoration: none; }
   box-shadow: 0 0 0 3px var(--accent), var(--shadow);
 }
 
+/* ---------- The "More colors" button and recent colors ---------- */
+.more-colors {
+  grid-row: span 2;            /* upright: a tall button at the start of the two swatch rows */
+  width: var(--swatch-size);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  border-radius: 22px;
+  background: var(--surface);
+  color: var(--muted);
+  box-shadow: var(--shadow);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.more-colors:active { transform: scale(0.96); }
+.more-colors-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  /* a rainbow ring around the color she's painting with right now */
+  background: radial-gradient(circle, var(--current, var(--accent)) 0 46%, transparent 48%), var(--rainbow);
+  box-shadow: var(--shadow);
+}
+
+.recent-colors {
+  display: flex;
+  gap: 10px;
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.recent-colors::-webkit-scrollbar { display: none; }
+.recent-colors .swatch { flex: none; }
+
+/* ---------- The color picker window ---------- */
+.dialog-backdrop.picker-backdrop { touch-action: manipulation; }
+.dialog-top { z-index: 20; }
+
+.dialog.picker {
+  width: min(700px, 100%);
+  max-height: calc(100vh - 40px);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.picker-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+.wheel {
+  position: relative;
+  width: var(--wheel-size);
+  aspect-ratio: 1;
+  flex: none;
+  touch-action: none;
+  cursor: crosshair;
+}
+.wheel-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.wheel-square {
+  position: absolute;
+  left: 26.5%;   /* the square sits in the middle: from 0.5 - 0.235 */
+  top: 26.5%;
+  width: 47%;
+  height: 47%;
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px var(--hairline);
+}
+.wheel-handle {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  border: 4px solid var(--surface);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), var(--shadow);
+  pointer-events: none;
+}
+.picker-side {
+  flex: 1 1 170px;
+  min-width: 170px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.compare {
+  width: 100%;
+  max-width: 230px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+}
+.compare-swatch {
+  height: 88px;
+  padding: 0;
+  border: none;
+  border-radius: 16px;
+  box-shadow: inset 0 0 0 1px var(--hairline), var(--shadow);
+}
+button.compare-swatch { cursor: pointer; }
+.compare-label {
+  text-align: center;
+  font-size: var(--text-small);
+  color: var(--muted);
+}
+.hex-readout {
+  font: 600 var(--text-normal) ui-monospace, Menlo, Consolas, monospace;
+  letter-spacing: 0.5px;
+}
+.dialog .picker-note {
+  min-height: 1.3em;
+  margin: 0;
+  text-align: center;
+  font-size: var(--text-small);
+  color: var(--accent);
+}
+.picker-section h3 {
+  margin: 0 0 8px;
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--muted);
+}
+.picker-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 4px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.chip {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 2px solid var(--hairline);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-normal);
+  cursor: pointer;
+}
+.chip.selected {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--surface);
+}
+.chip-new {
+  border-style: dashed;
+  color: var(--muted);
+}
+.dialog .picker-hint {
+  margin: 10px 0 0;
+  font-size: var(--text-small);
+}
+.picker-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+.dialog-button.secondary {
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 500;
+  box-shadow: inset 0 0 0 2px var(--hairline);
+}
+.dialog-button.secondary.danger {
+  color: var(--danger);
+  box-shadow: inset 0 0 0 2px var(--danger);
+}
+.dialog-button.secondary.on {
+  background: var(--accent);
+  color: var(--surface);
+  box-shadow: none;
+}
+/* "Remove colors" mode: each swatch shows a little x. */
+.picker-swatches.editing .swatch { position: relative; }
+.picker-swatches.editing .swatch::after {
+  content: "×";
+  position: absolute;
+  right: -4px;
+  top: -6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--danger);
+  color: var(--surface);
+  font-size: 17px;
+  line-height: 21px;
+  text-align: center;
+}
+.dialog-input {
+  width: 100%;
+  height: var(--button-size);
+  margin-bottom: 20px;
+  padding: 0 14px;
+  border: 2px solid var(--hairline);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-size: 17px; /* 16px or more stops Safari zooming in when she taps the box */
+  -webkit-user-select: text;
+  user-select: text;
+}
+.dialog-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 /* Sideways iPad (or a wide window): panel on the right, everything stacked. */
 @media (orientation: landscape) {
   .workspace { flex-direction: row; }
   .tool-panel {
     width: calc(var(--panel-width) + env(safe-area-inset-right));
-    gap: 14px;
-    padding: 16px calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) 16px;
+    gap: 10px;
+    padding: 12px calc(16px + env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) 16px;
     border-top: none;
     border-left: 1px solid var(--hairline);
     overflow-y: auto;
@@ -624,7 +856,7 @@ a.page-card { text-decoration: none; }
   .panel-top {
     flex-direction: column;
     align-items: stretch;
-    gap: 14px;
+    gap: 10px;
   }
   .tools { justify-content: space-between; }
   .brush-controls {
@@ -641,9 +873,58 @@ a.page-card { text-decoration: none; }
   .palette {
     grid-auto-flow: row;
     grid-template-rows: none;
-    grid-template-columns: repeat(4, var(--swatch-size));
+    grid-template-columns: repeat(5, var(--swatch-size));
     grid-auto-rows: var(--swatch-size);
     justify-content: space-between;
     overflow: visible;
   }
+  /* "More colors" becomes a full-width button above the swatches. */
+  .more-colors {
+    grid-row: auto;
+    grid-column: 1 / -1;
+    width: 100%;
+    height: var(--button-size);
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 14px;
+    border-radius: 16px;
+    color: var(--ink);
+    font-size: var(--text-normal);
+  }
+  .more-colors-label::after { content: " colors"; }
+  .recent-colors {
+    display: grid;
+    grid-template-columns: repeat(5, var(--swatch-size));
+    grid-auto-rows: var(--swatch-size);
+    justify-content: space-between;
+    overflow: visible;
+  }
+  .recent-colors .swatch:nth-child(n + 6) { display: none; } /* one row of 5 when sideways */
+}
+
+/* The color picker when the iPad is sideways: the wheel on the left, colors and palettes on
+   the right, so everything fits without scrolling. */
+@media (orientation: landscape) and (min-width: 880px) {
+  .dialog.picker {
+    --wheel-size: 340px; /* (a percentage would be measured against a column that sizes itself) */
+    width: min(980px, 100%);
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto 1fr auto;
+    column-gap: 32px;
+    row-gap: 16px;
+    align-content: start;
+  }
+  .picker-main {
+    grid-column: 1;
+    grid-row: 1 / span 3;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 16px;
+  }
+  #picker-recent { grid-column: 2; grid-row: 1; }
+  .picker-section:not(#picker-recent) { grid-column: 2; grid-row: 2; }
+  .dialog.picker > .dialog-buttons { grid-column: 2; grid-row: 3; align-self: end; }
 }

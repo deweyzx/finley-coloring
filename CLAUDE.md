@@ -13,7 +13,10 @@ table, and any decisions that changed.
   and no interference from her hand resting on the screen while using the Pencil.
 - **Done and committed:** step 7, auto-save + progress in the library, plus the "Start over"
   button - both checked on the iPad and working.
-- **Next:** step 8, the full color picker.
+- **Done and committed:** step 8, the full color picker (passed Owen's PC test).
+  **Waiting:** iPad check - especially dragging the ring and square with the Pencil and with
+  Finley's flat finger pad.
+- **Next:** step 9, export to Photos.
 
 ## How to work with Owen
 
@@ -55,17 +58,14 @@ table, and any decisions that changed.
 | 5 | Undo / redo (big back/forward buttons) | ✅ |
 | 6 | Pinch-zoom, two-finger pan, palm rejection; 2-finger tap undo, 3-finger tap redo | ✅ |
 | 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails; Start over | ✅ |
-| 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | next |
-| 9 | Export the finished picture to Photos | |
+| 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | ✅ committed, iPad check pending |
+| 9 | Export the finished picture to Photos | next |
 | 10 | Brush collection: colored pencil, crayon, watercolor, airbrush, glitter/sparkle | |
 | 11 | Installable + offline (manifest, service worker, icons) | |
 | 12 | Magical storybook look, Themes, polish | |
 
 ### Notes for future steps
 
-- **Step 8:** Pencil-friendly hue ring + saturation/brightness square, recently used colors,
-  saved palettes she can name and switch between (store in IndexedDB; adding a store means
-  bumping `DB_VERSION`). `js/palette.js` holds the 24 default swatches.
 - **Step 11:** the service worker must cache pages and thumbnails; plan for updates (version the
   cache) since GitHub Pages also caches files for ~10 minutes.
 - **Step 12, fairy-tale UI + Themes:** the default theme is the magical storybook look: soft
@@ -255,6 +255,46 @@ table, and any decisions that changed.
   page is blank in the library too. Undo afterwards re-saves normally. Tested all paths.
 - Not built (could add later): saving undo history between visits.
 
+## Color picker, recent colors and palettes (step 8)
+
+- **Files:** `js/color.js` (hex / rgb / hsv conversions), `js/palette.js` (data + toolbar
+  swatches), `js/color-picker.js` (the picker window), `js/dialogs.js` (`askText` / `askConfirm`
+  question boxes in the app's style, appended to `body` with class `dialog-top`, z-index 20).
+- **Toolbar:** a "More" button (rainbow ring around the current color; tall pill spanning both
+  swatch rows when upright, a full-width "More colors" row when sideways) is the first item in
+  `#palette` and opens the picker. Below/above: a `#recent-colors` row (last 8 painted colors,
+  hidden until she has painted; one row of 5 when sideways) and the active palette's swatches.
+  `setupSwatches()` redraws only what changed (a color change just moves the highlight, so
+  dragging in the picker doesn't rebuild swatches).
+- **Picker window** (`#picker-dialog`): hue ring (red at top, clockwise) with a saturation x
+  brightness square inside (HSV; square corners: top-left white, top-right pure hue, bottom black).
+  Drag with Pencil, finger or mouse; the color applies live (`selectColor(hex, "picker")`). Ring is
+  drawn once per size with `ImageData`; the square is redrawn with two gradients when the hue
+  changes. Handles are DOM circles. Greys keep their hue so the ring handle doesn't jump. A
+  "Before" swatch (tap to go back) and "Now" swatch, the hex code, recent colors, palettes,
+  **Done** (also tapping outside / Escape closes). Upright: single column; sideways (landscape,
+  >= 880 px wide): wheel on the left, colors and palettes on the right, no scrolling needed.
+- **Recent colors:** `noteColorUsed(hex)` is called when a color stroke starts or a fill is tapped
+  (not when merely picked); newest first, max 10 kept, 8 shown in the toolbar.
+- **Palettes:** the built-in "Classic" (the original 24 swatches) can't be changed. She can make
+  palettes (max 20, max 48 colors each, names up to 24 chars): "Add this color" on Classic starts a
+  new palette (naming box, starts with the current color); on her own palette it adds the color
+  (says if it's already there); "Remove colors" mode shows an x on each swatch; Rename; Delete
+  (confirmation, "Keep it" is the default). Switching palettes changes the toolbar swatches.
+- **Storage: localStorage**, keys `recent-colors` and `palettes` ({active, list}), not IndexedDB as
+  first planned: it's a few hundred bytes, and avoiding another database version bump avoids the
+  upgrade-blocking problem seen in step 7. (Same Safari 7-day rule applies as for IndexedDB.)
+- The editor listens with `onPaletteChange(source)`: sources "palette" and "recent" only mean the
+  swatches changed; anything else is a color change (switches the eraser back to the last brush,
+  refreshes the brush preview).
+- **Sideways panel is now 304 px wide with 5 swatches per row** (was 262 / 4) so the new recent
+  row fits without scrolling on an iPad Pro 11" (766 px of panel height).
+- Tested with simulated pointer events: ring at 0/90/180/270 degrees, square corners and middle,
+  clamping when dragging outside the square, recents (order, only painted colors, persistence),
+  palette create/add/duplicate/remove/rename/switch/delete, persistence after reload, naming
+  box on top of the picker. Screenshot tool was flaky for the final visuals.
+- Not built: typing a hex code; lightness slider; reordering palette colors.
+
 ## Key decisions
 
 - **Device:** iPad Pro 11" (screen 1668 × 2388), Apple Pencil 2, Safari.
@@ -345,7 +385,10 @@ table, and any decisions that changed.
 | `js/editor.js` | Coloring screen: layers, tools, taps, strokes, sliders, preview, fitting the page |
 | `js/lineart.js` | Loads a page, makes white see-through, returns the darkness map |
 | `js/fill.js`, `js/fill-worker.js` | Tap-to-fill |
-| `js/palette.js` | Default swatches |
+| `js/palette.js` | Current color, recent colors, palettes (localStorage); toolbar swatches |
+| `js/color.js` | Color conversions (hex / rgb / hsv) |
+| `js/color-picker.js` | The full color picker window (hue ring, shade square, palettes) |
+| `js/dialogs.js` | Small question boxes: ask for a name, ask "are you sure?" |
 | `js/brushes.js` | Brush definitions, saved per-brush settings, paper grain |
 | `js/stroke-engine.js` | Draws brush strokes (dabs, coverage, live layer, commit) |
 | `js/slider.js` | Pencil-friendly slider |

@@ -2,18 +2,19 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610182317";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610182317";
-import { renderPalette, currentColor, toRGB } from "./palette.js?v=202610182317";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610182317";
-import { StrokeEngine } from "./stroke-engine.js?v=202610182317";
-import { createSlider } from "./slider.js?v=202610182317";
-import { History } from "./history.js?v=202610182317";
-import { Viewport } from "./viewport.js?v=202610182317";
-import { setupInput } from "./touch-input.js?v=202610182317";
-import { toggleDebug } from "./touch-debug.js?v=202610182317";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610182317";
-import { SETTINGS } from "./settings.js?v=202610182317";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610191452";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610191452";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610191452";
+import { setupColorPicker } from "./color-picker.js?v=202610191452";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610191452";
+import { StrokeEngine } from "./stroke-engine.js?v=202610191452";
+import { createSlider } from "./slider.js?v=202610191452";
+import { History } from "./history.js?v=202610191452";
+import { Viewport } from "./viewport.js?v=202610191452";
+import { setupInput } from "./touch-input.js?v=202610191452";
+import { toggleDebug } from "./touch-debug.js?v=202610191452";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610191452";
+import { SETTINGS } from "./settings.js?v=202610191452";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -196,7 +197,16 @@ function selectTool(name) {
   drawPreview();
 }
 
-renderPalette(document.getElementById("palette"), () => {
+// The color swatches, recent colors, and the full color picker (ring + square + palettes).
+const moreColorsButton = document.getElementById("more-colors");
+setupSwatches({
+  strip: document.getElementById("palette"),
+  recentRow: document.getElementById("recent-colors"),
+  more: moreColorsButton,
+});
+setupColorPicker(moreColorsButton);
+onPaletteChange((source) => {
+  if (source === "palette" || source === "recent") return; // only the swatches changed
   // Picking a color while the eraser is selected switches back to the last brush.
   if (BRUSHES[currentTool]?.paint === "paper") selectTool(lastColorTool);
   drawPreview();
@@ -443,6 +453,7 @@ async function fillAt(point) {
   if (!fillReady) return;
   await fillReady;
   const color = toRGB(currentColor());
+  noteColorUsed(currentColor()); // remembered in "recent colors"
   // A tap that lands on a line fills the nearest open spot within about a fingertip.
   const reach = Math.min(SETTINGS.tapReach / view.scale, 60);
   const result = await findFillArea(point.x, point.y, reach);
@@ -462,6 +473,7 @@ let frameRequested = false;
 function startStroke(e) {
   const brush = BRUSHES[currentTool];
   const rgb = brush.paint === "paper" ? PAPER_RGB : toRGB(currentColor());
+  if (brush.paint === "color") noteColorUsed(currentColor()); // remembered in "recent colors"
   const first = readPoint(e);
   const s = { pointerId: e.pointerId, page: currentPage, waiting: false, pending: [], lifted: false };
   stroke = s;

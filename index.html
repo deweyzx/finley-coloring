@@ -5,9 +5,9 @@
   <!-- "user-scalable=no" stops Safari's own pinch-zoom; the app will do its own zooming on the picture. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Finley's Coloring Book</title>
-  <link rel="stylesheet" href="css/styles.css?v=202610182317">
+  <link rel="stylesheet" href="css/styles.css?v=202610191452">
   <!-- type="module" lets our JavaScript files import from each other. -->
-  <script type="module" src="js/app.js?v=202610182317"></script>
+  <script type="module" src="js/app.js?v=202610191452"></script>
 </head>
 <body>
 
@@ -129,9 +129,64 @@
             <div id="opacity-slider"></div>
           </div>
         </div>
-        <!-- Color swatches (filled in by palette.js) -->
-        <div id="palette" class="palette"></div>
+        <!-- Recently used colors (filled in by palette.js; hidden until she has painted) -->
+        <div id="recent-colors" class="recent-colors" aria-label="Recently used colors" hidden></div>
+        <!-- Color swatches of the active palette (filled in by palette.js). The first item is the
+             button that opens the full color picker. -->
+        <div id="palette" class="palette">
+          <button id="more-colors" class="more-colors" type="button" aria-label="More colors: open the color picker">
+            <span class="more-colors-dot"></span>
+            <span class="more-colors-label">More</span>
+          </button>
+        </div>
       </aside>
+    </div>
+
+    <!-- The full color picker (hidden until she taps the rainbow "More colors" button). -->
+    <div id="picker-dialog" class="dialog-backdrop picker-backdrop" hidden>
+      <div class="dialog picker" role="dialog" aria-label="Choose a color">
+        <div class="picker-main">
+          <!-- Hue ring with the shade square inside it. -->
+          <div id="wheel" class="wheel" aria-label="Color wheel">
+            <canvas id="wheel-ring" class="wheel-ring"></canvas>
+            <canvas id="wheel-square" class="wheel-square"></canvas>
+            <div id="ring-handle" class="wheel-handle"></div>
+            <div id="square-handle" class="wheel-handle"></div>
+          </div>
+          <div class="picker-side">
+            <div class="compare">
+              <button id="compare-before" class="compare-swatch" type="button" aria-label="Go back to the color from when you opened the picker"></button>
+              <div id="compare-now" class="compare-swatch" aria-label="The color you are picking"></div>
+              <span class="compare-label">Before</span>
+              <span class="compare-label">Now</span>
+            </div>
+            <div id="hex-readout" class="hex-readout"></div>
+            <p id="picker-note" class="picker-note" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <section id="picker-recent" class="picker-section" hidden>
+          <h3>Recent colors</h3>
+          <div class="picker-swatches"></div>
+        </section>
+
+        <section class="picker-section">
+          <h3>Palettes</h3>
+          <div id="palette-chips" class="chips"></div>
+          <div id="palette-swatches" class="picker-swatches"></div>
+          <p id="palette-hint" class="picker-hint" hidden></p>
+          <div class="picker-actions">
+            <button id="add-color" class="dialog-button secondary" type="button">Add this color</button>
+            <button id="edit-colors" class="dialog-button secondary" type="button" hidden>Remove colors</button>
+            <button id="rename-palette" class="dialog-button secondary" type="button" hidden>Rename</button>
+            <button id="delete-palette" class="dialog-button secondary danger" type="button" hidden>Delete palette</button>
+          </div>
+        </section>
+
+        <div class="dialog-buttons">
+          <button id="picker-done" class="dialog-button" type="button">Done</button>
+        </div>
+      </div>
     </div>
 
     <!-- "Start over?" confirmation (hidden until she taps Start over). -->

@@ -199,3 +199,18 @@ she hasn't left the page.
 
 If a page ever says its saved coloring couldn't be opened, close any other Safari tabs with the
 coloring book and open the page again. Nothing is lost.
+
+## Colors
+
+- The swatches in the tool panel are the **Classic** palette. Tap one to paint with it.
+- Tap **More** (the rainbow circle) to open the color picker: drag around the **ring** to choose a
+  color of the rainbow, then drag in the **square** to make it lighter, darker, brighter or
+  greyer. The color changes as you drag. Tap **Done** when you like it. "Before" shows the color
+  you started with (tap it to go back).
+- **Recent colors** (a row above the swatches) are the colors you actually painted with lately.
+- **Palettes** are your own sets of colors. In the picker, tap **Add this color** to start a
+  palette (it asks for a name), **+ New palette** to make another, and tap a palette's name to
+  switch to it. **Remove colors** lets you tap colors to delete them from a palette, and Rename
+  and Delete palette do what they say. The Classic palette can't be changed.
+- Palettes and recent colors are saved on this device (they follow the same Safari rule as
+  her coloring: open the app at least once a week until it's on the Home Screen).
