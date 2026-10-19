@@ -38,6 +38,12 @@ export const SETTINGS = {
   tapGestureMoveLimit: 12,
   // A touch the iPad reports as wider than this (screen pixels) is treated as a palm and ignored.
   palmSize: 60,
+  // One finger draws and taps to fill (true). Set to false for "Pencil only": then fingers
+  // only zoom, pan and do the two/three-finger taps.
+  fingersDraw: true,
+  // For this many milliseconds after the Pencil lifts, a new finger can't draw (it's probably
+  // her hand), but it can still be part of a two- or three-finger gesture.
+  afterPencilMs: 500,
   // When a finger is drawing and a second finger lands within this many milliseconds,
   // the first finger's stroke is taken back (it was the start of a gesture, not drawing).
   secondFingerMs: 250,

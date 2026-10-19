@@ -167,12 +167,11 @@ On the PC: Ctrl+Z to undo, Ctrl+Y to redo.
 
 - **On the iPad:** pinch with two fingers to zoom, drag with two fingers to move around. Pinch
   smaller than the page and it springs back to show the whole page.
-- **The Apple Pencil draws; fingers don't** (unless the **Draw with finger** switch is on).
-  Once the iPad has seen the Pencil, fingers only zoom, move and tap, so her hand can rest on the
-  screen while she colors. While the Pencil is touching the screen, other touches are ignored.
-- **Draw with finger** (switch under the tools, off by default): turn it on to color with a
-  finger too. One finger draws and taps to fill; two- and three-finger gestures still work.
-  With it on, a hand resting on the screen can draw, so turn it off when using the Pencil.
+- **The Apple Pencil and one finger both draw** (and tap to fill). Two fingers zoom and move.
+- **Palm rejection is automatic:** while the Pencil is touching the screen, and for half a second
+  after it lifts, fingers can't draw (they can still do the two/three-finger taps). A hand that
+  lands just before the Pencil leaves no mark, and palm-sized touches are always ignored.
+  To make it "Pencil only", set `fingersDraw: false` in `js/settings.js`.
 - **Touch debug log (temporary):** open **https://deweyzx.github.io/finley-coloring/?debug**
   (or tap the page title on the coloring screen 5 times) to show a log of every touch: how many
   fingers, their timing, movement and size, and what the app decided. The log's **Hide log**

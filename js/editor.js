@@ -90,9 +90,6 @@ function makeSwitch(id, storageKey, startOn) {
 }
 const lineLock = makeSwitch("line-lock", "line-lock", true);
 const buildUp = makeSwitch("build-up", "build-up", true);
-// "Draw with finger": off = only the Pencil draws (fingers zoom, pan and tap); on = one finger
-// draws and taps to fill too. Two- and three-finger gestures work either way.
-const fingerDraw = makeSwitch("finger-draw", "finger-draw", false);
 
 // Hidden: tapping the page title 5 times quickly shows/hides the touch debug log.
 let titleTaps = [];
@@ -472,7 +469,6 @@ function readPoint(e) {
 setupInput(area, view, {
   ready: () => !paper.hidden && !!engine,
   isBrush: () => !!tools[currentTool].brush,
-  fingerDraws: () => fingerDraw.on,
   strokeStart: (e) => {
     if (!stroke) startStroke(e);
   },

@@ -9,13 +9,14 @@ table, and any decisions that changed.
 ## Where we are
 
 - **Done and committed:** steps 1–6 (lighter pencil + eraser-edge fix included).
-- **In testing on the iPad (committed so Owen can test):** the **touch debug overlay** and the
-  **"Draw with finger"** switch. Finley finds pinch/pan and two/three-finger taps hard to trigger.
-  Owen will send screenshots of the overlay; then **loosen the gesture thresholds in
-  `js/settings.js` based on that real data** (keep: a tap never leaves a mark). Likely suspects,
-  confirmed possible in simulation: her touches reported wider than `palmSize` 60 (ignored as
-  palm), a resting hand counted as an extra finger (2-finger tap becomes "3 fingers, too slow"),
-  taps slower than 350 ms, wobble over 12 px. Then remove or hide the overlay for good.
+- **In testing on the iPad:** the touch debug log (open the link with `?debug`) and **fingers
+  drawing by default with automatic palm rejection** (replaced the "Draw with finger" switch).
+  Finley finds pinch/pan and two/three-finger taps hard to trigger. Owen will send log
+  screenshots; then **loosen the gesture thresholds in `js/settings.js` based on that real data**
+  (keep: a tap never leaves a mark). Suspects shown possible in simulation: her touches reported
+  wider than `palmSize` 60 (ignored as palm, which would also stop finger drawing), a resting hand
+  counted as an extra finger, taps slower than 350 ms, wobble over 12 px. Then remove or hide the
+  debug log for good.
 - **Not started (Owen said wait):** step 7, auto-save + progress thumbnails.
 
 ## How to work with Owen
@@ -173,26 +174,28 @@ table, and any decisions that changed.
   animation can't run) up to 4 screen px per page px. The middle of the drawing area always stays
   over the page, so it can't be lost.
 - `js/touch-input.js` decides what every pointer means:
-  - **Pencil** (`pointerType "pen"`) always draws / taps to fill. The first Pencil touch sets
-    `localStorage "pencil-seen"`; from then on **fingers never draw or fill** (only zoom/pan/taps).
-  - **Palm rejection:** while the Pencil is down, all touches are ignored; touches already on the
-    screen when the Pencil lands are ignored until lifted (and cancel any gesture); touches wider
-    than 60 px are treated as palms.
+  - **Pencil and one finger both draw / tap to fill** (`SETTINGS.fingersDraw` true; false =
+    Pencil-only, fingers just zoom/pan/tap). Owen asked for fingers to work without a switch.
+  - **Automatic palm rejection:** while the Pencil is down, all touches are ignored; touches
+    already on the screen when the Pencil lands are ignored until lifted, and a finger stroke in
+    progress is taken back with no mark (her palm landing just before the Pencil); for
+    `afterPencilMs` (500) after the Pencil lifts, a new finger can't draw but can still join a
+    gesture (so a quick two-finger-tap undo right after a stroke works); touches wider than
+    `palmSize` (60) are always ignored. Known trade-off: a resting hand with no Pencil nearby
+    can draw (palm-size filter permitting).
   - **Two fingers moving** = pinch-zoom + pan, measured from where the fingers first touched (the
     iPad reports each finger separately, so measuring "right now" at the start was lopsided and
     made a plain drag zoom a bit - fixed).
   - **Taps:** all fingers up within 350 ms, none moved more than 12 px → 2 fingers = undo,
     3 = redo, with a small "Undo"/"Redo" toast. Anything moving or longer is zoom/pan.
-  - **Finger mode** (device never saw a Pencil, e.g. PC touchscreen): one finger draws; a second
-    finger within 250 ms cancels that stroke with no mark (`engine.cancel()`), then it's a gesture.
+  - **Second finger:** when one finger is drawing and a second lands, the first finger's stroke is
+    taken back with no mark (`engine.cancel()`) if it started under `secondFingerMs` (250) ago or
+    the finger has moved under 10 px (resting, waiting for the second); then it's a gesture.
   - **PC:** mouse draws; wheel / trackpad pinch zooms at the pointer; middle-button drag or
     Space + drag pans; Ctrl+0 fits the page.
-  - **"Draw with finger" switch** (third switch; **off by default**; `localStorage` "finger-draw";
-    added at Finley's request): on = fingers draw and tap to fill even after the Pencil was
-    used (finger-mode rules: a second finger within `secondFingerMs` takes the stroke back with no
-    mark). Gestures work either way. With it on, a resting palm can draw (expected trade-off).
+  - (A "Draw with finger" switch existed briefly; removed in favor of the automatic rules above.)
   - Gesture thresholds live in `js/settings.js`: `tapGestureMaxMs` 350, `tapGestureMoveLimit` 12,
-    `palmSize` 60, `secondFingerMs` 250.
+    `palmSize` 60, `secondFingerMs` 250, `afterPencilMs` 500, `fingersDraw` true.
 - **Touch debug overlay** (temporary, `js/touch-debug.js`, `#touch-debug`): turned on by opening
   **https://deweyzx.github.io/finley-coloring/?debug** (the `?debug` is then removed from the
   address so a reload doesn't re-enable it) or by tapping the coloring screen's page title 5 times;
