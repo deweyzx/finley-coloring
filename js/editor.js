@@ -2,20 +2,20 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610192037";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610192037";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610192037";
-import { setupColorPicker } from "./color-picker.js?v=202610192037";
-import { setupSavePicture } from "./save-picture.js?v=202610192037";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610192037";
-import { StrokeEngine } from "./stroke-engine.js?v=202610192037";
-import { createSlider } from "./slider.js?v=202610192037";
-import { History } from "./history.js?v=202610192037";
-import { Viewport } from "./viewport.js?v=202610192037";
-import { setupInput } from "./touch-input.js?v=202610192037";
-import { toggleDebug, debugOn, debugLog } from "./touch-debug.js?v=202610192037";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610192037";
-import { SETTINGS } from "./settings.js?v=202610192037";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610201533";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610201533";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610201533";
+import { setupColorPicker } from "./color-picker.js?v=202610201533";
+import { setupSavePicture } from "./save-picture.js?v=202610201533";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610201533";
+import { StrokeEngine } from "./stroke-engine.js?v=202610201533";
+import { createSlider } from "./slider.js?v=202610201533";
+import { History } from "./history.js?v=202610201533";
+import { Viewport } from "./viewport.js?v=202610201533";
+import { setupInput } from "./touch-input.js?v=202610201533";
+import { toggleDebug, debugOn, debugLog } from "./touch-debug.js?v=202610201533";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610201533";
+import { SETTINGS } from "./settings.js?v=202610201533";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -452,6 +452,45 @@ export async function openEditor(page) {
   messageEl.textContent = "";
   paper.hidden = false;
   view.setPage(w, h);
+  setTimeout(warmUpBrushes, 300);
+}
+
+// The very first stroke with a brush used to be slow (the touch log showed 83% work for the
+// first airbrush stroke, 41% or less after): the browser only gets a piece of code ready to
+// run fast once it has been used. So a moment after a page opens, every brush draws a few
+// tiny practice strokes on a small hidden canvas. Takes a few hundredths of a second, once.
+let warmedUp = false;
+function warmUpBrushes() {
+  if (warmedUp) return;
+  warmedUp = true;
+  const size = 160;
+  const practice = new StrokeEngine(size, size);
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  const brushes = Object.values(BRUSHES);
+  // One brush at a time, with a pause in between, so it never holds up her drawing; it waits
+  // while she's in the middle of a stroke.
+  const next = () => {
+    if (!brushes.length) return;
+    if (stroke) {
+      setTimeout(next, 200);
+      return;
+    }
+    const brush = brushes.shift();
+    for (let round = 0; round < 2; round++) {
+      practice.begin(brush, { size: 24 + round * 30, opacity: 0.8 }, { r: 90, g: 60, b: 200 }, round === 0);
+      for (let k = 0; k <= 24; k++) {
+        const p = { x: 20 + k * 5, y: 80 + Math.sin(k / 4) * 30, pressure: 0.3 + k / 40, altitude: k % 2 ? 0.6 : 1.5, azimuth: 1 };
+        practice.addPoint(p);
+        if (k % 3 === 0) practice.renderAhead(ctx, [{ ...p, x: p.x + 6 }]);
+      }
+      if (brush.flow) practice.hold(2);
+      practice.commit(ctx, ctx, null);
+    }
+    setTimeout(next, 30);
+  };
+  next();
 }
 
 export function closeEditor() {
@@ -806,7 +845,16 @@ function drawStrokeNow() {
   const s = stroke;
   if (!s || s.waiting) return;
   const t0 = performance.now();
-  if (engine.tipRadius() * view.scale > SETTINGS.predictMaxBrushPx) {
+  const big = engine.tipRadius() * view.scale > SETTINGS.predictMaxBrushPx;
+  // A big brush with an expensive look (watercolor's rims, metallic shine, smooth hair's paint
+  // relief) is redrawn at most about 60 times a second instead of up to 120: half the work, and
+  // with a big brush the Pencil tip is inside the paint anyway. (The finished stroke is the same.)
+  const expensive = engine.brush.wash || (engine.brush.effect && engine.brush.effect.kind !== "glitter");
+  if (big && expensive && t0 - (s.drawnAt || 0) < 14) {
+    showStroke();
+    return;
+  }
+  if (big) {
     engine.render(strokeCtx); // a big brush on screen: no gap to hide (see settings.js)
     s.timing.bigBrush = true;
   } else {

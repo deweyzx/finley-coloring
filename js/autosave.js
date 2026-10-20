@@ -8,7 +8,7 @@
 //   updated - when it was saved
 // Plus a small colored preview (store "progressThumbs") and the save time (store "progress").
 
-import { dbGet, dbPutMany, dbDeleteMany, dbEntries } from "./storage.js?v=202610192037";
+import { dbGet, dbPutMany, dbDeleteMany, dbEntries } from "./storage.js?v=202610201533";
 
 const THUMB_W = 420; // same size as the ready-made library thumbnails
 const THUMB_H = 560;

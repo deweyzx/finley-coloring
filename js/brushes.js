@@ -31,14 +31,28 @@
 //                     brush sizes) until it reaches full size }
 //   bristles        - { strength: how visible the hair streaks are (0-1), width: one hair's
 //                     width as a share of the brush size }
-//   wash            - watercolor: { wobble: how much the edge wanders, uneven: patchiness,
+//   wash            - watercolor: { wobble: how much the edge wanders (cloud-like), uneven:
+//                     patches where pigment pools and thins, granulate: pigment settling into the
+//                     paper's tooth,
 //                     rimWidth: width of the darker rim (share of size), rimGain: how quickly
 //                     the rim darkens, middle: strength in the middle, rim: extra at the rim }
 //   scatter         - splatter: { count: droplets per dab [light, full pressure], reach: how
 //                     far they fly [light, full] in brush radii, spread: >1 keeps more near the
 //                     middle, drop: droplet size [smallest, biggest] as a share of brush size,
-//                     hardness: droplet edge }
+//                     hardness: droplet edge }. Bigger droplets are irregular: a stretched blob
+//                     with little satellite drops around it, and now and then a short tail.
 //   blend           - "multiply" = see-through glaze: colors mix like layered watercolor
+//   effect          - the paint's own look, worked into each pixel's color (so it's part of the
+//                     picture and shows in a saved picture too):
+//                     { kind: "glitter", base: how bright the base between the flakes is (a share
+//                       of the color's deep shade), sparkle: how bright the glints are (0-1) }
+//                     { kind: "metallic", shine: how wide the rounded highlight is (share of
+//                       size), bump: how strongly the stroke looks rounded, gloss: how small and
+//                       sharp the shiny highlight is, highlight: how bright it is (0-1),
+//                       sheen: polished light/dark bands (0-1), flake: fine metal grain (0-1),
+//                       mica: tiny bright specks (0-1), join: true = the same color already on the
+//                       page joins in as one surface, maxShine: the rounding reaches at most this
+//                       many pixels whatever the brush size (12 if left out) }
 
 export const BRUSHES = {
   pencil: {
@@ -128,10 +142,10 @@ export const BRUSHES = {
     icon: `<path d="M12 3.2 C9 7.8 6.3 11 6.3 14.6 a5.7 5.7 0 0 0 11.4 0 C17.7 11 15 7.8 12 3.2 Z" fill="currentColor" fill-opacity="0.25" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.2 14.8 a2.9 2.9 0 0 0 2.6 2.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`,
     sizeRange: [6, 160],
     defaults: { size: 50, opacity: 0.45 },
-    hardness: 0.75,
+    hardness: 0.65,
     spacing: 0.07,
     pressure: { size: [0.55, 1], opacity: [0.45, 1], curve: 0.9 },
-    wash: { wobble: 0.3, uneven: 0.3, rimWidth: 0.12, rimGain: 2.5, middle: 0.62, rim: 1.0 },
+    wash: { wobble: 0.6, uneven: 0.5, granulate: 0.08, rimWidth: 0.1, rimGain: 2.2, middle: 0.85, rim: 0.8 },
     blend: "multiply",
     tilt: { widen: 1.2, opacity: 0.8, grainFill: 1 },
     grain: null,
@@ -148,9 +162,45 @@ export const BRUSHES = {
     hardness: 0.8,
     spacing: 0.3,
     pressure: { size: [1, 1], opacity: [0.85, 1], curve: 1 },
-    scatter: { count: [1.2, 6], reach: [0.35, 1.25], spread: 0.8, drop: [0.012, 0.12], hardness: 0.75 },
+    scatter: { count: [1.2, 6], reach: [0.35, 1.25], spread: 0.8, drop: [0.008, 0.2], hardness: 0.94 },
     tilt: { widen: 0, opacity: 1, grainFill: 1 },
     grain: null,
+    paint: "color",
+  },
+
+  // ----- Step 10, batch 2: effect brushes -----
+
+  // Glitter: the color in tiny flakes, some lighter and some darker, with bright sparkle flecks
+  // and a few little star-shaped glints. Every stroke gets its own scatter of sparkles, so going
+  // over glitter again adds new ones.
+  glitter: {
+    name: "Glitter",
+    icon: `<path d="M12 3 L13.6 9.4 L20 11 L13.6 12.6 L12 19 L10.4 12.6 L4 11 L10.4 9.4 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M18.5 15.5 L19.2 17.8 L21.5 18.5 L19.2 19.2 L18.5 21.5 L17.8 19.2 L15.5 18.5 L17.8 17.8 Z" fill="currentColor"/><circle cx="5.5" cy="18.5" r="1.2" fill="currentColor"/><circle cx="19" cy="5" r="1" fill="currentColor"/>`,
+    sizeRange: [4, 150],
+    defaults: { size: 30, opacity: 0.9 },
+    hardness: 0.95,
+    spacing: 0.1,
+    pressure: { size: [0.6, 1], opacity: [0.55, 1], curve: 0.8 },
+    tilt: { widen: 1, opacity: 0.85, grainFill: 1 },
+    grain: null,
+    effect: { kind: "glitter", base: 0.8, sparkle: 1 },
+    paint: "color",
+  },
+
+  // Metallic ink: shiny like a metallic gel pen. Light comes from the top left, so each stroke
+  // gets a bright highlight on top and a darker edge below, and wide areas get soft polished
+  // bands and a fine metal grain.
+  metallic: {
+    name: "Metallic",
+    icon: `<path d="M5 19 C8 12 11 16 14 9 C15.5 5.5 18 4.5 20 5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><path d="M6.4 16.3 C8.6 12.6 10.6 14.6 12.8 9.6" fill="none" style="stroke: var(--surface)" stroke-width="1" stroke-linecap="round" opacity="0.9"/><path d="M19 13 L19.6 14.9 L21.5 15.5 L19.6 16.1 L19 18 L18.4 16.1 L16.5 15.5 L18.4 14.9 Z" fill="currentColor"/>`,
+    sizeRange: [3, 120],
+    defaults: { size: 20, opacity: 1 },
+    hardness: 0.8,
+    spacing: 0.08,
+    pressure: { size: [0.45, 1], opacity: [0.8, 1], curve: 0.8 },
+    tilt: { widen: 0.8, opacity: 0.95, grainFill: 1 },
+    grain: null,
+    effect: { kind: "metallic", shine: 0.3, bump: 0.8, gloss: 40, highlight: 0.9, sheen: 1, flake: 0.05, mica: 0.6, join: true },
     paint: "color",
   },
 };
@@ -260,6 +310,116 @@ function makeGrain(size, seed) {
   return out;
 }
 
+// ---------- Glitter texture ----------
+// Real-looking glitter: separate flat flakes (little 4- to 6-sided pieces, 3 to 16 pixels across,
+// mostly small), lying at different angles so each catches the light differently: most are the
+// paint's color, some darker, some much brighter, and a few blaze almost white with a sharp
+// star-shaped glint. Between the flakes a darker base shows. 512 x 512 and repeating; each stroke
+// uses it shifted to a random spot.
+//   GLITTER.shade[i]: 0 = the base between flakes, otherwise the flake's brightness x 100
+//                     (100 = the paint's color, 50 = half as bright, 200 = nearly white)
+//   GLITTER.pick[i]:  0-255, a random number per flake: with light pressure (or at the soft edge
+//                     of a stroke) only the flakes with low numbers appear, so the glitter is sparser
+//   GLITTER.spark[i]: 0-255, the sharp glints
+
+export const GLITTER_SIZE = 512;
+export const GLITTER = makeGlitter(GLITTER_SIZE, 23);
+
+function makeGlitter(size, seed) {
+  let state = seed;
+  const random = () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+  const shade = new Uint8Array(size * size);
+  const pick = new Uint8Array(size * size);
+  const spark = new Uint8Array(size * size);
+  const wrap = (v) => ((v % size) + size) % size;
+  const flakes = 9000;
+  for (let n = 0; n < flakes; n++) {
+    const cx = random() * size;
+    const cy = random() * size;
+    const r = 1.5 + 6.5 * Math.pow(random(), 2.2); // mostly small, a few big
+    // how it catches the light
+    const roll = random();
+    let bright;
+    if (roll < 0.2) bright = 0.5 + 0.3 * random(); // turned away: darker
+    else if (roll < 0.75) bright = 0.85 + 0.3 * random(); // the paint's color
+    else if (roll < 0.93) bright = 1.25 + 0.35 * random(); // catching the light
+    else bright = 1.75 + 0.25 * random(); // blazing
+    // a flat piece tilted a little: one side slightly brighter than the other
+    const ga = random() * Math.PI * 2;
+    const gx = Math.cos(ga) * 0.15 / r;
+    const gy = Math.sin(ga) * 0.15 / r;
+    const flakePick = 1 + Math.floor(random() * 254);
+    // its outline: 4 to 6 corners at slightly random angles and distances
+    const corners = 4 + Math.floor(random() * 3);
+    const turn = random() * Math.PI * 2;
+    const px = [];
+    const py = [];
+    for (let k = 0; k < corners; k++) {
+      const ang = turn + (k + (random() - 0.5) * 0.5) * (Math.PI * 2 / corners);
+      const rr = r * (0.75 + 0.4 * random());
+      px.push(Math.cos(ang) * rr);
+      py.push(Math.sin(ang) * rr);
+    }
+    const reach = Math.ceil(r * 1.2);
+    for (let oy = -reach; oy <= reach; oy++) {
+      for (let ox = -reach; ox <= reach; ox++) {
+        const x = ox + 0.5 - (cx % 1);
+        const y = oy + 0.5 - (cy % 1);
+        // inside the (convex) outline if on the inner side of every edge
+        let inside = true;
+        for (let k = 0; k < corners && inside; k++) {
+          const k2 = (k + 1) % corners;
+          if ((px[k2] - px[k]) * (y - py[k]) - (py[k2] - py[k]) * (x - px[k]) < 0) inside = false;
+        }
+        if (!inside) continue;
+        const i = wrap(Math.floor(cy) + oy) * size + wrap(Math.floor(cx) + ox);
+        const v = bright + x * gx + y * gy;
+        shade[i] = Math.max(1, Math.min(255, Math.round(v * 100)));
+        pick[i] = flakePick;
+      }
+    }
+    // blazing flakes (the bigger ones) get a sharp four-pointed glint
+    if (bright > 1.75 && r > 2.5) {
+      const arm = Math.round(r * (1.2 + random()));
+      const put = (x, y, v) => {
+        const i = wrap(Math.round(y)) * size + wrap(Math.round(x));
+        if (v > spark[i]) spark[i] = v;
+      };
+      put(cx, cy, 255);
+      for (let s = 1; s <= arm; s++) {
+        const v = Math.round(255 * Math.pow(1 - s / (arm + 1), 1.6));
+        put(cx + s, cy, v);
+        put(cx - s, cy, v);
+        put(cx, cy + s, v);
+        put(cx, cy - s, v);
+        if (s <= arm / 2) {
+          const d = Math.round(v * 0.5);
+          put(cx + s, cy + s, d);
+          put(cx - s, cy - s, d);
+          put(cx + s, cy - s, d);
+          put(cx - s, cy + s, d);
+        }
+      }
+    }
+  }
+  return { shade, pick, spark };
+}
+
+// ---------- Cloud texture (watercolor edges) ----------
+// Soft blotches with some finer detail on top, like the edge of a cloud: used to make watercolor's
+// wet edge wander in feathery, irregular shapes. 256 x 256, repeating.
+
+export const CLOUD_SIZE = 256;
+export const CLOUD = makeNoise(CLOUD_SIZE, 31, [
+  { cell: 64, weight: 0.3 },
+  { cell: 32, weight: 0.25 },
+  { cell: 16, weight: 0.2 },
+  { cell: 8, weight: 0.15 },
+]);
+
 // ---------- Watercolor texture ----------
 // Big, soft blotches (no fine detail): where pigment settles more or less, and how the wet edge
 // wanders. Also 256 x 256 and repeating; each stroke uses it shifted to a random spot.
@@ -280,6 +440,43 @@ function makeWash(size, seed) {
     { cell: 16, weight: 0.17 },
     { cell: 8, weight: 0.08 },
   ];
+  for (const { cell, weight } of layers) {
+    const n = size / cell;
+    const lattice = Array.from({ length: n * n }, random);
+    const at = (gx, gy) => lattice[((gy + n) % n) * n + ((gx + n) % n)];
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const fx = x / cell;
+        const fy = y / cell;
+        const x0 = Math.floor(fx);
+        const y0 = Math.floor(fy);
+        const tx = smooth(fx - x0);
+        const ty = smooth(fy - y0);
+        const top = at(x0, y0) * (1 - tx) + at(x0 + 1, y0) * tx;
+        const bottom = at(x0, y0 + 1) * (1 - tx) + at(x0 + 1, y0 + 1) * tx;
+        sum[y * size + x] += weight * (top * (1 - ty) + bottom * ty);
+      }
+    }
+  }
+  let lo = Infinity;
+  let hi = -Infinity;
+  for (const v of sum) {
+    if (v < lo) lo = v;
+    if (v > hi) hi = v;
+  }
+  const out = new Uint8Array(size * size);
+  for (let i = 0; i < sum.length; i++) out[i] = Math.round((255 * (sum[i] - lo)) / (hi - lo));
+  return out;
+}
+
+// Smooth random noise from a few layers of soft bumps (cell = bump size in pixels), 0-255.
+function makeNoise(size, seed, layers) {
+  let state = seed;
+  const random = () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+  const sum = new Float32Array(size * size);
   for (const { cell, weight } of layers) {
     const n = size / cell;
     const lattice = Array.from({ length: n * n }, random);

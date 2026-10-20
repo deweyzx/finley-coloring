@@ -238,4 +238,14 @@ shows that brush, so it's easy to spot. New in step 10 (batch 1):
 - **Splatter** - flicked droplets. Press harder for more droplets, thrown farther; the size slider
   sets how wide they spread.
 
+New in step 10 (batch 2):
+
+- **Glitter** - separate flakes of different sizes on a deep-colored base, some much brighter
+  than others, with sharp star-shaped glints. Press lightly for a sprinkle, harder for a full
+  coat. Going over glitter again adds new flakes.
+- **Metallic** - shiny like metallic ink: lit from the top left, with soft polished reflections.
+  Coloring in an area makes one smooth, shiny surface.
+
+Both looks are part of the picture itself, so they also show in a picture saved to Photos.
+
 The settings for each brush are in `js/brushes.js`, with comments explaining each number.

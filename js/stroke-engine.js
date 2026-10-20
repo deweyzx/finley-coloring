@@ -24,10 +24,12 @@
 //   wash      - watercolor: uneven, wobbly edges, and darker rims where the color pools
 //   scatter   - splatter: each dab throws droplets of different sizes around it
 //   blend     - "multiply": the color is laid on like a see-through glaze (watercolor)
+//   effect    - glitter or metallic: the paint's look is worked into each pixel's COLOR when
+//               the stroke is drawn (renderEffect), so it's part of the picture itself
 //
 // The brushes themselves are described in brushes.js.
 
-import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE } from "./brushes.js?v=202610192037";
+import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE, GLITTER, GLITTER_SIZE, CLOUD, CLOUD_SIZE } from "./brushes.js?v=202610201533";
 
 export class StrokeEngine {
   constructor(width, height) {
@@ -66,6 +68,13 @@ export class StrokeEngine {
     this.washShift = [Math.floor(this.rand() * WASH_SIZE), Math.floor(this.rand() * WASH_SIZE)];
     // Watercolor rims: how far in from the edge the darker pooling reaches.
     this.rimRadius = brush.wash ? Math.round(clamp(settings.size * brush.wash.rimWidth, 3, 18)) : 0;
+    // Metallic: how far around each pixel to look when working out how rounded the stroke is
+    // there (which way it faces the light).
+    const lit = brush.effect && brush.effect.kind !== "glitter" ? brush.effect : null;
+    // (at most 12 pixels, or the effect's own `maxShine`: more costs a lot of work on every
+    // screen update for big brushes)
+    this.shineRadius = lit ? Math.round(clamp(settings.size * lit.shine, 1, lit.maxShine || 12)) : 0;
+    this.glitterShift = [Math.floor(this.rand() * GLITTER_SIZE), Math.floor(this.rand() * GLITTER_SIZE)];
     // How this stroke is laid onto the picture. (Build-up off keeps touch-ups even, which
     // only works with ordinary painting, so the watercolor glaze is used with build-up on.)
     this.blend = brush.blend === "multiply" && buildUp ? "multiply" : "source-over";
@@ -188,19 +197,43 @@ export class StrokeEngine {
         ox += Math.cos(away) * shift;
         oy += Math.sin(away) * shift;
       }
-      // Mostly tiny droplets, a few big ones; the far ones are smaller.
-      const big = Math.pow(rand(), 3);
-      const radius = Math.max(0.7, size * lerp(sc.drop[0], sc.drop[1], big) * (1 - 0.45 * far));
-      this.stamp(p.x + ox, p.y + oy, {
-        radius,
-        stretch: 1 + s.side * 0.9 * far, // far droplets of a tilted spray are streaks
-        angle: away - Math.PI / 2,
-        opacity: s.opacity * (0.8 + 0.2 * rand()),
-        strength: s.strength,
-        grainFill: 1,
-        hardness: sc.hardness,
-      });
+      // Mostly tiny droplets, some medium, a few big blobs; the far ones are smaller.
+      const big = Math.pow(rand(), 2.6);
+      const radius = Math.max(0.6, size * lerp(sc.drop[0], sc.drop[1], big) * (1 - 0.45 * far));
+      const opacity = s.opacity * (0.85 + 0.15 * rand());
+      const x = p.x + ox;
+      const y = p.y + oy;
+      // a tilted spray throws streaks; otherwise each drop is a slightly squashed blob
+      const tilted = s.side * far > 0.15;
+      const turn = tilted ? away - Math.PI / 2 : rand() * Math.PI;
+      const stretch = tilted ? 1 + s.side * 0.9 * far : 1 + rand() * 0.45;
+      this.drop(x, y, radius, stretch, turn, opacity, s.strength, sc.hardness);
+      if (radius < 2.5) continue;
+      // Bigger drops aren't round: a few little satellite drops cling to the edge, making an
+      // irregular splash shape...
+      const satellites = 1 + Math.floor(rand() * Math.min(5, radius / 2));
+      for (let k = 0; k < satellites; k++) {
+        const a = rand() * Math.PI * 2;
+        const at = radius * (0.65 + 0.5 * rand());
+        this.drop(x + Math.cos(a) * at, y + Math.sin(a) * at, radius * (0.2 + 0.35 * rand()), 1 + rand() * 0.6, rand() * Math.PI, opacity, s.strength, sc.hardness);
+      }
+      // ...and now and then a big one leaves a short tail of shrinking drops.
+      if (radius > 6 && rand() < 0.3) {
+        const a = tilted ? away : rand() * Math.PI * 2;
+        let r = radius * 0.45;
+        let at = radius * 1.1;
+        for (let k = 0; k < 4 && r > 0.6; k++) {
+          this.drop(x + Math.cos(a) * at, y + Math.sin(a) * at, r, 1.3, a - Math.PI / 2, opacity, s.strength, sc.hardness);
+          at += r * 2.2;
+          r *= 0.62;
+        }
+      }
     }
+  }
+
+  // One splatter drop (an oval) - see splatter().
+  drop(x, y, radius, stretch, turn, opacity, strength, hardness) {
+    this.stamp(x, y, { radius, stretch, angle: turn, opacity, strength, grainFill: 1, hardness });
   }
 
   // Stamps one round (or oval) mark into the coverage map.
@@ -266,6 +299,7 @@ export class StrokeEngine {
     const wash = brush.wash;
     const wobble = wash ? wash.wobble : 0;
     const uneven = wash ? wash.uneven : 0;
+    const granulate = wash ? wash.granulate || 0 : 0;
     const sx = this.washShift[0];
     const sy = this.washShift[1];
     let rng = this.seed ^ ((x0 * 73856093) ^ (y0 * 19349663)); // quick random numbers for speckle
@@ -292,6 +326,7 @@ export class StrokeEngine {
       const row = y * W;
       const grainRow = (y & (GRAIN_SIZE - 1)) * GRAIN_SIZE;
       const washRow = ((y + sy) & (WASH_SIZE - 1)) * WASH_SIZE;
+      const cloudRow = ((y + sx) & (CLOUD_SIZE - 1)) * CLOUD_SIZE;
       const clipRow = clip ? (y - clip.y) * clip.w - clip.x : 0;
       for (let x = xs; x <= xe; x++) {
         if (clip && clip.mask[clipRow + x] === 0) continue; // outside the locked area
@@ -301,9 +336,10 @@ export class StrokeEngine {
         let d = Math.sqrt(u * u + v * v);
         let w = 0;
         if (wash) {
-          // Watercolor: the wet edge wanders in and out a little.
+          // Watercolor: the wet edge wanders in and out in soft, cloud-like shapes...
+          d += (CLOUD[cloudRow + ((x + sy) & (CLOUD_SIZE - 1))] / 255 - 0.5) * wobble;
+          // ...and the pigment pools in some places and thins in others.
           w = WASH[washRow + ((x + sx) & (WASH_SIZE - 1))] / 255;
-          d += (w - 0.5) * wobble;
         }
         if (d >= 1) continue;
         let a = d <= inner ? 1 : (1 - d) / edge;
@@ -314,7 +350,11 @@ export class StrokeEngine {
           const reached = clamp((g - (1 - grainFill)) / grainSoft + 0.5, 0, 1);
           a *= 1 - grain.strength + grain.strength * reached;
         }
-        if (wash) a *= 1 - uneven * w; // patchy, like pigment settling unevenly
+        if (wash) {
+          a *= 1 - uneven * w * w * (3 - 2 * w); // patchy, like pigment pooling and thinning
+          // pigment settling into the dips of the paper (a fine, grainy look)
+          if (granulate) a *= 1 - granulate * (1 - GRAIN[grainRow + (x & (GRAIN_SIZE - 1))] / 255);
+        }
         if (bristles) {
           // Brush hairs: which hair passes over this spot depends on how far it is across
           // the stroke, so each hair leaves its own faint streak along the stroke.
@@ -366,6 +406,20 @@ export class StrokeEngine {
       y0 = Math.max(0, y0 - r);
       x1 = Math.min(this.width - 1, x1 + r);
       y1 = Math.min(this.height - 1, y1 + r);
+    }
+    if (this.brush.effect) {
+      // Metallic: a change also changes the shine around it (how rounded the stroke looks). The
+      // blur that tells how rounded it is runs twice, so it reaches twice its radius (+1 for the
+      // slope).
+      const r = this.shineRadius ? 2 * this.shineRadius + 1 : 0;
+      if (r > 0) {
+        x0 = Math.max(0, x0 - r);
+        y0 = Math.max(0, y0 - r);
+        x1 = Math.min(this.width - 1, x1 + r);
+        y1 = Math.min(this.height - 1, y1 + r);
+      }
+      this.renderEffect(ctx, x0, y0, x1, y1);
+      return;
     }
     const w = x1 - x0 + 1;
     const h = y1 - y0 + 1;
@@ -437,6 +491,243 @@ export class StrokeEngine {
     ctx.putImageData(image, x0, y0, 0, 0, w, h);
   }
 
+  // Glitter and metallic: draws an area of the stroke with the paint's look worked into each
+  // pixel's color. The strength of each pixel (and so line-lock, build-up and the paint memory)
+  // works exactly as for any other brush; only the color changes from pixel to pixel.
+  renderEffect(ctx, x0, y0, x1, y1) {
+    const W = this.width;
+    const w = x1 - x0 + 1;
+    const h = y1 - y0 + 1;
+    let image = this.scratch;
+    if (!image || image.width < w || image.height < h) {
+      image = new ImageData(Math.max(w, image ? image.width : 0), Math.max(h, image ? image.height : 0));
+      this.scratch = image;
+    }
+    const stride = image.width;
+    const px = image.data;
+    const { r, g, b } = this.rgb;
+    const cov = this.coverage;
+    const mem = this.memory;
+    const evenOut = !this.buildUp;
+    const fx = this.brush.effect;
+    const glitter = fx.kind === "glitter";
+    // (the effect's settings, read once here rather than for every pixel)
+    const join = !!fx.join;
+    const sheen = fx.sheen || 0;
+    const flake = fx.flake || 0;
+    const mica = fx.mica || 0;
+    const base = fx.base || 0;
+    const sparkle = fx.sparkle || 0;
+
+    // Metallic: how rounded the paint is around each pixel, from a blurred copy of it
+    // (the middle of a stroke is "higher" than its edges), so we can tell
+    // which way it faces. For metallic the same color already on the page counts too (from the
+    // paint memory), so coloring in an area with many strokes makes one smooth, shiny surface.
+    let blur = null;
+    let bx0 = 0;
+    let by0 = 0;
+    let bw = 0;
+    let bh = 0;
+    let bump = 0;
+    let glossTable = null;
+    if (!glitter) {
+      const rad = this.shineRadius;
+      const reach = 2 * rad + 1; // (the blur runs twice, plus one pixel for the slope)
+      bx0 = Math.max(0, x0 - reach);
+      by0 = Math.max(0, y0 - reach);
+      const bx1 = Math.min(W - 1, x1 + reach);
+      const by1 = Math.min(this.height - 1, y1 + reach);
+      bw = bx1 - bx0 + 1;
+      bh = by1 - by0 + 1;
+      if (!this.surface || this.surface.length < bw * bh) this.surface = new Uint8Array(bw * bh);
+      const surface = this.surface;
+      for (let row = 0; row < bh; row++) {
+        let si = (by0 + row) * W + bx0;
+        let o = row * bw;
+        for (let col = 0; col < bw; col++, si++, o++) {
+          const now = cov[si];
+          if (join) {
+            const m = si * 4;
+            const before = mem[m + 3] > 0 && mem[m] === r && mem[m + 1] === g && mem[m + 2] === b ? mem[m + 3] : 0;
+            surface[o] = now > before ? now : before;
+          } else {
+            surface[o] = now;
+          }
+        }
+      }
+      if (!this.blurKeep) this.blurKeep = {};
+      blur = boxBlur(surface, bw, 0, 0, bw, bh, rad, this.blurKeep);
+      // (steepness: the same whatever the opacity, a bit gentler for wide strokes)
+      bump = (fx.bump * rad) / Math.max(1, this.settings.opacity * 255) / 2;
+      // how bright the highlight is for each "facing" value 0-1, from a table
+      if (!this.glossTable || this.glossFor !== fx) {
+        this.glossTable = new Float32Array(1025);
+        for (let k = 0; k <= 1024; k++) this.glossTable[k] = Math.pow(k / 1024, fx.gloss) * fx.highlight;
+        this.glossFor = fx;
+      }
+      glossTable = this.glossTable;
+    }
+    // Light comes from the top left, a little in front of the page.
+    const Lx = -0.45, Ly = -0.55, Lz = 0.7;
+    const Ll = Math.hypot(Lx, Ly, Lz);
+    const lx = Lx / Ll, ly = Ly / Ll, lz = Lz / Ll;
+    const hl = Math.hypot(lx, ly, lz + 1); // halfway between the light and her eye
+    const hx = lx / hl, hy = ly / hl, hz = (lz + 1) / hl;
+    // The highlight color: the paint's own color, almost white.
+    const hr = r + (255 - r) * 0.85, hg = g + (255 - g) * 0.85, hb = b + (255 - b) * 0.85;
+    // Metallic shadows are a deeper, richer version of the color itself (gold goes warm brown,
+    // not grey): the color "multiplied by itself".
+    const dr = (r * r) / 255, dg = (g * g) / 255, db = (b * b) / 255;
+    // Glitter: the base between flakes, and how strong a full coat is (for sparse light strokes).
+    const peak = Math.max(1, this.settings.opacity * 255);
+    const gs = this.glitterShift;
+    const GM = GLITTER_SIZE - 1;
+
+    for (let row = 0; row < h; row++) {
+      const y = y0 + row;
+      let i = y * W + x0;
+      let p = row * stride * 4;
+      const gRow = ((y + gs[1]) & GM) * GLITTER_SIZE;
+      const grainRow = (y & (GRAIN_SIZE - 1)) * GRAIN_SIZE;
+      for (let col = 0; col < w; col++, i++, p += 4) {
+        let c = cov[i];
+        px[p + 3] = 0; // (the reused block may still hold an older update here)
+        if (c === 0) continue;
+        if (evenOut) {
+          // Build-up off: same as for every brush (see render()).
+          const m = i * 4;
+          const had = mem[m + 3];
+          if (had > 0 && mem[m] === r && mem[m + 1] === g && mem[m + 2] === b) {
+            if (c <= had) continue;
+            c = had >= 255 ? 0 : Math.round(((c - had) / (255 - had)) * 255);
+            if (c === 0) continue;
+          }
+        }
+        const x = x0 + col;
+        let R, G, B;
+        if (glitter) {
+          const t = gRow + ((x + gs[0]) & GM);
+          const code = GLITTER.shade[t];
+          const amount = c / peak; // 1 = a full coat; less at light pressure and soft edges
+          if (code === 0 || GLITTER.pick[t] > amount * 380 - 30) {
+            // the darker base between flakes (or a flake that isn't there with light pressure)
+            // a deep, rich shade of the color (like colored glue under the glitter), solid inside
+            // the stroke so it looks the same over paper and over earlier glitter...
+            R = dr * base;
+            G = dg * base;
+            B = db * base;
+            // ...but thinning out toward the stroke's edge, so where strokes overlap the glitter
+            // underneath keeps sparkling
+            const k = amount > 0.7 ? 1 : amount / 0.7;
+            c *= k * k;
+          } else {
+            // a flake: flat, crisp, with its own brightness
+            const v = code / 100;
+            if (v <= 1) {
+              R = r * v;
+              G = g * v;
+              B = b * v;
+            } else {
+              const k = Math.min(1, (v - 1) * 0.85);
+              R = r + (255 - r) * k;
+              G = g + (255 - g) * k;
+              B = b + (255 - b) * k;
+            }
+            c = c + (255 - c) * 0.6; // flakes are solid pieces: they cover well
+          }
+          const glint = (GLITTER.spark[t] / 255) * sparkle;
+          if (glint > 0) {
+            R += (255 - R) * glint;
+            G += (255 - G) * glint;
+            B += (255 - B) * glint * 0.92; // (a touch warm, like light on glitter)
+            c = c + (255 - c) * glint;
+          }
+        } else {
+          // Which way the paint faces here (from the slope of the blurred surface)...
+          const bx = x - bx0;
+          const by = y - by0;
+          const bi = by * bw + bx;
+          // (at the very edge of the page there's no neighbour on one side: use this pixel)
+          const left = bx > 0 ? bi - 1 : bi;
+          const right = bx < bw - 1 ? bi + 1 : bi;
+          const up = by > 0 ? bi - bw : bi;
+          const down = by < bh - 1 ? bi + bw : bi;
+          const gx = (blur[right] - blur[left]) * bump;
+          const gy = (blur[down] - blur[up]) * bump;
+          const inv = 1 / Math.sqrt(gx * gx + gy * gy + 1);
+          const nx = -gx * inv, ny = -gy * inv, nz = inv;
+          // ...how much light it catches (compared with a flat surface)...
+          let t = 0.5 + (nx * lx + ny * ly + nz * lz - lz) * 1.6;
+          if (sheen) {
+            // ...polished reflections, running diagonally: bright and dark bands with fairly
+            // sharp edges, like a mirror-like surface reflecting a room. They're fixed to the
+            // page (not to the stroke), so strokes side by side join up seamlessly...
+            // (read smoothly between the texture's pixels, so the bands have no little steps)
+            const fu = (x - y) * 0.25 + 1024;
+            const fv = (x + y) * 0.0625;
+            const u0 = Math.floor(fu);
+            const v0 = Math.floor(fv);
+            const tu = fu - u0;
+            const tv = fv - v0;
+            const m = WASH_SIZE - 1;
+            const ra = (v0 & m) * WASH_SIZE;
+            const rb = ((v0 + 1) & m) * WASH_SIZE;
+            const top = WASH[ra + (u0 & m)] * (1 - tu) + WASH[ra + ((u0 + 1) & m)] * tu;
+            const bottom = WASH[rb + (u0 & m)] * (1 - tu) + WASH[rb + ((u0 + 1) & m)] * tu;
+            let band = ((top * (1 - tv) + bottom * tv) / 255 - 0.5) * 3.5;
+            band = band < -1 ? -1 : band > 1 ? 1 : band;
+            band = band * (1.5 - 0.5 * band * band); // (an S-curve: crisper light and dark)
+            t += band * sheen * 0.5;
+          }
+          let grain = 0;
+          if (flake || mica) grain = GRAIN[grainRow + (x & (GRAIN_SIZE - 1))] / 255;
+          // ...and a fine metal grain.
+          if (flake) t += (grain - 0.5) * flake * 2;
+          t = t < 0 ? 0 : t > 1 ? 1 : t;
+          if (t < 0.5) {
+            if (join) {
+              // metallic: from the deep, rich shade of the color up to the color itself
+              const k = t * 2;
+              R = dr * 0.8 + (r - dr * 0.8) * k;
+              G = dg * 0.8 + (g - dg * 0.8) * k;
+              B = db * 0.8 + (b - db * 0.8) * k;
+            } else {
+              const k = 0.6 + 0.8 * t; // (paint: just a little darker in the dips)
+              R = r * k;
+              G = g * k;
+              B = b * k;
+            }
+          } else {
+            const k = (t - 0.5) * (join ? 1.5 : 1.0);
+            R = r + (255 - r) * k;
+            G = g + (255 - g) * k;
+            B = b + (255 - b) * k;
+          }
+          // the shiny highlight where the paint faces between the light and her eye
+          const facing = nx * hx + ny * hy + nz * hz;
+          if (facing > 0) {
+            const sp = glossTable[(facing * 1024) | 0];
+            R += (hr - R) * sp;
+            G += (hg - G) * sp;
+            B += (hb - B) * sp;
+          }
+          // metallic ink's tiny bright specks (like mica in the ink)
+          if (mica && grain > 0.94) {
+            const k = ((grain - 0.94) / 0.06) * mica;
+            R += (255 - R) * k;
+            G += (255 - G) * k;
+            B += (255 - B) * k;
+          }
+        }
+        px[p] = R;
+        px[p + 1] = G;
+        px[p + 2] = B;
+        px[p + 3] = c;
+      }
+    }
+    ctx.putImageData(image, x0, y0, 0, 0, w, h);
+  }
+
   // Shows the stroke right up to the Pencil tip - and a little past it, to where the Pencil is
   // about to be (`ahead`, a guess) - without keeping those extra dabs.
   // Why: real dabs are only placed every `spacing`, so the newest one can be up to one spacing
@@ -445,10 +736,10 @@ export class StrokeEngine {
   // at the tip and ahead of it, draw, then put the coverage back exactly as it was. The next
   // update redraws that area from the real coverage, so the guess never stays on the page.
   // (Not for splatter: its droplets are random, so temporary ones would flicker. Not for
-  // watercolor: redrawing its darker rims around the tip on every update costs too much, and
-  // it already felt quick on her iPad.)
+  // watercolor and metallic: redrawing their rims or shine around the tip on every update costs
+  // too much.)
   renderAhead(ctx, ahead) {
-    if (!this.last || !this.box || this.brush.scatter || this.brush.wash) {
+    if (!this.last || !this.box || this.brush.scatter || this.brush.wash || this.shineRadius > 3) {
       this.render(ctx);
       return;
     }
@@ -726,13 +1017,26 @@ function sprayRows(engine, cx, cy, x0, y0, x1, y1, cos, sin, rLong, rShort, qa, 
 
 // Averages each pixel with its neighbours up to `r` pixels away (twice, for a smooth result).
 // Reads a w x h area of `src` (a full-page map, `stride` wide) starting at x0, y0.
-function boxBlur(src, stride, x0, y0, w, h, r) {
-  const a = new Float32Array(w * h);
+// `keep` (optional) is an object that holds the working memory between calls, so it can be
+// reused instead of made new each time (the screen is updated many times a second).
+function boxBlur(src, stride, x0, y0, w, h, r, keep) {
+  let a;
+  let b;
+  if (keep) {
+    if (!keep.a || keep.a.length < w * h) {
+      keep.a = new Float32Array(w * h);
+      keep.b = new Float32Array(w * h);
+    }
+    a = keep.a;
+    b = keep.b;
+  } else {
+    a = new Float32Array(w * h);
+    b = new Float32Array(w * h);
+  }
   for (let row = 0; row < h; row++) {
     const s = (y0 + row) * stride + x0;
     for (let col = 0; col < w; col++) a[row * w + col] = src[s + col];
   }
-  const b = new Float32Array(w * h);
   for (let pass = 0; pass < 2; pass++) {
     blurLine(a, b, w, h, r, 1, w); // across
     blurLine(b, a, h, w, r, w, 1); // down

@@ -27,8 +27,17 @@ table, and any decisions that changed.
   drawing work 22-48%, but "most behind" 44-56 ms at every size; airbrush felt laggy at 80 but
   not 250, the eraser slightly. **Committed:** ink drawn right up to the Pencil tip and ~20 ms
   ahead (see "Keeping the ink up with the Pencil") and a clearer speed log (passed Owen's PC
-  test). Smooth hair at 200 confirmed good. **Waiting:** iPad feel + a `?debug` log of pencil,
-  marker, eraser and airbrush 80/250. Batch 2 only after that. **Batch 2 only after Owen has tested these on her iPad.**
+  test). Smooth hair at 200 confirmed good. iPad (2026-10-20): **ink keeps up with the Pencil**
+  for every brush, the stopping tail isn't a problem; log: typical Pencil→app 6-19 ms, 90% under
+  10-52 ms. **Batch 1 is done.**
+  **Batch 2 (glitter, metallic) + a quality pass are committed** (see "Richer looks"): Owen's
+  first PC look said glitter looked like noise and the brushes "a bit cheap" next to a reference
+  app (quality reference only, no copying), so glitter, metallic, watercolor and splatter got
+  richer original textures (passed Owen's PC test). **Smooth hair was reverted to exactly its
+  batch-1 version** (Finley liked it; max size 200 kept; proven pixel-identical in 80 cases).
+  Also a brush warm-up when a page opens. **Waiting:** iPad check of batch 2 and the richer
+  brushes. Batch 3 only after that.
+  Batch 3 only after Owen has tested batch 2 on her iPad.
 
 ## How to work with Owen
 
@@ -72,7 +81,7 @@ table, and any decisions that changed.
 | 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails; Start over | ✅ |
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | ✅ |
 | 9 | Export the finished picture to Photos | ✅ |
-| 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | batch 1 committed, iPad check pending |
+| 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | batch 1 ✅; batch 2 committed, iPad check pending |
 | 11 | Installable + offline (manifest, service worker, icons) | |
 | 12 | Magical storybook look, Themes, polish | |
 
@@ -268,6 +277,76 @@ table, and any decisions that changed.
   zoom); most brushes +5-20 ms.
   **Not measurable here:** how long Safari takes to deliver Pencil positions and show a frame;
   the guess hides ~20 ms of that. Whether "under 30 ms" is reachable depends on the iPad's own part.
+- **Batch 2** (cards come after splatter in the Brushes window):
+  - New optional field **`effect`**: the paint's look is worked into each pixel's COLOR in
+    `renderEffect()` (stroke-engine.js); the per-pixel strength (coverage) works exactly like
+    every other brush, so line-lock, build-up off (same even-out math), the paint memory (stores
+    the base color), undo, auto-save and the saved picture need nothing special. Tested: finished
+    picture identical whether the screen updated every point, every 9th point, with drawing
+    ahead, or only at lift; 0 px outside line-lock; undo/redo exact; build-up off: a second
+    same-color pass changes nothing; auto-save and the saved picture match the page exactly.
+  - **Glitter** (4-150, default 30 / 90%): `GLITTER` texture in brushes.js (256 px tile, shifted
+    randomly per stroke so layering adds new sparkles): flakes ~4 px (nearest of jittered points,
+    each with a shade -1..1, `facet` 0.4 lighter/darker), sparkles on 1 flake in 10 (nearly white,
+    slightly warm, `sparkle` 0.95, they also raise the pixel's strength so they shine through a
+    thin coat), a third of them with 4-point star flares 3-7 px. Uses drawing ahead.
+  - **Metallic** (3-120, default 20 / 100%): lit from the top left. The paint "surface" = this
+    stroke's coverage, or the same color already painted (paint memory), whichever is stronger,
+    double box-blurred (`shineRadius` = 30% of size, 2-12 px); its slope gives each pixel a
+    facing direction -> diffuse light (`bump` 0.7) + a highlight from a lookup table (`gloss` 24,
+    `highlight` 0.7). Plus polished diagonal bands **fixed to the page** (the WASH texture read
+    smoothly and stretched, `sheen` 0.5) so strokes side by side join seamlessly, and a fine
+    grain (GRAIN, `flake` 0.06). Brightness 0-1 maps to the color x 0.6-1.0 (dark side, not
+    lower or yellows turn olive) and toward white above the middle. Each update redraws 2 x
+    shineRadius + 1 px around the change (the blur runs twice - with only 1 x the live picture
+    differed from the final one). No drawing ahead (too costly, like watercolor).
+    History of the look: first version shaded each stroke as a rounded tube (`bump` 1.6) -
+    lovely for lines but colored-in areas looked corrugated; using the paint memory alone didn't
+    fix it (normal back-and-forth strokes overlap too little), so the rounding was made gentle
+    and the bands were tied to the page.
+  - Speed (PC, ms of work per second of fast drawing, whole-page zoom): glitter 30: 19, glitter
+    150: 115; metallic 20: 25, 60: 93, 120: 191 (was 366 before reusing the blur's memory, the
+    highlight table and the 12 px cap); lift ~5 ms. Marker 120 is 43 for comparison.
+- **Richer looks (quality pass, 2026-10-20),** all original textures made in code:
+  - **Glitter:** new `GLITTER` texture (512 px): 9000 separate flat flakes, 4-6 sided, 3-16 px
+    across (mostly small), each with its own brightness (20% darker, 55% the color, 18% catching
+    the light, 7% blazing almost white; plus a slight tilt gradient) and a random `pick` number;
+    blazing bigger flakes get sharp 4-point glints. Between flakes: a solid **deep shade** of the
+    color (`base` 0.8 x color-times-itself, like colored glue), thinning toward a stroke's edge
+    (strokes overlapping showed light/dark stripes when it was see-through everywhere). Light
+    pressure / soft edges show fewer flakes (`pick > amount * 380 - 30` -> base instead). Flakes
+    raise the pixel's strength (solid pieces). Hardness 0.95 (crisp edge).
+  - **Metallic:** shadows are the color times itself (gold -> warm brown, not grey), highlights
+    toward white (x1.5), reflection bands sharper (x3.5 then an S-curve, `sheen` 1), `gloss` 40,
+    `highlight` 0.9, `bump` 0.8, `mica` 0.6 (tiny bright specks where the GRAIN tile > 0.94),
+    `join` true (same color on the page counts as one surface).
+  - **Smooth hair:** a richer version was built (wider hairs whose paint came and went along the
+    stroke, plus a fine light-and-shadow "paint" relief) and looked like real paint, but **Owen
+    asked to revert it to exactly the batch-1 version because Finley liked that one** (max size
+    200 kept). Reverted and proven pixel-identical to commit 5159bf1 in 80 cases (sizes 8-200,
+    build-up, line-lock, drawing ahead, tilt). Left over from it: the generic `maxShine` setting
+    for lit effects, and drawing ahead is allowed for lit effects with shineRadius <= 3.
+  - **Watercolor:** the edge wanders by a new `CLOUD` texture (256 px, layers 64-8 px; finer
+    layers made the edge look like noise) with `wobble` 0.6 -> cloud-like edges; pooling
+    `uneven` 0.5 (S-curved); `granulate` 0.08 (pigment in the paper's tooth, from GRAIN; 0.22
+    looked grainy); `middle` 0.85, `rim` 0.8, hardness 0.65.
+  - **Splatter:** sizes 0.8%-20% of the brush (power 2.6: mostly tiny, a few big blobs); each drop
+    a randomly squashed oval, drops over 2.5 px get 1-5 satellite drops on their edge (irregular
+    splash), drops over 6 px have a 30% chance of a tail of 4 shrinking drops; hardness 0.94.
+  - **Big + expensive brushes redraw at most ~60 times a second:** watercolor and metallic,
+    when the tip dab reaches > `predictMaxBrushPx` screen px (drawStrokeNow).
+  - Speed (PC, ms per second of fast drawing at whole-page zoom, before -> after the pass):
+    glitter 30: 17 -> 20, 150: 105 -> 118; metallic 20: 26 -> 27, 120: 195 -> 217; watercolor
+    50: 45 -> 64, 160: 244 -> 233; splatter ~4. (Smooth hair's rejected relief version had cost
+    about 2x; it's back to its batch-1 speed.)
+  - Tested after the pass: every brush gives the same finished picture whether the screen updates
+    every point, every 9th, with drawing ahead, or only at lift; 0 px outside line-lock; pencil,
+    marker and eraser identical to step 9; in the app: undo/redo exact, auto-save exact.
+- **Brush warm-up** (`warmUpBrushes()` in editor.js): 300 ms after the first page opens, each brush
+  draws two tiny practice strokes on a hidden 160 px canvas, one brush every 30 ms (each step
+  1-13 ms on the PC), pausing while she draws. Why: the first airbrush stroke on her iPad showed
+  83% work / 29 ms slowest update vs 41% or less after - browsers only make code fast after it
+  has run. Not verified on the iPad yet.
 
 ## Undo and redo (step 5)
 
