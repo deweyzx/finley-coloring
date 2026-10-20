@@ -27,6 +27,21 @@ export const SETTINGS = {
   // SCREEN pixels away (about a fingertip), instead of doing nothing.
   tapReach: 10,
 
+  // ---------- Keeping the ink up with the Pencil (step 10) ----------
+
+  // The iPad hands the Pencil's position to the page a moment after it moves, so the ink would
+  // trail a little behind the tip. To hide that, each screen update also draws where the Pencil
+  // is about to be, this many milliseconds ahead (a guess from how it's moving; it's taken back
+  // and replaced by the real stroke a moment later). 0 = off. Too big = the ink can overshoot
+  // for a split second at sharp turns and sudden stops.
+  predictAheadMs: 20,
+  // ...but never more than this many SCREEN pixels ahead of the tip.
+  predictMaxPx: 24,
+  // Big brushes skip this: when the brush reaches more than this many SCREEN pixels from its
+  // middle, the Pencil tip is well inside the paint anyway (no gap to see), and drawing the
+  // guess for a big brush would cost a lot of work on every screen update.
+  predictMaxBrushPx: 32,
+
   // ---------- Auto-save (step 7) ----------
 
   // After a change, the page is saved once she has paused for this many milliseconds.

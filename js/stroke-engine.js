@@ -27,7 +27,7 @@
 //
 // The brushes themselves are described in brushes.js.
 
-import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE } from "./brushes.js?v=202610191633";
+import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE } from "./brushes.js?v=202610192037";
 
 export class StrokeEngine {
   constructor(width, height) {
@@ -100,7 +100,7 @@ export class StrokeEngine {
     for (;;) {
       // spacing depends on how big the dab is right here
       const t0 = Math.max(0, travelled) / length;
-      const step = Math.max(0.5, this.dabSize(lerpPoint(a, p, t0)) * this.brush.spacing);
+      const step = Math.max(0.5, this.dabSize(lerpPoint(a, p, t0)) * this.brush.spacing * (this.spacingScale || 1));
       if (travelled + step > length) {
         this.leftover = length - travelled;
         break;
@@ -437,6 +437,82 @@ export class StrokeEngine {
     ctx.putImageData(image, x0, y0, 0, 0, w, h);
   }
 
+  // Shows the stroke right up to the Pencil tip - and a little past it, to where the Pencil is
+  // about to be (`ahead`, a guess) - without keeping those extra dabs.
+  // Why: real dabs are only placed every `spacing`, so the newest one can be up to one spacing
+  // behind the tip, and the iPad hands the Pencil's position to the page a moment late. Both
+  // look like ink trailing behind the Pencil. So for each screen update: stamp temporary dabs
+  // at the tip and ahead of it, draw, then put the coverage back exactly as it was. The next
+  // update redraws that area from the real coverage, so the guess never stays on the page.
+  // (Not for splatter: its droplets are random, so temporary ones would flicker. Not for
+  // watercolor: redrawing its darker rims around the tip on every update costs too much, and
+  // it already felt quick on her iPad.)
+  renderAhead(ctx, ahead) {
+    if (!this.last || !this.box || this.brush.scatter || this.brush.wash) {
+      this.render(ctx);
+      return;
+    }
+    const W = this.width;
+    const H = this.height;
+    // The area temporary dabs could touch: the size of the dab at the tip (the guessed points
+    // carry the tip's pressure and tilt, so their dabs are the same size).
+    const grow = this.brush.wash ? 1 / (1 - this.brush.wash.wobble / 2) : 1;
+    const reach = Math.ceil(this.tipRadius() * grow) + 2;
+    let minX = this.last.x;
+    let maxX = minX;
+    let minY = this.last.y;
+    let maxY = minY;
+    for (const p of ahead) {
+      minX = Math.min(minX, p.x);
+      maxX = Math.max(maxX, p.x);
+      minY = Math.min(minY, p.y);
+      maxY = Math.max(maxY, p.y);
+    }
+    const x0 = Math.max(0, Math.floor(minX - reach));
+    const y0 = Math.max(0, Math.floor(minY - reach));
+    const x1 = Math.min(W - 1, Math.ceil(maxX + reach));
+    const y1 = Math.min(H - 1, Math.ceil(maxY + reach));
+    if (x0 > x1 || y0 > y1) {
+      this.render(ctx);
+      return;
+    }
+    const w = x1 - x0 + 1;
+    const h = y1 - y0 + 1;
+    // Keep a copy of the coverage there (one reused block of memory).
+    if (!this.aheadCopy || this.aheadCopy.length < w * h) this.aheadCopy = new Uint8Array(w * h);
+    const copy = this.aheadCopy;
+    const cov = this.coverage;
+    for (let row = 0; row < h; row++) {
+      const start = (y0 + row) * W + x0;
+      copy.set(cov.subarray(start, start + w), row * w);
+    }
+    const saved = { last: this.last, leftover: this.leftover, direction: this.direction, dabCount: this.dabCount, box: this.box };
+    // A dab right at the tip, then on toward where the Pencil is heading - with the dabs three
+    // times farther apart than usual: they're only on screen for one update, so nobody can see
+    // the difference, and it saves a lot of work.
+    this.dab({ ...this.last });
+    this.leftover = 0;
+    this.spacingScale = 3;
+    for (const p of ahead) this.addPoint(p);
+    this.spacingScale = 1;
+    this.render(ctx);
+    // Put everything back as it was.
+    for (let row = 0; row < h; row++) {
+      cov.set(copy.subarray(row * w, row * w + w), (y0 + row) * W + x0);
+    }
+    Object.assign(this, saved);
+    // The next update redraws this area from the real coverage (taking the temporary dabs away).
+    this.dirty = growBox(this.dirty, x0, y0, x1, y1);
+  }
+
+  // How far the dab at the Pencil tip reaches from its middle (the long side of the oval), in
+  // page pixels. 0 before the stroke has started.
+  tipRadius() {
+    if (!this.last) return 0;
+    const s = this.shape(this.last);
+    return s.radius * s.stretch;
+  }
+
   // Watercolor: the stroke's strength in an area, with the pooled darker rims worked in.
   // A pixel is "near the rim" when its blurred neighbourhood is weaker than itself (it sits
   // just inside the edge of the wet patch, or against a line when line-lock is on).
@@ -489,7 +565,7 @@ export class StrokeEngine {
         this.coverage.set(shaped.subarray(row * w, row * w + w), (box.y0 + row) * this.width + box.x0);
       }
       this.baked = true;
-      this.dirty = { ...box };
+      this.dirty = growBox(this.dirty, box.x0, box.y0, box.x1, box.y1);
     }
     this.render(strokeCtx);
     if (beforeChange) beforeChange({ x: box.x0, y: box.y0, w, h });
@@ -560,7 +636,7 @@ StrokeEngine.prototype.rememberFill = function (area, rgb) {
 // Takes the current stroke back without leaving any mark (e.g. a finger stroke that turned
 // out to be the start of a two-finger gesture).
 StrokeEngine.prototype.cancel = function (strokeCtx) {
-  const box = this.box;
+  const box = this.box && this.dirty ? growBox(this.box, this.dirty.x0, this.dirty.y0, this.dirty.x1, this.dirty.y1) : this.box;
   if (box) {
     // (watercolor rims can reach a little past the stroke's own box)
     const r = this.rimRadius || 0;

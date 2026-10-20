@@ -2,20 +2,20 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610191633";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610191633";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610191633";
-import { setupColorPicker } from "./color-picker.js?v=202610191633";
-import { setupSavePicture } from "./save-picture.js?v=202610191633";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610191633";
-import { StrokeEngine } from "./stroke-engine.js?v=202610191633";
-import { createSlider } from "./slider.js?v=202610191633";
-import { History } from "./history.js?v=202610191633";
-import { Viewport } from "./viewport.js?v=202610191633";
-import { setupInput } from "./touch-input.js?v=202610191633";
-import { toggleDebug, debugOn, debugLog } from "./touch-debug.js?v=202610191633";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610191633";
-import { SETTINGS } from "./settings.js?v=202610191633";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610192037";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610192037";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610192037";
+import { setupColorPicker } from "./color-picker.js?v=202610192037";
+import { setupSavePicture } from "./save-picture.js?v=202610192037";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610192037";
+import { StrokeEngine } from "./stroke-engine.js?v=202610192037";
+import { createSlider } from "./slider.js?v=202610192037";
+import { History } from "./history.js?v=202610192037";
+import { Viewport } from "./viewport.js?v=202610192037";
+import { setupInput } from "./touch-input.js?v=202610192037";
+import { toggleDebug, debugOn, debugLog } from "./touch-debug.js?v=202610192037";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610192037";
+import { SETTINGS } from "./settings.js?v=202610192037";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -576,16 +576,33 @@ function startStroke(e) {
   const first = readPoint(e);
   const s = { pointerId: e.pointerId, page: currentPage, waiting: false, pending: [], lifted: false };
   // Speed check for the touch log (?debug): how long the drawing work takes, and how far
-  // behind the Pencil the app falls (time from the Pencil moving to the app handling it).
-  s.timing = { start: performance.now(), work: 0, slowest: 0, behind: 0, brush: brush.name, size: brushSettings(currentTool).size };
+  // behind the Pencil the app is (time from the iPad sensing the Pencil to the app handling it).
+  s.timing = {
+    start: performance.now(),
+    startDelay: performance.now() - e.timeStamp, // Pencil touching down -> the app hearing about it
+    work: 0,
+    slowest: 0,
+    lags: [], // for each Pencil event: newest position sensed -> handled (ms)
+    events: 0,
+    samples: 0,
+    updates: 0,
+    ahead: 0, // total ms drawn ahead of the tip (prediction)
+    aheadCount: 0,
+    predictor: "off",
+    brush: brush.name,
+    size: brushSettings(currentTool).size,
+  };
+  s.recent = []; // the last few Pencil positions, for guessing where it's heading
+  s.ahead = [];
   stroke = s;
   engine.begin(brush, brushSettings(currentTool), rgb, buildUp.on);
   // Watercolor glazes over the colors underneath; the live stroke shows it the same way.
   strokeCanvas.style.mixBlendMode = engine.blend === "multiply" ? "multiply" : "";
   if (brush.flow) sprayWhileHeld(s);
+  s.recent.push({ x: first.x, y: first.y, t: e.timeStamp });
   if (!lineLock.on) {
     engine.addPoint(first);
-    showStroke();
+    drawStrokeNow();
     return;
   }
   // Line-lock: find the outlined area where the stroke starts (exactly what a fill from
@@ -616,26 +633,85 @@ async function findLockArea(point) {
 }
 
 function continueStroke(e) {
+  const s = stroke;
   const t0 = performance.now();
   // The iPad records the Pencil up to 240 times a second but only sends some of those
   // as events; getCoalescedEvents() gives us all of them for smoother strokes.
-  const samples = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
-  for (const sample of samples.length ? samples : [e]) {
-    const p = readPoint(sample);
-    if (stroke.waiting) stroke.pending.push(p);
+  const coalesced = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+  const samples = coalesced.length ? coalesced : [e];
+  let p = null;
+  for (const sample of samples) {
+    p = readPoint(sample);
+    if (s.waiting) s.pending.push(p);
     else engine.addPoint(p);
+    s.recent.push({ x: p.x, y: p.y, t: sample.timeStamp || e.timeStamp });
   }
-  showStroke();
-  noteWork(stroke, t0, e.timeStamp);
+  if (s.recent.length > 8) s.recent.splice(0, s.recent.length - 8);
+  s.ahead = guessAhead(e, s, p);
+  // Speed check: how late this newest position reached the app.
+  const newest = samples[samples.length - 1].timeStamp || e.timeStamp;
+  s.timing.lags.push(t0 - newest);
+  s.timing.events++;
+  s.timing.samples += samples.length;
+  noteWork(s, t0);
+  // Draw right away (the ink then shows on the very next screen refresh), unless the stroke was
+  // just drawn a moment ago - then once on the next refresh is enough.
+  if (performance.now() - (s.drawnAt || 0) > 6) drawStrokeNow();
+  else showStroke();
+}
+
+// Where will the Pencil be a moment from now? Uses the iPad's own guess when the browser offers
+// one (getPredictedEvents), otherwise carries on in the direction and speed it's moving.
+function guessAhead(e, s, last) {
+  const lead = SETTINGS.predictAheadMs;
+  if (!last || !(lead > 0)) return [];
+  const maxDist = SETTINGS.predictMaxPx / view.scale; // screen px -> page px
+  let target = null;
+  const predicted = e.getPredictedEvents ? e.getPredictedEvents() : [];
+  if (predicted.length) {
+    // the furthest of the iPad's guesses that's no more than `lead` ms ahead
+    for (const q of predicted) if (!target || q.timeStamp - e.timeStamp <= lead) target = q;
+    target = readPoint(target);
+    s.timing.predictor = "iPad's";
+  } else {
+    // our own guess: the speed over the last ~30 ms, carried on for `lead` ms
+    const r = s.recent;
+    const now = r[r.length - 1];
+    let old = null;
+    for (let k = r.length - 2; k >= 0; k--) {
+      old = r[k];
+      if (now.t - old.t >= 30) break;
+    }
+    if (!old || now.t - old.t < 4) return [];
+    const k = lead / (now.t - old.t);
+    target = { ...last, x: last.x + (now.x - old.x) * k, y: last.y + (now.y - old.y) * k };
+    s.timing.predictor = "own";
+  }
+  let dx = target.x - last.x;
+  let dy = target.y - last.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist < 0.5) return [];
+  if (dist > maxDist) {
+    dx *= maxDist / dist;
+    dy *= maxDist / dist;
+  }
+  // (for the log: how many ms ahead this is, at the current speed)
+  const r = s.recent;
+  const span = r[r.length - 1].t - r[0].t;
+  const speed = span > 0 ? Math.hypot(r[r.length - 1].x - r[0].x, r[r.length - 1].y - r[0].y) / span : 0;
+  if (speed > 0) {
+    s.timing.ahead += Math.hypot(dx, dy) / speed;
+    s.timing.aheadCount++;
+  }
+  return [{ ...last, x: last.x + dx, y: last.y + dy, pressure: target.pressure ?? last.pressure }];
 }
 
 // Adds up drawing work for the speed check (see startStroke).
-function noteWork(s, t0, eventTime) {
+function noteWork(s, t0) {
   if (!s || !s.timing) return;
   const now = performance.now();
   s.timing.work += now - t0;
   s.timing.slowest = Math.max(s.timing.slowest, now - t0);
-  if (eventTime) s.timing.behind = Math.max(s.timing.behind, now - eventTime);
 }
 
 function endStroke() {
@@ -650,14 +726,23 @@ function finishStroke() {
   const t0 = performance.now();
   const changed = engine.commit(strokeCtx, colorCtx, (box) => history.saveBefore(box));
   const t = stroke && stroke.timing;
+  if (stroke) clearTimeout(stroke.staleTimer);
   if (t && debugOn()) {
     const lift = performance.now() - t0;
     const length = t0 - t.start;
+    const lags = t.lags.slice().sort((a, b) => a - b);
+    const at = (share) => (lags.length ? Math.round(lags[Math.min(lags.length - 1, Math.floor(share * lags.length))]) : 0);
     debugLog(
-      `${t.brush} ${Math.round(t.size)}: stroke ${(length / 1000).toFixed(1)} s, drawing work ` +
-        `${Math.round(t.work)} ms (${Math.round((100 * t.work) / Math.max(1, length))}%), slowest ` +
-        `${Math.round(t.slowest)} ms, most behind ${Math.round(t.behind)} ms, lift ${Math.round(lift)} ms` +
-        (t.lockWait !== undefined ? `, stay-inside wait ${Math.round(t.lockWait)} ms` : "")
+      `${t.brush} ${Math.round(t.size)}: ${(length / 1000).toFixed(1)} s, work ${Math.round(t.work)} ms ` +
+        `(${Math.round((100 * t.work) / Math.max(1, length))}%), slowest ${Math.round(t.slowest)} ms\n` +
+        `   Pencil→app: touch-down ${Math.round(t.startDelay)} ms, typical ${at(0.5)} ms, 90% under ${at(0.9)} ms, ` +
+        `worst ${at(1)} ms\n` +
+        (t.bigBrush
+          ? `   drawn ahead: no (brush big on screen) · `
+          : `   drawn ahead ~${t.aheadCount ? Math.round(t.ahead / t.aheadCount) : 0} ms (${t.predictor} guess) · `) +
+        `${t.events} events, ${(t.samples / Math.max(1, t.events)).toFixed(1)} samples each, ${t.updates} screen updates · ` +
+        `lift ${Math.round(lift)} ms` +
+        (t.lockWait !== undefined ? ` · stay-inside wait ${Math.round(t.lockWait)} ms` : "")
     );
   }
   stroke = null;
@@ -668,6 +753,7 @@ function finishStroke() {
 // Takes the stroke back with no mark at all (a finger that turned into a gesture).
 function cancelStroke() {
   if (!stroke) return;
+  clearTimeout(stroke.staleTimer);
   stroke = null;
   engine.cancel(strokeCtx);
   strokeCanvas.style.mixBlendMode = "";
@@ -703,17 +789,40 @@ function sprayWhileHeld(s) {
   requestAnimationFrame(tick);
 }
 
-// Redraws the stroke once per screen refresh (not once per Pencil sample).
+// Redraws the stroke on the next screen refresh (at most once per refresh).
 function showStroke() {
   if (frameRequested) return;
   frameRequested = true;
   requestAnimationFrame(() => {
     frameRequested = false;
-    if (!stroke) return;
-    const t0 = performance.now();
-    engine.render(strokeCtx);
-    noteWork(stroke, t0);
+    drawStrokeNow();
   });
+}
+
+// Draws the stroke so far, right up to the Pencil tip and a little beyond (see renderAhead in
+// stroke-engine.js). If no new Pencil position arrives for a moment (she stopped moving), the
+// guess ahead is dropped so it doesn't hang in the air.
+function drawStrokeNow() {
+  const s = stroke;
+  if (!s || s.waiting) return;
+  const t0 = performance.now();
+  if (engine.tipRadius() * view.scale > SETTINGS.predictMaxBrushPx) {
+    engine.render(strokeCtx); // a big brush on screen: no gap to hide (see settings.js)
+    s.timing.bigBrush = true;
+  } else {
+    engine.renderAhead(strokeCtx, s.ahead || []);
+  }
+  s.drawnAt = performance.now();
+  s.timing.updates++;
+  noteWork(s, t0);
+  clearTimeout(s.staleTimer);
+  if (s.ahead && s.ahead.length) {
+    s.staleTimer = setTimeout(() => {
+      if (stroke !== s) return;
+      s.ahead = [];
+      drawStrokeNow();
+    }, 50);
+  }
 }
 
 // Reads position, pressure and tilt from a pointer event.

@@ -1,7 +1,7 @@
 // fill.js - tap-to-fill. The heavy work happens in fill-worker.js (in the background);
 // this file sends it the page and the taps, and paints the result.
 
-import { SETTINGS } from "./settings.js?v=202610191633";
+import { SETTINGS } from "./settings.js?v=202610192037";
 
 let worker = null;
 let nextId = 1;
@@ -9,7 +9,7 @@ const waiting = new Map(); // message id -> function to call with the answer
 
 function ask(message, transfer = []) {
   if (!worker) {
-    worker = new Worker("js/fill-worker.js?v=202610191633");
+    worker = new Worker("js/fill-worker.js?v=202610192037");
     worker.onmessage = (event) => {
       const done = waiting.get(event.data.id);
       waiting.delete(event.data.id);

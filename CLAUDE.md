@@ -23,8 +23,12 @@ table, and any decisions that changed.
   Brushes window, line-lock, sliders/preview, hold-to-spray, watercolor glaze, undo/redo,
   auto-save). iPad: smooth hair, watercolor, splatter feel good; **airbrush lagged** (ink trailing
   the Pencil) and smooth hair needed a bigger maximum. **Committed:** a faster airbrush (2-4x, see
-  "Airbrush speed") and smooth hair up to 200 (passed Owen's PC test). **Waiting:** iPad check,
-  ideally with the `?debug` speed lines from a few fast, big airbrush strokes. **Batch 2 only after Owen has tested these on her iPad.**
+  "Airbrush speed") and smooth hair up to 200 (passed Owen's PC test). iPad log (2026-10-19):
+  drawing work 22-48%, but "most behind" 44-56 ms at every size; airbrush felt laggy at 80 but
+  not 250, the eraser slightly. **Committed:** ink drawn right up to the Pencil tip and ~20 ms
+  ahead (see "Keeping the ink up with the Pencil") and a clearer speed log (passed Owen's PC
+  test). Smooth hair at 200 confirmed good. **Waiting:** iPad feel + a `?debug` log of pencil,
+  marker, eraser and airbrush 80/250. Batch 2 only after that. **Batch 2 only after Owen has tested these on her iPad.**
 
 ## How to work with Owen
 
@@ -232,12 +236,38 @@ table, and any decisions that changed.
   tilted 236 -> 171, watercolor 160 tilted 721 -> 559.
   **Unknown:** how much slower her iPad is than this PC; even before, size 80 used only ~10% of
   the time here, so the iPad may be much slower at this work, or something only happens there.
-- **Speed line in the touch log** (`?debug`): after every stroke, e.g. "Airbrush 80: stroke 1.4
-  s, drawing work 310 ms (22%), slowest 12 ms, most behind 30 ms, lift 8 ms, stay-inside wait 3
-  ms". *drawing work* = time spent stamping + redrawing; *slowest* = the longest single piece of
-  work; *most behind* = longest time from a Pencil movement to the app handling it (lag);
-  *stay-inside wait* = time to find the line-lock area. (`s.timing`, `noteWork()` in editor.js.)
-  Use this to measure on her iPad.
+- **Speed lines in the touch log** (`?debug`), three lines after every stroke:
+  "Airbrush 80: 1.4 s, work 310 ms (22%), slowest 3 ms" /
+  "Pencil→app: touch-down 48 ms, typical 22 ms, 90% under 30 ms, worst 54 ms" /
+  "drawn ahead ~20 ms (own guess) · 120 events, 2.0 samples each, 118 screen updates · lift 9 ms
+  · stay-inside wait 3 ms". *work* = stamping + redrawing; *Pencil→app* = from the iPad sensing
+  the Pencil (the event's `timeStamp`, newest coalesced sample) to our code handling it, split into
+  touch-down, typical (median), 90th percentile and worst - this part happens before our code and
+  can only grow if our code keeps the page busy; *drawn ahead* = how far the guess reaches at the
+  current speed ("iPad's" if Safari offers `getPredictedEvents`, "own" otherwise, "no" when the
+  brush is big on screen). (`s.timing`, `noteWork()`, `guessAhead()` in editor.js.) The first
+  version showed only the worst value, which was 44-56 ms at every size on her iPad.
+- **Keeping the ink up with the Pencil** (after that log):
+  1. Real dabs are placed every `spacing`, so the newest could be up to one spacing behind the tip
+     (the airbrush's spacing had just gone from 12% to 20% of its size). `engine.renderAhead(ctx,
+     ahead)` stamps temporary dabs at the tip and toward a guessed point ~`predictAheadMs` (20) ahead
+     (at most `predictMaxPx` 24 screen px), draws, then restores the coverage exactly from a copy
+     (`aheadCopy`) along with `last/leftover/direction/dabCount/box`, and marks that area dirty so
+     the next update redraws it from the real coverage. Temporary dabs use 3x the spacing
+     (`spacingScale`). Tested: for every brush, with/without build-up and line-lock, the finished
+     picture and paint memory are identical with or without it, and nothing is left on the stroke
+     layer after lifting or cancelling.
+  2. Skipped for splatter (random droplets would flicker), watercolor (rims are expensive to
+     redraw; it already felt fine), and when the tip dab reaches more than `predictMaxBrushPx` (32)
+     screen px - the gap is inside the paint then (why size 250 didn't feel laggy) and the extra
+     work would be large.
+  3. Pencil events draw right away (`drawStrokeNow()`) instead of waiting for the next animation
+     frame (unless drawn < 6 ms ago). If no new position arrives for 50 ms, the guess is dropped.
+  Measured here: ink at half strength now reaches 12-46 page px past the tip instead of -8..+19
+  px. Extra work (PC): at most ~39 ms per second of fast drawing (smooth hair 100 at whole-page
+  zoom); most brushes +5-20 ms.
+  **Not measurable here:** how long Safari takes to deliver Pencil positions and show a frame;
+  the guess hides ~20 ms of that. Whether "under 30 ms" is reachable depends on the iPad's own part.
 
 ## Undo and redo (step 5)
 
@@ -326,8 +356,8 @@ table, and any decisions that changed.
   - Palm rejection by timing (ignore fingers while the Pencil is down / 500 ms after) works fully
     for her; the size filter is now only a backstop for a whole hand.
 - **Touch log:** off by default; open the app with `?debug` to turn it on, "Hide log" to turn it
-  off (remembered per device). Since step 10 it also logs a speed line after every stroke (see
-  "Airbrush speed").
+  off (remembered per device). Since step 10 it also logs speed lines after every stroke (see
+  "Speed lines in the touch log").
 
 ## Auto-save and progress (step 7)
 
