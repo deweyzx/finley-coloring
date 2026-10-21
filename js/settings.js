@@ -3,12 +3,24 @@
 
 export const SETTINGS = {
   // ---------- Blender and Blur (step 10, batch 3) ----------
-  // Sampling radius as a share of size; capped to keep fast strokes inexpensive.
-  blendRadiusShare: 0.12,
-  blendMaxRadius: 10,
-  // Blender carries color from behind the stroke, at most this many page pixels.
-  blendPullShare: 0.45,
-  blendMaxPull: 14,
+  // Wider color sampling gives a gradual transition instead of a narrow smeared seam.
+  // Each averaged tile is still calculated only once, never once per overlapping dab.
+  blendRadiusShare: 0.30,
+  blendMaxRadius: 16,
+  blurRadiusShare: 0.22,
+  blurMaxRadius: 12,
+  // Blender keeps a small patch of picked-up paint on its tip. This is how far
+  // (in brush widths) it carries that paint before mostly replacing it with new paint.
+  blendCarryDistance: 2.5,
+  // A small grid retains separate color streaks across the tip instead of averaging
+  // the entire brush into one flat color. More cells cost more work per dab.
+  blendTipGrid: 12,
+  // Smooth that small tip grid once per dab, then use fast pixel lookups.
+  blendTipPixels: 32,
+  // Blender gives colored pixels more weight than bare paper. This fills the tooth
+  // of pencil strokes without turning a rich color into a milky average with white.
+  // 0 = ordinary averaging (like Blur); 1 = fully favor pigment over white paper.
+  blendPigmentWeight: 0.9,
   // At most this many small, smoothed tiles stay cached (about 1.2 MB).
   blendCacheTiles: 96,
   // ---------- Tap-to-fill ----------

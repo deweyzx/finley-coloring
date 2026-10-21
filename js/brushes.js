@@ -206,19 +206,23 @@ export const BRUSHES = {
   },
   blender: {
     name: "Blender",
-    icon: `<path d="M5 19L9 10L16 3L21 8L14 15Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 21Q9 16 15 20" fill="none" stroke="currentColor" stroke-width="1.7"/>`,
+    // A paper blending stump, in the same diagonal, outlined style as Pencil/Marker.
+    icon: `<path d="M4 20 L6 13.5 L15.6 3.9 Q16.5 3 17.4 3.9 L20.1 6.6 Q21 7.5 20.1 8.4 L10.5 18 Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M6 13.5 L10.5 18 M14.1 5.4 L18.6 9.9 M4 20 L7.1 19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`,
     sizeRange: [6, 48], defaults: { size: 30, opacity: 0.65 },
-    hardness: 0.35, spacing: 0.3,
-    pressure: { size: [0.65, 1], opacity: [0.15, 1], curve: 0.65 },
-    tilt: { widen: 0.35, opacity: 0.9, grainFill: 1 },
+    hardness: 0.65, spacing: 0.2,
+    // A light touch already does useful blending; pressure adds control, not a hurdle.
+    // The opacity slider still sets the maximum. No pressure threshold or hard press needed.
+    pressure: { size: [0.9, 1], opacity: [0.6, 1], curve: 0.4 },
+    tilt: { widen: 0.35, opacity: 1, grainFill: 1 },
     grain: null, paint: "modify", modify: "blender",
   },
   blur: {
     name: "Blur",
-    icon: `<circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2" opacity=".6"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" opacity=".3"/>`,
+    // A soft blending brush, matching Smooth hair's handle and fine outline.
+    icon: `<path d="M20.5 3.5 L14 10 M18.4 3.2 L12.4 9.2 L15.2 12 L21.2 6 Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.4 9.2 C8.1 9.5 4.8 13 4.2 18.8 C9.7 18.2 13.5 15.5 15.2 12 M8.1 15.7 L6.3 18.2 M10.8 14.4 L9.5 17.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
     sizeRange: [6, 48], defaults: { size: 30, opacity: 0.65 },
-    hardness: 0.35, spacing: 0.3,
-    pressure: { size: [0.65, 1], opacity: [0.15, 1], curve: 0.65 },
+    hardness: 0.65, spacing: 0.3,
+    pressure: { size: [0.9, 1], opacity: [0.6, 1], curve: 0.4 },
     tilt: { widen: 0.2, opacity: 1, grainFill: 1 },
     grain: null, paint: "modify", modify: "blur",
   },

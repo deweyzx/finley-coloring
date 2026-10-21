@@ -62,7 +62,12 @@ table, and any decisions that changed.
   are complete. **Batch 3 (Blender and Blur) passed Owen's PC test and is committed for the iPad check:** existing-paint
   tools, maximum size 48 each (default 30 / 65%), pressure and gentle tilt, line-lock, undo/redo,
   auto-save and export. Owen confirmed on 2026-10-21: "works good on the computer".
-  Waiting for Finley's iPad test before step 11.
+  iPad result: no lag, but both tools needed too much pressure; Blender's color result and the
+  icons/previews were not accepted. Owen supplied IMG_6831.MOV showing Pigment smoothing green
+  and yellow pencil strokes. **Revisions approved on PC and committed for iPad retest:** lighter pressure,
+  paint-pickup/carrying Blender (yellow trails into green), wider Blur, matching outlined
+  tool icons and curved previews. Owen approved the color-carrying result on 2026-10-21
+  ("perfect! thank you!"). Waiting for Finley's iPad retest of pressure, color trails and speed. Step 11 waits.
   Steps 11 and 12 have not started.
 
 ## How to work with Owen
@@ -107,7 +112,7 @@ table, and any decisions that changed.
 | 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails; Start over | ✅ |
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | ✅ |
 | 9 | Export the finished picture to Photos | ✅ |
-| 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | batches 1–2 ✅ iPad; batch 3 committed, iPad check pending |
+| 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | batches 1–2 ✅ iPad; batch 3 revisions committed, iPad retest pending |
 | 11 | Installable + offline (manifest, service worker, icons) | |
 | 12 | Magical storybook look, Themes, polish | |
 
@@ -453,17 +458,43 @@ table, and any decisions that changed.
 
 ## Blender and Blur (step 10, batch 3)
 
-- **Status:** passed Owen's PC test (2026-10-21); committed for Finley's iPad check. Finley
-  confirmed the latest watercolor 130 / glitter 120 / metallic 60 are all smooth on her iPad.
+- **Status:** original batch 3 passed PC and was committed as a96c03b. Her iPad: both tools
+  smooth, but pressure too weak until pressing hard, Blender's color result unlike Pigment, and
+  icons disliked. Owen approved the revisions below on PC (2026-10-21: "perfect! thank you!");
+  committed for the iPad retest. Await Finley's pressure, color-carrying and speed feedback.
+  Batches 1/2, including watercolor 130 / glitter 120 / metallic 60, are confirmed smooth.
 - **Implementation:** `js/blend-engine.js` exports `PaintEngine`, extending the original
   `StrokeEngine`. Ordinary brushes delegate unchanged to that engine. `modify: "blender"` /
   `"blur"`, `paint: "modify"` in brushes.js identify tools that change existing paint; they do
   not add the palette color, record a recently used color, or become the last color brush.
-- **Blender:** samples smoothed paint a little behind the stroke's direction, gently pulling and
-  mixing it. Blur averages neighboring paint in place. Both use a frozen starting picture,
-  MAX coverage per stroke, and a soft oval with pressure controlling size and strength.
+- **Blender now picks up and CARRIES paint.** Owen rejected the first local revision because
+  he wants the yellow streaks invading green in IMG_6831.MOV, not merely a softened boundary.
+  A per-stroke 12x12 paint tip retains separate colors across its footprint. Each dab picks up
+  some local paint and retains earlier paint using `1 - exp(-distance/(size*2.5))`; strokes
+  starting in yellow carry yellow into green, gradually picking up green. Samples obey line-lock.
+  The palette color is never added. New strokes start with a fresh tip. The previous fixed-offset
+  pull settings are removed. Blender spacing 0.2 (was 0.3) gives smoother continuous trails.
+- **Pickup and Blur:** Blender's sampled paint favors pigment over white paper gaps
+  (`weight = 1 - 0.9 * min(R,G,B)/255`), radius 30% of size, cap 16px. Blur still averages in
+  place with ordinary pixel weights, radius 22% of size, cap 12px; it does not carry paint.
+  Both keep a frozen starting picture and MAX opacity coverage. Blender cross-fades varying
+  carried COLORS with a smooth bell and per-pixel running weighted averages (separate from
+  opacity), avoiding visible round stamp boundaries without accumulating darker alpha blotches.
   Tilt gently widens the area. Maximum 48 page px each, default 30 / 65%; all other maxima
   stay unchanged. The size and opacity are remembered separately for each tool as usual.
+- **Light-touch revision:** both pressure curves 0.4, opacity minimum 0.6, size minimum 0.9
+  (was 0.65 / 0.15 / 0.65); hardness 0.65 instead of 0.35 gives a wider effective center with a
+  soft edge. Natural tilt no longer weakens Blender. At 3% simulated pressure with opacity 65%,
+  center strength 15.4% -> 45.4%; at 90% pressure 63.9%. Sliders still cap size/opacity; saved
+  choices stay unchanged. This is a simulated response, not measured Pencil force.
+- **Reference:** Owen's private IMG_6831.MOV (10.3 sec) shows green/yellow pencil grain becoming
+  smoother, fuller color with little dragging. Frames inspected locally; recording never copied
+  into the repository. New behavior is an original approximation, not a verified reproduction
+  of Pigment's private mixing math, particularly for other color pairs.
+  Follow-up: Owen explicitly wants streaks of yellow traveling into green and smooth lines;
+  softening-only was insufficient. The latest samples compare local softening vs real pickup/
+  carry on solid and original textured pencil marks. Automated checks confirm yellow influences
+  green 60px beyond the boundary (local averaging radius only 14px), and vice versa.
 - **Build up ON:** each new stroke uses the finished picture as its source, so successive strokes
   blend/smooth further. **OFF:** consecutive strokes with the same tool, size and lock region
   share an original source and a strongest-strength map; repeating the same path at equal or
@@ -478,17 +509,24 @@ table, and any decisions that changed.
 - **Memory/performance:** lazy source snapshots in 64px tiles avoid reading the full 22 MB canvas
   on touch-down. A reserved full-page source buffer is filled only as needed. A summed-area
   table makes each smoothed tile in linear time; cache capped at 96 tiles (~1.2 MB).
-  Stamping records coverage and pull direction; sampling/colors run once per changed pixel per
-  screen update, rather than per overlapping dab. Refreshes capped around 60/s; no predicted
+  The 12px paint tip is smoothed to 32px using tiny CPU-read-friendly canvases and the browser's
+  native resizer. Dabs use quick tip-pixel lookups and average carried color; screen updates apply
+  coverage to the frozen original. The oval row loop visits only the ellipse and increments
+  coordinates instead of recalculating rotations per pixel. Refreshes capped around 60/s; no predicted
   smudges. Pencil-up updates paint memory only in visited tiles, not the whole bounding box.
   The source is ~22 MB at full page size; build-up off adds ~5.6 MB for strengths; result tiles
-  are allocated only along the current stroke. Sources are released after build-up-on strokes,
+  are allocated only along the current stroke. Blender adds Float32 RGB/weight accumulators
+  (16 bytes per visited tile pixel, plus its 4-byte live image); long strokes need more memory.
+  Sources are released after build-up-on strokes,
   other picture edits/tool changes, or leaving the page.
 - **Paint memory:** altered pixels lose their old single-color/opacity record (mixed paint cannot
   honestly keep that old record). Painting there afterwards treats it as existing mixed paint;
   normal new paint records its own memory again. History saves/restores this memory with pixels.
-- **Preview:** cards and the live preview show a stroke across two existing color bands. Blender
-  and Blur appear after Metallic in the Brushes window. The old white-paint Speed test skips
+- **Preview:** cards/live preview now show curved paint ribbons matching the other brushes,
+  current color plus a lighter shade, using actual blending and a ribbon clip mask. The previous
+  two rectangular complementary-color blocks were disliked. Icons are now an outlined paper
+  stump and a soft brush, matching the existing diagonal handles/line weights. Blender and
+  Blur appear after Metallic. The old white-paint Speed test skips
   these tools because they need a colored source; the usual real-stroke speed log still works.
 - **Checks:** direct engine checks for pressure/opacity, build-up on/off, exact undo/redo,
   cancellation, refresh-frequency independence, unchanged original nine brushes; real masks on
@@ -496,11 +534,15 @@ table, and any decisions that changed.
   and paint-memory restore, lossless PNG; actual UI pointer strokes, undo/redo, reload persistence,
   export preview/download and portrait/landscape cards. Before/after sample sheet generated from
   actual tool output. Browser tests use an isolated profile, not Owen's saved coloring.
-- **Not verified:** actual Pencil pressure/tilt feel and speed on Finley's iPad. CPU throttling
-  and PC timing are estimates, not proof. She should simply try them and report smooth/laggy;
+- **Not verified:** revised Pencil pressure/tilt feel and speed on Finley's iPad. Original batch 3 was smooth. CPU throttling
+  and PC timing are estimates, not proof. The carrying version does more work than local
+  softening (latest 4x CPU-throttled 2300 screen-px/s check: Blender 48 ~1.2s work per simulated
+  second, first update 34ms, slowest later 30ms; Blur unchanged ~0.62s, later 21ms). Do not claim
+  that this proves iPad smoothness; improve further if her retest reports lag. She should simply
+  try them and report smooth/laggy;
   do not send her back through repeated Speed tests.
 - Tweakable sampling controls are in `js/settings.js`: `blendRadiusShare`, `blendMaxRadius`,
-  `blendPullShare`, `blendMaxPull`, `blendCacheTiles`.
+  `blendCarryDistance`, `blendTipGrid`, `blendTipPixels`, `blendPigmentWeight`, `blurRadiusShare`, `blurMaxRadius`, `blendCacheTiles`.
 
 ## Undo and redo (step 5)
 

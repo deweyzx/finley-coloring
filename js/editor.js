@@ -2,21 +2,22 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610210038";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610210038";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610210038";
-import { setupColorPicker } from "./color-picker.js?v=202610210038";
-import { setupSavePicture } from "./save-picture.js?v=202610210038";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610210038";
-import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=202610210038";
-import { createSlider } from "./slider.js?v=202610210038";
-import { History } from "./history.js?v=202610210038";
-import { Viewport } from "./viewport.js?v=202610210038";
-import { setupInput } from "./touch-input.js?v=202610210038";
-import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=202610210038";
-import { runSpeedTest } from "./speed-test.js?v=202610210038";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610210038";
-import { SETTINGS } from "./settings.js?v=202610210038";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610210116";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610210116";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610210116";
+import { setupColorPicker } from "./color-picker.js?v=202610210116";
+import { setupSavePicture } from "./save-picture.js?v=202610210116";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610210116";
+import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=202610210116";
+import { createSlider } from "./slider.js?v=202610210116";
+import { History } from "./history.js?v=202610210116";
+import { Viewport } from "./viewport.js?v=202610210116";
+import { setupInput } from "./touch-input.js?v=202610210116";
+import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=202610210116";
+import { runSpeedTest } from "./speed-test.js?v=202610210116";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610210116";
+import { SETTINGS } from "./settings.js?v=202610210116";
+import { hexToHsv, hsvToHex } from "./color.js?v=202610210116";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -340,12 +341,29 @@ function drawSample(canvas, toolId, pickSize) {
   const size = pickSize({ width: w, height: h }, ratio);
   const sample = new StrokeEngine(w, h);
   if (brush.modify) {
-    // Two contrasting painted bands let the preview actually show mixing/smoothing.
-    ctx.fillStyle = currentColor();
-    ctx.fillRect(0, h * 0.18, w * 0.5, h * 0.64);
-    const color = toRGB(currentColor());
-    ctx.fillStyle = `rgb(${255 - color.r}, ${255 - color.g}, ${255 - color.b})`;
-    ctx.fillRect(w * 0.5, h * 0.18, w * 0.5, h * 0.64);
+    // Show the same curved paint swatch as the other brushes, rather than two blocks.
+    // A lighter version of her color keeps the preview consistent with the other brushes.
+    const color = hexToHsv(currentColor());
+    const partner = hsvToHex({ h: color.h, s: color.s * 0.55, v: Math.min(1, color.v + 0.12) });
+    const band = document.createElement("canvas");
+    band.width = w; band.height = h;
+    const bandCtx = band.getContext("2d");
+    const paint = bandCtx.createLinearGradient(0, 0, w, 0);
+    paint.addColorStop(0, currentColor()); paint.addColorStop(0.499, currentColor());
+    paint.addColorStop(0.5, partner); paint.addColorStop(1, partner);
+    bandCtx.strokeStyle = paint;
+    bandCtx.lineWidth = Math.max(3 * ratio, size * 1.2);
+    bandCtx.lineCap = "round"; bandCtx.lineJoin = "round";
+    bandCtx.beginPath();
+    for (let k = 0; k <= 40; k++) {
+      const t = k / 40, x = w * (0.1 + 0.8 * t), y = h * (0.5 + 0.18 * Math.sin(t * Math.PI * 2));
+      if (!k) bandCtx.moveTo(x, y); else bandCtx.lineTo(x, y);
+    }
+    bandCtx.stroke(); ctx.drawImage(band, 0, 0);
+    const rgba = bandCtx.getImageData(0, 0, w, h).data;
+    const mask = new Uint8Array(w * h);
+    for (let i = 0; i < mask.length; i++) mask[i] = rgba[i * 4 + 3] ? 1 : 0;
+    sample.previewClip = { x: 0, y: 0, w, h, mask };
   }
   const paperBand = brush.paint === "paper";
   if (paperBand) {
@@ -354,6 +372,7 @@ function drawSample(canvas, toolId, pickSize) {
     ctx.fillRect(0, h * 0.2, w, h * 0.6);
   }
   sample.begin(brush, { size, opacity: settings.opacity }, paperBand ? PAPER_RGB : toRGB(currentColor()), true, ctx);
+  if (sample.previewClip) sample.setClip(sample.previewClip);
   const steps = 40;
   for (let k = 0; k <= steps; k++) {
     const t = k / steps;

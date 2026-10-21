@@ -250,12 +250,15 @@ Both looks are part of the picture itself, so they also show in a picture saved 
 
 New in step 10 (batch 3):
 
-- **Blender** gently pulls and mixes the colors already on the page along the stroke.
+- **Blender** picks up the color where the stroke starts and carries it along, gradually mixing
+  with the colors it crosses. Start in yellow and drag into green to pull a yellow trail into it;
+  reverse the stroke to carry green into yellow. It favors paint over white paper grain gaps.
 - **Blur** softens existing color transitions in place.
 
 These two tools use the paint already there, not the selected palette color. Start by painting
 two colors next to each other, then stroke across their boundary. Their maximum size is 48;
-opacity controls strength, and a light Pencil touch gives a gentler effect. Each remembers its
+opacity controls strength. A light Pencil touch already blends visibly, with firmer pressure
+strengthening the effect; she should not need to press hard. Each remembers its
 own size and opacity. White paper can lighten the color when mixed into it.
 
 **Stay inside lines** limits both the changed pixels and where color is sampled from, keeping
