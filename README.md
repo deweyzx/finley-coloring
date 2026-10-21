@@ -248,4 +248,24 @@ New in step 10 (batch 2):
 
 Both looks are part of the picture itself, so they also show in a picture saved to Photos.
 
+New in step 10 (batch 3):
+
+- **Blender** gently pulls and mixes the colors already on the page along the stroke.
+- **Blur** softens existing color transitions in place.
+
+These two tools use the paint already there, not the selected palette color. Start by painting
+two colors next to each other, then stroke across their boundary. Their maximum size is 48;
+opacity controls strength, and a light Pencil touch gives a gentler effect. Each remembers its
+own size and opacity. White paper can lighten the color when mixed into it.
+
+**Stay inside lines** limits both the changed pixels and where color is sampled from, keeping
+the neighboring outlined areas separate. The black lines always stay untouched.
+
+**Build up color on:** each new stroke blends or smooths further. **Off:** consecutive strokes
+with the same tool, size and outlined area work from the same starting picture, so repeated
+passes at the same strength stay even. More pressure or opacity can strengthen the effect.
+Switching tools, changing size or outlined area, undoing, painting, or reopening a page starts
+a fresh blending pass. The finished result always auto-saves, appears in the library, and is
+included in exported pictures; the temporary blending pass itself is not saved.
+
 The settings for each brush are in `js/brushes.js`, with comments explaining each number.

@@ -54,6 +54,7 @@
 //                       page joins in as one surface, maxShine: the rounding reaches at most this
 //                       many pixels whatever the brush size (12 if left out) }
 
+// modify: existing-paint tools, handled by blend-engine.js (no palette color added).
 export const BRUSHES = {
   pencil: {
     name: "Pencil",
@@ -203,6 +204,25 @@ export const BRUSHES = {
     effect: { kind: "metallic", shine: 0.3, bump: 0.8, gloss: 40, highlight: 0.9, sheen: 1, flake: 0.05, mica: 0.6, join: true },
     paint: "color",
   },
+  blender: {
+    name: "Blender",
+    icon: `<path d="M5 19L9 10L16 3L21 8L14 15Z" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 21Q9 16 15 20" fill="none" stroke="currentColor" stroke-width="1.7"/>`,
+    sizeRange: [6, 48], defaults: { size: 30, opacity: 0.65 },
+    hardness: 0.35, spacing: 0.3,
+    pressure: { size: [0.65, 1], opacity: [0.15, 1], curve: 0.65 },
+    tilt: { widen: 0.35, opacity: 0.9, grainFill: 1 },
+    grain: null, paint: "modify", modify: "blender",
+  },
+  blur: {
+    name: "Blur",
+    icon: `<circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="2" opacity=".6"/><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2" opacity=".3"/>`,
+    sizeRange: [6, 48], defaults: { size: 30, opacity: 0.65 },
+    hardness: 0.35, spacing: 0.3,
+    pressure: { size: [0.65, 1], opacity: [0.15, 1], curve: 0.65 },
+    tilt: { widen: 0.2, opacity: 1, grainFill: 1 },
+    grain: null, paint: "modify", modify: "blur",
+  },
+
 };
 
 // ---------- Remembering each brush's size and opacity ----------

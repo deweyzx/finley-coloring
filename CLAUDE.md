@@ -58,8 +58,12 @@ table, and any decisions that changed.
   sizes, Finley just says smooth or laggy. **Committed:** lean loops for plain dabs and watercolor
   (identical results), wider spacing for watercolor (0.3) / glitter (0.16) / metallic (0.16),
   **new max sizes: watercolor 130 (was 160), glitter 120 (was 150), metallic 60 (was 120)**; all
-  others unchanged. **Waiting:** Finley tries them (smooth or laggy). Batch 3 only after that.
-  Batch 3 only after Owen has tested batch 2 on her iPad.
+  others unchanged. **iPad confirmed:** Owen reports all three are smooth. Batches 1 and 2
+  are complete. **Batch 3 (Blender and Blur) passed Owen's PC test and is committed for the iPad check:** existing-paint
+  tools, maximum size 48 each (default 30 / 65%), pressure and gentle tilt, line-lock, undo/redo,
+  auto-save and export. Owen confirmed on 2026-10-21: "works good on the computer".
+  Waiting for Finley's iPad test before step 11.
+  Steps 11 and 12 have not started.
 
 ## How to work with Owen
 
@@ -103,7 +107,7 @@ table, and any decisions that changed.
 | 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails; Start over | ✅ |
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | ✅ |
 | 9 | Export the finished picture to Photos | ✅ |
-| 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | batch 1 ✅; batch 2 committed, iPad check pending |
+| 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | batches 1–2 ✅ iPad; batch 3 committed, iPad check pending |
 | 11 | Installable + offline (manifest, service worker, icons) | |
 | 12 | Magical storybook look, Themes, polish | |
 
@@ -447,6 +451,57 @@ table, and any decisions that changed.
   83% work / 29 ms slowest update vs 41% or less after - browsers only make code fast after it
   has run. Not verified on the iPad yet.
 
+## Blender and Blur (step 10, batch 3)
+
+- **Status:** passed Owen's PC test (2026-10-21); committed for Finley's iPad check. Finley
+  confirmed the latest watercolor 130 / glitter 120 / metallic 60 are all smooth on her iPad.
+- **Implementation:** `js/blend-engine.js` exports `PaintEngine`, extending the original
+  `StrokeEngine`. Ordinary brushes delegate unchanged to that engine. `modify: "blender"` /
+  `"blur"`, `paint: "modify"` in brushes.js identify tools that change existing paint; they do
+  not add the palette color, record a recently used color, or become the last color brush.
+- **Blender:** samples smoothed paint a little behind the stroke's direction, gently pulling and
+  mixing it. Blur averages neighboring paint in place. Both use a frozen starting picture,
+  MAX coverage per stroke, and a soft oval with pressure controlling size and strength.
+  Tilt gently widens the area. Maximum 48 page px each, default 30 / 65%; all other maxima
+  stay unchanged. The size and opacity are remembered separately for each tool as usual.
+- **Build up ON:** each new stroke uses the finished picture as its source, so successive strokes
+  blend/smooth further. **OFF:** consecutive strokes with the same tool, size and lock region
+  share an original source and a strongest-strength map; repeating the same path at equal or
+  lower strength does not keep smoothing it. Higher pressure/opacity can strengthen it. Changing
+  tools, size or lock region, painting, filling, undo/redo, Start over, leaving/reopening the page
+  starts a new pass. The temporary pass is not saved; the finished colors and controls are saved.
+- **Line-lock:** uses the existing fill worker's exact gap-closed/thin-sliver mask. Both destination
+  pixels AND sampled neighbors obey it; the average divides by allowed samples only, preventing
+  a neighboring outlined area's color (or artificial white padding) bleeding into the locked area.
+  Uncolored white paper within the region can lighten paint naturally. Line art is never sampled
+  or modified. With lock off, color can mix across outlined areas beneath the unchanged lines.
+- **Memory/performance:** lazy source snapshots in 64px tiles avoid reading the full 22 MB canvas
+  on touch-down. A reserved full-page source buffer is filled only as needed. A summed-area
+  table makes each smoothed tile in linear time; cache capped at 96 tiles (~1.2 MB).
+  Stamping records coverage and pull direction; sampling/colors run once per changed pixel per
+  screen update, rather than per overlapping dab. Refreshes capped around 60/s; no predicted
+  smudges. Pencil-up updates paint memory only in visited tiles, not the whole bounding box.
+  The source is ~22 MB at full page size; build-up off adds ~5.6 MB for strengths; result tiles
+  are allocated only along the current stroke. Sources are released after build-up-on strokes,
+  other picture edits/tool changes, or leaving the page.
+- **Paint memory:** altered pixels lose their old single-color/opacity record (mixed paint cannot
+  honestly keep that old record). Painting there afterwards treats it as existing mixed paint;
+  normal new paint records its own memory again. History saves/restores this memory with pixels.
+- **Preview:** cards and the live preview show a stroke across two existing color bands. Blender
+  and Blur appear after Metallic in the Brushes window. The old white-paint Speed test skips
+  these tools because they need a colored source; the usual real-stroke speed log still works.
+- **Checks:** direct engine checks for pressure/opacity, build-up on/off, exact undo/redo,
+  cancellation, refresh-frequency independence, unchanged original nine brushes; real masks on
+  Daffodils and both Tiger Lilies (no changed pixels outside, lines untouched), exact saved-color
+  and paint-memory restore, lossless PNG; actual UI pointer strokes, undo/redo, reload persistence,
+  export preview/download and portrait/landscape cards. Before/after sample sheet generated from
+  actual tool output. Browser tests use an isolated profile, not Owen's saved coloring.
+- **Not verified:** actual Pencil pressure/tilt feel and speed on Finley's iPad. CPU throttling
+  and PC timing are estimates, not proof. She should simply try them and report smooth/laggy;
+  do not send her back through repeated Speed tests.
+- Tweakable sampling controls are in `js/settings.js`: `blendRadiusShare`, `blendMaxRadius`,
+  `blendPullShare`, `blendMaxPull`, `blendCacheTiles`.
+
 ## Undo and redo (step 5)
 
 - `js/history.js`: before every stroke or fill changes the picture, `history.saveBefore(box)`
@@ -739,6 +794,7 @@ table, and any decisions that changed.
 | `js/dialogs.js` | Small question boxes: ask for a name, ask "are you sure?" |
 | `js/save-picture.js` | Save button: makes the finished picture, shares it to Photos / downloads it |
 | `js/brushes.js` | Brush definitions, saved per-brush settings, paper grain |
+| `js/blend-engine.js` | Blender/Blur: existing-paint sampling, soft coverage, line-lock and commit |
 | `js/stroke-engine.js` | Draws brush strokes (dabs, coverage, live layer, commit; spray, bristles, watercolor rims, splatter) |
 | `js/slider.js` | Pencil-friendly slider |
 | `js/history.js` | Undo and redo |

@@ -13,8 +13,8 @@
 //            takes longer than about two screen refreshes (33 ms).
 // Nothing is kept: her picture isn't touched, and the stroke layer is cleared after each stroke.
 
-import { BRUSHES } from "./brushes.js?v=202610202217";
-import { StrokeEngine } from "./stroke-engine.js?v=202610202217";
+import { BRUSHES } from "./brushes.js?v=202610210038";
+import { StrokeEngine } from "./stroke-engine.js?v=202610210038";
 
 const SCREEN_SPEED = 600; // screen pixels per second: a quick, sweeping stroke
 const SHARES = [1, 0.85, 0.7, 0.55, 0.4, 0.25]; // sizes tried, as shares of the biggest size
@@ -39,6 +39,8 @@ export async function runSpeedTest({ width, height, scale, wait, ahead, strokeCt
     // a first stroke so the browser has the brush code ready (like the warm-up)
     run(BRUSHES.marker, 20);
     for (const [id, brush] of Object.entries(BRUSHES)) {
+      // Existing-paint tools need a colored source and a different test, not a white spray.
+      if (brush.modify) continue;
       const [min, max] = brush.sizeRange;
       const sizes = [...new Set(SHARES.map((k) => Math.max(min, Math.round(max * k))))];
       const tried = [];

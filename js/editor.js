@@ -2,21 +2,21 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610202217";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610202217";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610202217";
-import { setupColorPicker } from "./color-picker.js?v=202610202217";
-import { setupSavePicture } from "./save-picture.js?v=202610202217";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610202217";
-import { StrokeEngine } from "./stroke-engine.js?v=202610202217";
-import { createSlider } from "./slider.js?v=202610202217";
-import { History } from "./history.js?v=202610202217";
-import { Viewport } from "./viewport.js?v=202610202217";
-import { setupInput } from "./touch-input.js?v=202610202217";
-import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=202610202217";
-import { runSpeedTest } from "./speed-test.js?v=202610202217";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610202217";
-import { SETTINGS } from "./settings.js?v=202610202217";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610210038";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610210038";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610210038";
+import { setupColorPicker } from "./color-picker.js?v=202610210038";
+import { setupSavePicture } from "./save-picture.js?v=202610210038";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610210038";
+import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=202610210038";
+import { createSlider } from "./slider.js?v=202610210038";
+import { History } from "./history.js?v=202610210038";
+import { Viewport } from "./viewport.js?v=202610210038";
+import { setupInput } from "./touch-input.js?v=202610210038";
+import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=202610210038";
+import { runSpeedTest } from "./speed-test.js?v=202610210038";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610210038";
+import { SETTINGS } from "./settings.js?v=202610210038";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -257,6 +257,7 @@ function changeBrushSetting(key, value) {
 
 function selectTool(name) {
   if (!tools[name]) return;
+  if (name !== currentTool) engine?.invalidateBlend();
   currentTool = name;
   for (const button of toolBar.querySelectorAll("[data-tool]")) {
     button.classList.toggle("selected", button.dataset.tool === name);
@@ -338,13 +339,21 @@ function drawSample(canvas, toolId, pickSize) {
   const settings = brushSettings(toolId);
   const size = pickSize({ width: w, height: h }, ratio);
   const sample = new StrokeEngine(w, h);
+  if (brush.modify) {
+    // Two contrasting painted bands let the preview actually show mixing/smoothing.
+    ctx.fillStyle = currentColor();
+    ctx.fillRect(0, h * 0.18, w * 0.5, h * 0.64);
+    const color = toRGB(currentColor());
+    ctx.fillStyle = `rgb(${255 - color.r}, ${255 - color.g}, ${255 - color.b})`;
+    ctx.fillRect(w * 0.5, h * 0.18, w * 0.5, h * 0.64);
+  }
   const paperBand = brush.paint === "paper";
   if (paperBand) {
     // The eraser is shown rubbing out a band of the current color.
     ctx.fillStyle = currentColor();
     ctx.fillRect(0, h * 0.2, w, h * 0.6);
   }
-  sample.begin(brush, { size, opacity: settings.opacity }, paperBand ? PAPER_RGB : toRGB(currentColor()));
+  sample.begin(brush, { size, opacity: settings.opacity }, paperBand ? PAPER_RGB : toRGB(currentColor()), true, ctx);
   const steps = 40;
   for (let k = 0; k <= steps; k++) {
     const t = k / steps;
@@ -480,7 +489,7 @@ function warmUpBrushes() {
     }
     const brush = brushes.shift();
     for (let round = 0; round < 2; round++) {
-      practice.begin(brush, { size: 24 + round * 30, opacity: 0.8 }, { r: 90, g: 60, b: 200 }, round === 0);
+      practice.begin(brush, { size: 24 + round * 30, opacity: 0.8 }, { r: 90, g: 60, b: 200 }, round === 0, ctx);
       for (let k = 0; k <= 24; k++) {
         const p = { x: 20 + k * 5, y: 80 + Math.sin(k / 4) * 30, pressure: 0.3 + k / 40, altitude: k % 2 ? 0.6 : 1.5, azimuth: 1 };
         practice.addPoint(p);
@@ -498,6 +507,7 @@ export function closeEditor() {
   if (stroke && !stroke.waiting) finishStroke();
   stroke = null;
   saveNow(); // leaving the page: save right away
+  engine?.invalidateBlend(); // release the temporary mixing source when leaving the editor
   currentPage = null;
 }
 
@@ -509,7 +519,8 @@ let unsaved = false;
 let saveTimer = null;
 let lastSave = Promise.resolve();
 
-function markChanged() {
+function markChanged(keepBlendPass = false) {
+  if (!keepBlendPass) engine?.invalidateBlend();
   unsaved = true;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(saveNow, SETTINGS.autosaveDelayMs);
@@ -569,6 +580,7 @@ function startOver() {
   colorCtx.fillStyle = "#ffffff";
   colorCtx.fillRect(0, 0, w, h);
   engine.memory.fill(0);
+  engine.invalidateBlend(); // a new blank picture must not reuse the previous mixing source
   // Forget the saved version too (a pending auto-save is no longer needed).
   clearTimeout(saveTimer);
   unsaved = false;
@@ -639,7 +651,7 @@ function startStroke(e) {
   s.recent = []; // the last few Pencil positions, for guessing where it's heading
   s.ahead = [];
   stroke = s;
-  engine.begin(brush, brushSettings(currentTool), rgb, buildUp.on);
+  engine.begin(brush, brushSettings(currentTool), rgb, buildUp.on, colorCtx);
   // Watercolor glazes over the colors underneath; the live stroke shows it the same way.
   strokeCanvas.style.mixBlendMode = engine.blend === "multiply" ? "multiply" : "";
   if (brush.flow) sprayWhileHeld(s);
@@ -797,7 +809,7 @@ function finishStroke() {
   }
   stroke = null;
   strokeCanvas.style.mixBlendMode = "";
-  if (changed) markChanged();
+  if (changed) markChanged(!!engine.brush.modify);
 }
 
 // Takes the stroke back with no mark at all (a finger that turned into a gesture).
@@ -858,7 +870,7 @@ function showStroke() {
 //   drawing can't fall further and further behind.
 // (The speed test in the touch log uses this too.)
 function drawingWait(eng, scale, lastCost) {
-  const notSmall = eng.tipRadius() * scale > SETTINGS.fullRateMaxBrushPx;
+  const notSmall = !!eng.brush.modify || eng.tipRadius() * scale > SETTINGS.fullRateMaxBrushPx;
   return Math.max(notSmall ? 14 : 0, lastCost * 2);
 }
 

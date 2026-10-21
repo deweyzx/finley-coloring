@@ -2,6 +2,15 @@
 // Sizes are in page pixels (a page is about 2048 x 2732 pixels).
 
 export const SETTINGS = {
+  // ---------- Blender and Blur (step 10, batch 3) ----------
+  // Sampling radius as a share of size; capped to keep fast strokes inexpensive.
+  blendRadiusShare: 0.12,
+  blendMaxRadius: 10,
+  // Blender carries color from behind the stroke, at most this many page pixels.
+  blendPullShare: 0.45,
+  blendMaxPull: 14,
+  // At most this many small, smoothed tiles stay cached (about 1.2 MB).
+  blendCacheTiles: 96,
   // ---------- Tap-to-fill ----------
 
   // Gap closing: breaks in a line up to about TWICE this many pixels wide are treated

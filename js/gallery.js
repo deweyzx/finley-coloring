@@ -1,9 +1,9 @@
 // gallery.js - the library screens: all categories -> one category -> one sub-category.
 // They all use the same grid of cards; only the cards and the header change.
 
-import { categories, coverPage, problems } from "./library.js?v=202610202217";
-import { getThumbnailURL } from "./thumbnails.js?v=202610202217";
-import { getPreviewURL, getProgressTimes, previewsReady } from "./autosave.js?v=202610202217";
+import { categories, coverPage, problems } from "./library.js?v=202610210038";
+import { getThumbnailURL } from "./thumbnails.js?v=202610210038";
+import { getPreviewURL, getProgressTimes, previewsReady } from "./autosave.js?v=202610210038";
 
 const grid = document.getElementById("gallery-grid");
 const titleEl = document.getElementById("library-title");
