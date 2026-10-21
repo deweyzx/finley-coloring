@@ -278,13 +278,15 @@ The settings for each brush are in `js/brushes.js`, with comments explaining eac
 
 ## Home Screen installation and offline coloring (step 11)
 
-**Status:** PC check passed (2026-10-21). The first iPad restore showed unreadable copies in
-the installed app; the Safari originals remain readable. A repair is uploaded for an iPad retest.
-Step 11 is not complete until installation, restore and offline checks pass on the iPad.
+**Status: step 11 is complete (2026-10-21).** PC testing passed. The first iPad restore needed
+repair 173f41d; the same backup then recovered the coloring. Owen confirmed the final installed
+app checklist worked perfectly: all 10 pages saved offline, Airplane Mode launch, coloring
+persistence after leaving/reopening, and rotation. The next planned step is storybook themes;
+that design work has not started.
 
 The library's **App & offline** button has the controls below.
 
-### Install on her iPad (after this step is uploaded)
+### Install on her iPad
 
 1. In Safari, open https://deweyzx.github.io/finley-coloring/ while online.
 2. Before moving, open **App & offline → Prepare backup → Save backup file**. Save the
@@ -360,8 +362,8 @@ and [WebKit storage policy](https://webkit.org/blog/14403/updates-to-storage-pol
 5. Change the Network setting back to **No throttling**, then close Developer Tools.
 6. Restore the saved .finley file without deleting any existing data. Confirm the message and
    Open library; coloring/palettes should still be there. Newer work should be kept.
-7. Report back before committing/uploading. Real iPad installation and Files selection still
-   need the hosted iPad check.
+7. This original checklist has already passed, along with the later iPad repair and offline
+   checks. Keep these instructions for future regression checks if something changes.
 
 ### If an earlier iPad restore left blank previews or unreadable pages
 
@@ -371,3 +373,11 @@ windows if asked. Then **Restore backup** using the same file, confirm, and choo
 library**. Matching pages should be refreshed; newer coloring is kept. Close and reopen the
 installed app and check those pages again. Do not clear website data or delete the app to repair
 this issue. The repair copies the backup's compressed data independently of the Files picker.
+
+### Project checkpoint and next step
+
+Latest published app code: **173f41d**, including the accepted iPad restore repair. Home Screen
+installation and offline coloring are complete and accepted on Finley's iPad. The next planned
+step is **12: Storybook design and themes**, including Storybook, Midnight Forest, Ocean Dreams,
+Autumn Cottage and a minimal look. Step 12 has not started. CLAUDE.md and AGENTS.md contain the
+full implementation history, current settings and next-session notes.

@@ -1,10 +1,46 @@
 # Finley's Coloring Book: project guide for Codex
 
 A free coloring app (a replacement for "Pigment") for Finley's iPad Pro 11" with Apple Pencil 2
-(pressure + tilt). Built by Owen (GitHub: deweyzx) with Codex, one tested step at a time.
+(pressure + tilt). Built by Owen (GitHub: deweyzx), first with Claude and now with Codex,
+one tested step at a time. This file and AGENTS.md share the same current project facts.
 
 **Keep this file current:** when a step is finished and committed, update "Where we are", the step
 table, and any decisions that changed.
+
+## Resume here — current status (2026-10-21)
+
+- **Step 11 is complete and accepted on the iPad.** Steps 1–11 are finished. Step 12 is next
+  and has NOT started; wait for Owen to ask before building the storybook design or themes.
+- **Latest reports:** after repair 173f41d, Owen said "everything returned". He then explicitly
+  confirmed the entire final checklist "all worked perfectly": Save all pages offline showed
+  10 of 10; the installed app reopened in Airplane Mode; a colored page opened, a new stroke
+  survived leaving/reopening, and rotation worked. This supersedes older pending-retest notes.
+- **Latest app code checkpoint:** 173f41d, committed and pushed to main, with deployed version
+  `20261021022059`. Earlier step 11 foundation: e6bc927. Full step 10 acceptance: f214dc9.
+- **Live app:** https://deweyzx.github.io/finley-coloring/ . Local project:
+  `C:\Users\owen moran\Documents\Projects\coloring-app`; start `start-server.bat`, then
+  http://localhost:8000 . Test the iPad through the hosted link because local Wi-Fi testing
+  between devices is unreliable. No npm, frameworks, bundler or build pipeline.
+- **Protect her work:** Safari and the Home Screen app had separate saved coloring in this
+  migration. Her Safari originals remained readable while the first installed restore failed.
+  The same .finley backup repaired the installed copy. Keep the original backup; never suggest
+  clearing website data or deleting/reinstalling the app as a routine update or restore fix.
+- **Working style:** explain simply; one step at a time; PC test then approved checkpoint/upload,
+  then iPad acceptance. Owen expressly approved uploading the Safari repair for its iPad retest.
+  Finley draws fast (1600–2300 screen px/s), has long nails, and values smooth brushes over
+  larger maximum sizes. Do not restart speed-log rounds unless a new lag problem warrants it.
+- **Documentation audit:** this session updates CLAUDE.md, AGENTS.md and README.md only. No new
+  app feature or step 12 design is part of this request. These acceptance/audit edits are saved
+  locally; latest published app code remains 173f41d. Include these guide edits in the next
+  approved checkpoint. Do not describe unsaved/uncommitted guide edits as already uploaded.
+
+### Accepted checkpoints
+
+| Checkpoint | What was delivered | Acceptance |
+|---|---|---|
+| f214dc9 | Step 10 completion record, all brush batches | Finley's iPad: all accepted |
+| e6bc927 | Step 11 install/offline, icon, backup and updates | PC passed; initial iPad restore needed repair |
+| 173f41d | Independent restored bytes, matching-date repair, readback verification | iPad restore recovered; final offline/reopen checklist then passed |
 
 ## Where we are
 
@@ -68,11 +104,12 @@ table, and any decisions that changed.
   paint-pickup/carrying Blender (yellow trails into green), wider Blur, matching outlined
   tool icons and curved previews. Owen approved the color-carrying result on 2026-10-21
   ("perfect! thank you!"). The subsequent iPad retest passed: "everything works perfectly! thank you!"
-  (2026-10-21). Step 10 is complete. **Step 11 checkpoint: PC check passed** (Home Screen/offline + backups);
-  committed/uploaded as e6bc927 for the iPad check. Restore failed in the installed app;
-  Safari originals remain readable. A restore repair is approved for upload and awaiting iPad
-  retest (see the repair notes below). The icon is approved.
-  Owen confirmed on 2026-10-21: "it worked now what". Step 12 has not started.
+  (2026-10-21). Step 10 is complete.
+- **Done, committed and accepted:** step 11, Home Screen installation, the approved enchanted
+  book icon, offline pages, safe app updates, and .finley backup/transfer. Foundation e6bc927;
+  Safari restore repair 173f41d. Owen confirmed both recovered coloring and the entire final
+  installed-app offline/reopen/persistence/rotation checklist on 2026-10-21.
+- **Next:** step 12, magical storybook design and remembered themes. Planned only; not started.
 
 ## How to work with Owen
 
@@ -117,8 +154,8 @@ table, and any decisions that changed.
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | ✅ |
 | 9 | Export the finished picture to Photos | ✅ |
 | 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | ✅ all three batches confirmed on iPad |
-| 11 | Installable + offline (manifest, service worker, icons), coloring backup/transfer | PC passed; iPad restore repair awaiting retest |
-| 12 | Magical storybook look, Themes, polish | |
+| 11 | Installable + offline (manifest, service worker, icons), coloring backup/transfer | ✅ PC and installed iPad app accepted, including offline/reopen |
+| 12 | Magical storybook look, Themes, polish | next; planned only, not started |
 
 ### Notes for future steps
 
@@ -143,8 +180,9 @@ table, and any decisions that changed.
   - With this many brushes the tool bar can't hold them all: the bar keeps Fill, Pencil, Marker,
     Eraser and a **Brushes** button that opens a window of all brushes, each with a sample stroke.
 
-- **Step 11:** the service worker must cache pages and thumbnails; plan for updates (version the
-  cache) since GitHub Pages also caches files for ~10 minutes.
+- **Step 11 is finished:** scoped/versioned app cache, thumbnail cache, on-demand full outlines,
+  bulk offline downloads, safe updates and repaired backup/transfer. See the implementation
+  section below; do not reimplement these as unfinished work.
 - **Step 12, fairy-tale UI + Themes:** the default theme is the magical storybook look: soft
   pastels with gold accents, gentle sparkle effects on taps and when a page is finished, a
   whimsical but readable title font (`--font-title`), and a library that feels like a magical book
@@ -165,10 +203,10 @@ table, and any decisions that changed.
   or null, `paint` "color" | "paper". **Adding a brush (step 10) = adding one entry**; the tool
   button is created automatically. Step 10 brushes (watercolor, airbrush, glitter) may need new
   engine features (e.g. wet edges, scatter, sparkle color) - add them as new optional fields.
-- **Stroke engine** (`js/stroke-engine.js`): stamps evenly spaced dabs, interpolating pressure and
+- **Stroke engine** (`js/stroke-engine.js`; ordinary brushes through `PaintEngine`): stamps evenly spaced dabs, interpolating pressure and
   tilt. Each stroke writes into a per-stroke coverage map using **MAX**, so a stroke never darkens
   where it overlaps itself (no blotches). It's shown live on `#stroke-canvas` (between color and
-  line art) once per animation frame, and on Pencil-up is drawn onto the color canvas
+  line art), with immediate input updates, prediction and adaptive pacing described in step 10, and on Pencil-up is drawn onto the color canvas
   (source-over), so **separate strokes build up** for layered shading.
 - **Pressure works under the sliders:** the slider value is the maximum; lighter pressure scales
   size and opacity down to the `pressure` minimums. Mouse and finger draw at full value.
@@ -208,13 +246,42 @@ table, and any decisions that changed.
   page opens, `warmUp()` works out the areas at 8 points along the page edges (usually the
   background). So starting a stroke or fill in the background takes ~2 ms instead of ~190 ms.
 
+## Current accepted brush settings
+
+This table is the current implementation in js/brushes.js. Historical development notes below
+retain earlier sizes, textures and measurements to explain decisions; they are not instructions
+to restore the old limits. All brushes were accepted on Finley's iPad in step 10.
+
+| Tool | Size range (page pixels) | Default size / opacity | Current spacing |
+|---|---|---|---|
+| Pencil | 1–40 | 8 / 90% | 0.12 |
+| Marker | 4–120 | 30 / 70% | 0.08 |
+| Eraser | 4–200 | 40 / 100% | 0.08 |
+| Airbrush | 10–300 | 80 / 60% | 0.2 |
+| Smooth hair | 2–200 | 24 / 85% | 0.12 |
+| Watercolor | 6–130 | 50 / 45% | 0.3 |
+| Splatter | 10–240 | 70 / 90% | 0.3 |
+| Glitter | 4–120 | 30 / 90% | 0.16 |
+| Metallic | 3–60 | 20 / 100% | 0.16 |
+| Blender | 6–48 | 30 / 65% | 0.2 |
+| Blur | 6–48 | 30 / 65% | 0.3 |
+
+- Smooth hair keeps Finley's preferred batch-1 appearance, with its later faster inner loop.
+- Pencil: pressure curve 0.5, minimum size 0.6 and opacity 0.5; grain fill [0.45, 0.85].
+- Blender/Blur: curve 0.4, minimum size 0.9 and opacity 0.6; hardness 0.65. Light touch is useful.
+- New defaults never overwrite her remembered per-brush size/opacity; values clamp to the range.
+- Keep original textures and effects in the exported picture. Do not copy Pigment assets/math.
+
 ## Brush collection (step 10)
+
+**History note:** batch-1/batch-2 descriptions and speed figures below include superseded
+implementations. Use the current settings table and later optimization notes for new work.
 
 - **Tool bar:** Fill, Pencil, Marker, Eraser (`inBar: true` in brushes.js) and a **Brushes**
   button (`.brushes-button`) that opens `#brushes-dialog`: a card per brush (every brush, bar
   ones too) with a sample stroke in the current color. The button shows the last brush picked
   from the window (`localStorage` "extra-brush") with a small grid badge, highlighted while that
-  brush is in use. Sideways, the 5 buttons just fit the 272 px panel (`.tools` gap 0).
+  brush is in use. Sideways, the 5 buttons fit the current 304 px panel (`.tools` gap 0).
 - `drawSample(canvas, toolId, pickSize)` in editor.js draws both the panel preview and the cards.
 - **New optional brush fields** (all in `stroke-engine.js`, all off for pencil/marker/eraser, which
   were checked to draw pixel-for-pixel the same as before - 12 fingerprints incl. tilt, line-lock
@@ -278,7 +345,7 @@ table, and any decisions that changed.
   size 300: 268 -> 97, 435 -> 137, 1021 -> 240 (2-4.3x); held still 1 s: 310 -> 35 (size 300).
   Other brushes also got faster from (1) and (5): marker 120 tilted 152 -> 83, smooth hair 100
   tilted 236 -> 171, watercolor 160 tilted 721 -> 559.
-  **Unknown:** how much slower her iPad is than this PC; even before, size 80 used only ~10% of
+  **Unknown at that early checkpoint (later calibrated below):** how much slower her iPad is than this PC; even before, size 80 used only ~10% of
   the time here, so the iPad may be much slower at this work, or something only happens there.
 - **Speed lines in the touch log** (`?debug`), three lines after every stroke:
   "Airbrush 80: 1.4 s, work 310 ms (22%), slowest 3 ms" /
@@ -406,15 +473,17 @@ table, and any decisions that changed.
   - Checked: every brush gives the expected finished picture (other brushes identical to the
     previous commit; watercolor identical however the screen updates) - 432 of 432 cases; 0 px
     outside line-lock; pencil/marker/eraser identical to step 9; app: undo/redo, build-up on/off,
-    auto-save exact. Not verified: the real iPad (the simulator is an estimate).
-- **Speed test** (`js/speed-test.js`, "Speed test" button in the touch log, `onSpeedTest()` in
-  touch-debug.js, wired in editor.js): for every brush, draws one second of a fast stroke (600
-  screen px/s at the current zoom, 240 samples/s, the app's own update rules via
-  `drawingWait()`) on a hidden full-size layer inside `#paper` (opacity 0) and a separate
-  StrokeEngine, starting at the biggest size and trying 85/70/55/40/25% until smooth (work <= 50%
-  of the second and no single update > 33 ms). Reports e.g. "Glitter (biggest 150): 150: 92% /
-  64 ms ✗ · 128: 61% ✗ · 105: 44% / 20 ms ✓ -> largest smooth size: about 105". Hidden layers
-  are removed afterwards. On the PC all brushes pass at their biggest size (1.7 s).
+    auto-save exact. These simulator figures were estimates at that checkpoint; later iPad
+    acceptance applies to the optimized brushes and conservative limits listed above.
+- **Speed test** (`js/speed-test.js`, button in ?debug): a retained diagnostic, not an acceptance
+  requirement. It uses 600 screen px/s and 240 samples/s, the app's drawing pace/prediction,
+  and the REAL visible stroke layer (white ink, cleared afterwards), with a separate engine
+  and hidden stand-in color canvas. Sizes 100/85/70/55/40/25%; smooth = work <= 50% and slowest
+  update <= 33 ms. Blender/Blur are skipped because they need existing colored paint. The first
+  version used a hidden layer and underestimated cost. Finley actually draws 1600–2300 px/s,
+  so do not treat this tool's 600 px/s result as proof of real fast-stroke performance. The
+  accepted conservative limits and her real "smooth" report take priority. Don't request
+  repeated screenshots/logs without a new unresolved performance issue.
 - **Drawing pace** (`drawingWait()` in editor.js): brushes reaching more than
   `fullRateMaxBrushPx` (12) screen px are redrawn at most ~60 times a second; plus the adaptive
   rule (wait twice the last update's time). Finished pictures don't depend on this.
@@ -458,7 +527,9 @@ table, and any decisions that changed.
   draws two tiny practice strokes on a hidden 160 px canvas, one brush every 30 ms (each step
   1-13 ms on the PC), pausing while she draws. Why: the first airbrush stroke on her iPad showed
   83% work / 29 ms slowest update vs 41% or less after - browsers only make code fast after it
-  has run. Not verified on the iPad yet.
+  has run. There was no separate follow-up warm-up measurement from the iPad; the
+  complete brush collection was subsequently accepted as smooth. Do not request another log
+  just to close this historical measurement note.
 
 ## Blender and Blur (step 10, batch 3)
 
@@ -466,7 +537,8 @@ table, and any decisions that changed.
   smooth, but pressure too weak until pressing hard, Blender's color result unlike Pigment, and
   icons disliked. Owen approved the revisions below on PC (2026-10-21: "perfect! thank you!");
   committed as 4341706. Owen then confirmed the iPad retest: "everything works perfectly!
-  thank you!" (2026-10-21). Batch 3 and step 10 are complete; step 11 passed the PC check; iPad installation/offline check pending.
+  thank you!" (2026-10-21). Batch 3 and step 10 are complete. Step 11 has since passed its
+  PC and installed-iPad checks too; see the current status at the top.
   Batches 1/2, including watercolor 130 / glitter 120 / metallic 60, are confirmed smooth.
 - **Implementation:** `js/blend-engine.js` exports `PaintEngine`, extending the original
   `StrokeEngine`. Ordinary brushes delegate unchanged to that engine. `modify: "blender"` /
@@ -643,7 +715,8 @@ table, and any decisions that changed.
   unavailable), updated }`, `progress[id] = { updated }`, `progressThumbs[id] = JPEG preview`
   (420×560 composite of color + lines). All three snapshots are taken synchronously at call time
   (`toBlob` snapshots the canvas; memory is `.slice()`d) so leaving the page can't save the wrong
-  picture. Measured on the daffodil: PNG 148 KB, memory 48 KB (from 22 MB), preview 103 KB.
+  picture. Since the step 11 repair, restored color/memory/previews may instead be Uint8Arrays;
+  `storedBlob()` supports both formats without changing database version 2. Measured on the daffodil: PNG 148 KB, memory 48 KB (from 22 MB), preview 103 KB.
 - `js/editor.js`: `markChanged()` after every stroke / fill / undo / redo → `saveNow()` after
   `SETTINGS.autosaveDelayMs` (1500) of quiet; never mid-stroke; immediately on leaving the page
   (`closeEditor`), on `visibilitychange` → hidden, and on `pagehide`. `openEditor` waits for any
@@ -652,8 +725,9 @@ table, and any decisions that changed.
 - **Database version 2** (`js/storage.js`): stores thumbnails, artwork, progress, progressThumbs.
   Opening gives up after 4 s (an old tab with the old app version blocks the upgrade - this
   happened in testing); connections close on `versionchange` so new versions never get stuck
-  again. **If her saved coloring can't be read, the page is NOT shown and NOT saved** (message:
-  close other tabs and reopen), so a blank page can never overwrite her real work.
+  again. **If her saved coloring can't be read, the page is NOT shown and NOT saved.** A
+  database-access failure suggests closing other tabs; an unreadable saved image now points
+  to App & offline → Restore backup. Do not dismiss that distinction or clear stored data.
 - `js/gallery.js`: before drawing cards, waits for the newest preview (`previewsReady()`) and
   reads `progress`; a page card shows her colored preview, a category/sub-category card shows its
   most recently colored page; untouched pages show the blank thumbnail.
@@ -740,7 +814,8 @@ table, and any decisions that changed.
 - Tested here: exact pixel contents (every line pixel black, every colored pixel kept, white paper,
   no transparency), share path with a stubbed `navigator.share` (file name/type/size, cancel, failure),
   download path, tap outside / Close, both orientations (fits, no scrolling).
-  **Not testable here: the real share sheet** - Owen checks on the iPad.
+  **Real iPad acceptance:** Owen confirmed the share sheet, Download instead and touch-and-hold
+  worked in both orientations in step 9. Local tests cannot substitute for that real check.
 - Not built: exporting the colors without lines, a share/export from the library, JPEG option.
 
 ## Key decisions
@@ -801,18 +876,30 @@ table, and any decisions that changed.
 - **Live:** https://deweyzx.github.io/finley-coloring/ (repo `deweyzx/finley-coloring`, public,
   Pages from `main` / root, `.nojekyll` present). It updates ~1 minute after a push, and Safari may
   show the old version for a few minutes.
-- **Browser caching lesson:** GitHub Pages lets Safari reuse files for ~10 min. Without version
-  stamps, Finley's iPad ran the new HTML with old cached JS (a new switch appeared but did
-  nothing). Fixed with version stamps (below). After any upload, tell Owen to **wait ~10 minutes
-  and reopen the tab** before testing.
+- **Browser caching lesson:** GitHub Pages/Safari previously mixed new HTML with old JS.
+  Versioned references fixed that; step 11 adds verified complete app caches. Publishing may
+  still be briefly mixed: an offline update with mismatched hashes is rejected and the current
+  app kept. If a new version is missing, allow about 10 minutes and check again; never clear
+  Safari data to force it. First install and browser-only visits can still show cached HTML.
 - **Before every commit that will be pushed, run `python tools/stamp_version.py`.** It stamps
-  `?v=<yyyymmddHHMMSS>` onto every reference (index.html's CSS/JS, every `import ... from "./x.js"`,
-  the fill worker URL). GitHub Pages lets browsers cache files ~10 min, and without stamps Safari
-  ran new HTML with old cached JS (the "Draw with finger" switch appeared but did nothing). With
-  stamps a page always gets matching code; only the HTML itself can be up to ~10 min stale, so
-  tell Owen to wait ~10 minutes after an upload (or until step 11's service worker). New imports
-  must use plain `"./x.js"` (the tool adds the stamp). In browser-pane tests, import modules with
-  the same `?v=` the page uses, or you get a separate copy of the module (separate worker/state).
+  `?v=<yyyymmddHHMMSS>` onto index CSS/JS, static module imports and fill-worker references,
+  updates the worker's VERSION/importScripts query, and generates offline-assets.js with
+  SHA-256 shell/outline hashes. Text hashes normalize CRLF/LF; images stay byte-exact. Run it
+  AFTER final source edits and page imports so the listed hashes match deployed files.
+  New imports use plain "./x.js" and receive a stamp. Browser checks must import the SAME ?v
+  as the app or they create separate module/worker state. Don't hand-edit offline-assets.js.
+- **Installed-app updates:** online → library → App & offline → Check for updates → Update app
+  when offered. No automatic mid-stroke reload. The app waits for the last save, blocks update
+  after a failed save, and requires other scoped app windows closed. Closing all app windows
+  also lets a downloaded waiting worker activate naturally. A hard refresh alone may keep the
+  old worker; use the app's update controls or normal close/reopen. Registration uses
+  updateViaCache: none. Serve via localhost or HTTPS; file:// is unsupported.
+- **Current local check method:** isolated desktop Chrome via the bundled Playwright runtime,
+  with working animation frames and the real pointer path, separate from Owen's browser data.
+  Old notes saying the browser pane cannot animate describe the historical pane only.
+  Temporary developer scripts/artifacts in tools/*.tmp are ignored and are not app dependencies
+  or reliable files to expect after a fresh clone. No tests or benchmarks were rerun for this
+  documentation-only audit.
 - **Git:** identity is repo-local: `deweyzx` / `343752721+deweyzx@users.noreply.github.com` (keeps
   his real email private). Pushing works through the saved Git Credential Manager sign-in.
   Commit messages are "Step N: …" with a short explanation.
@@ -861,13 +948,14 @@ table, and any decisions that changed.
 
 ## Home Screen, offline files and backups (step 11)
 
-- **Status:** Owen approved the PC check on 2026-10-21 ("it worked now what").
-  This checkpoint is for the hosted iPad installation/offline check. Wait for that report
-  before calling step 11 complete or starting step 12.
+- **Status: complete.** Owen approved the PC check, then confirmed restored coloring after
+  repair 173f41d, then explicitly confirmed the full installed-app offline/reopen/persistence/
+  rotation checklist "all worked perfectly" (2026-10-21). Step 12 is next, not started.
 - **Manifest and icons:** `manifest.webmanifest`, relative id/start_url/scope `./`, standalone,
   no orientation lock. `index.html` links the manifest, 180px Apple icon and Apple standalone
   metadata. User-approved original enchanted book/vines/slim pencil icon: `icons/enchanted-book-1024.png`;
-  derivatives 192/512 and Apple 180, all opaque square PNG. `icons/README.md` records built-in
+  derivatives 192/512 and Apple 180, all opaque square PNG. The original generation is
+  1254 square; the reusable master is 1024 square. iPad applies its own rounded corners. `icons/README.md` records built-in
   generation and the final prompt. Earlier design options are retained but not cached offline.
 - **Library button:** App & offline opens a scrollable window with installation help, page
   download status, Save all pages offline, backup/restore, update controls. Large controls,
@@ -904,11 +992,18 @@ table, and any decisions that changed.
   external libraries. Includes artwork PNG, gzip paint memory, progress previews/timestamps,
   palettes/recents, brush settings, line-lock/build-up and extra brush. Excludes outlines,
   undo history, touch-debug setting and temporary blending state. Backups include stored page
-  IDs even if not currently listed. File limits live in SETTINGS.
+  IDs even if not currently listed. File limits live in SETTINGS: 2000 pages, 2 MiB JSON
+  header, 2 GiB total file, 64 MiB per payload, 16,777,216 pixels per full image. These are
+  validation bounds, not proof that an iPad can restore a near-limit collection in memory.
+  Offline reply timeouts are 30 seconds normally and 120 seconds between download replies.
+  The exact preferences included are brush-settings, recent-colors, palettes, line-lock,
+  build-up and extra-brush; finger drawing is automatic and touch-debug is not transferred.
 - **Restore:** reads/validates the complete file (bounds, unique IDs, decoded images, decompressed
   memory size where supported) before a confirmation and writes. `dbMergeArtwork` merges all
-  artwork/progress/previews in ONE transaction, reading saved dates inside it to keep strictly newer
-  local work, including concurrent saves; equal dates are refreshed to repair old imports. Restores allowlisted preferences, reports failures;
+  artwork/progress/previews in ONE transaction, reading saved dates inside it to keep strictly
+  newer local work, including concurrent saves; equal dates are refreshed to repair old imports.
+  Restored payloads are independent byte arrays and are compared with database readback before
+  success. Restores allowlisted preferences and reports failures;
   finishing with Open library reloads UI caches. Online restores also try downloading current
   outlines for listed restored pages. Missing/removed outlines require restoring their IDs.
   No cloud sync, accounts, or uploads of artwork. No deletion of Safari data is required.
@@ -918,8 +1013,10 @@ table, and any decisions that changed.
   settings transferred, truncated file rejected; all 10 outlines downloaded and real Daffodil /
   both Tiger Lilies reopened offline; PNG download offline; deliberately incomplete update
   rejected with old app retained; extra-window activation refused; successful update retains
-  downloaded outlines and artwork. No unexpected JavaScript errors. Real iPad Home Screen,
-  Files picker/download, Pencil feel and Safari offline restart still need Owen's hosted check.
+  downloaded outlines and artwork. No unexpected JavaScript errors. **Real iPad acceptance is
+  now complete:** installation/backup flow was exercised, repaired coloring returned, and Owen
+  confirmed the final installed-app offline/reopen/persistence/rotation checklist passed.
+  Local checks and the hardware reports are separate evidence; preserve both.
 - **References:** https://webkit.org/tracking-prevention/ (Home Screen isolation),
   https://webkit.org/blog/14403/updates-to-storage-policy/ (storage),
   https://web.dev/articles/service-worker-lifecycle (update lifecycle).
@@ -949,10 +1046,33 @@ table, and any decisions that changed.
   storage, clearing selected file + reload, exact colors/gzip memory; simulate damaged matching-
   timestamp image and thumbnail then re-restore and open; preserve newer coloring; reject a
   truncated backup; offline real pages/export; safe update and artwork persistence. These are
-  Chrome checks, not confirmation of the iPad repair.
+  Chrome checks. The later iPad report below supplies real-device acceptance.
 - **Authorization:** Owen explicitly chose "Commit and upload the repair" (2026-10-21).
-  This repair checkpoint is for an iPad retest. Step 11 is still incomplete until that passes.
-- **Retest:** Home Screen app online → library → App & offline → Check for updates → Update app
-  when offered. Close other coloring-book windows if requested; keep all website data. Restore
-  the SAME backup, confirm, Open library, open colored pages; fully close/reopen installed app
-  to confirm progress remains. Keep the Safari original and backup until this succeeds.
+  Repair committed/uploaded as 173f41d. Owen confirmed "everything returned" on the iPad
+  (2026-10-21). That first report confirmed recovery only. **He subsequently confirmed the
+  ENTIRE final offline/reopen/persistence/rotation checklist "all worked perfectly". Step 11 is
+  complete.** Do not ask him to repeat it as though it were still pending.
+- **Recovery procedure (now passed; keep for reference):** Home Screen app online → library →
+  App & offline → Check for updates → Update app when offered. Close other coloring-book
+  windows if requested; keep website data. Restore the SAME backup, confirm, Open library,
+  then close/reopen and check progress. The original .finley file remains useful as a backup.
+
+### Final step 11 acceptance and next-session handoff
+
+Owen quoted the requested final checklist and explicitly said it "all worked perfectly":
+
+1. In the installed app, Save all pages offline reached 10 of 10 for the current library.
+2. Airplane Mode, fully closing the app, then reopening its Home Screen icon worked.
+3. A colored page opened; a new stroke remained after leaving and reopening; rotation worked.
+
+Record this as actual iPad acceptance, not a local simulation. Keep .finley backups and do not
+assume Home Screen installation is cloud sync. If an unrelated future problem appears, use the
+safe update/backup workflow above rather than repeating the whole migration.
+
+**Step 12 remains planned:** default Storybook (pastels, gold, readable whimsical title font,
+calm enchanted-shelf library), plus Midnight Forest, Ocean Dreams, Autumn Cottage and minimal.
+Library Themes button; remember choice in localStorage; each theme one CSS-variable block,
+with a small settings object for non-CSS effects. Gentle tap/finish sparkles; reduced motion
+should be considered during implementation. Paper stays white, buttons stay large, both
+orientations remain usable, and all accepted drawing/storage behavior must be preserved.
+No theme implementation, theme selection UI or final storybook restyle has been built yet.
