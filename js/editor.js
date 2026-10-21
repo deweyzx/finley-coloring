@@ -2,23 +2,23 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=20261021022059";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=20261021022059";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=20261021022059";
-import { setupColorPicker } from "./color-picker.js?v=20261021022059";
-import { setupSavePicture } from "./save-picture.js?v=20261021022059";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=20261021022059";
-import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=20261021022059";
-import { createSlider } from "./slider.js?v=20261021022059";
-import { History } from "./history.js?v=20261021022059";
-import { Viewport } from "./viewport.js?v=20261021022059";
-import { setupInput } from "./touch-input.js?v=20261021022059";
-import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=20261021022059";
-import { runSpeedTest } from "./speed-test.js?v=20261021022059";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=20261021022059";
-import { SETTINGS } from "./settings.js?v=20261021022059";
-import { hexToHsv, hsvToHex } from "./color.js?v=20261021022059";
-import { rememberPageForOffline } from "./offline.js?v=20261021022059";
+import { loadImage, drawLineArt } from "./lineart.js?v=20261021155109";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=20261021155109";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=20261021155109";
+import { setupColorPicker } from "./color-picker.js?v=20261021155109";
+import { setupSavePicture } from "./save-picture.js?v=20261021155109";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=20261021155109";
+import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=20261021155109";
+import { createSlider } from "./slider.js?v=20261021155109";
+import { History } from "./history.js?v=20261021155109";
+import { Viewport } from "./viewport.js?v=20261021155109";
+import { setupInput } from "./touch-input.js?v=20261021155109";
+import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=20261021155109";
+import { runSpeedTest } from "./speed-test.js?v=20261021155109";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=20261021155109";
+import { SETTINGS } from "./settings.js?v=20261021155109";
+import { hexToHsv, hsvToHex } from "./color.js?v=20261021155109";
+import { rememberPageForOffline } from "./offline.js?v=20261021155109";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -113,6 +113,7 @@ function openBrushes() {
     const card = document.createElement("button");
     card.type = "button";
     card.className = "brush-card" + (id === currentTool ? " selected" : "");
+    card.setAttribute("aria-pressed", String(id === currentTool));
     const sample = document.createElement("canvas");
     const name = document.createElement("span");
     name.className = "brush-name";
@@ -263,6 +264,7 @@ function selectTool(name) {
   currentTool = name;
   for (const button of toolBar.querySelectorAll("[data-tool]")) {
     button.classList.toggle("selected", button.dataset.tool === name);
+    button.setAttribute("aria-pressed", String(button.dataset.tool === name));
   }
   const brush = BRUSHES[name];
   if (brush && !brush.inBar && extraBrush !== name) {
@@ -275,7 +277,13 @@ function selectTool(name) {
     showBrushesButton();
   }
   brushesButton.classList.toggle("selected", !!brush && !brush.inBar);
+  brushesButton.setAttribute("aria-pressed", String(!!brush && !brush.inBar));
+  brushesButton.setAttribute("aria-label", brush && !brush.inBar ? `Brushes: ${brush.name}` : "More brushes");
   controls.classList.toggle("disabled", !brush); // fill has no size or opacity
+  for (const slider of controls.querySelectorAll(".slider")) {
+    slider.setAttribute("aria-disabled", String(!brush));
+    slider.tabIndex = brush ? 0 : -1;
+  }
   lineLock.button.classList.toggle("faded", !brush); // these switches are for brushes
   buildUp.button.classList.toggle("faded", !brush);
   if (brush) {
@@ -418,6 +426,7 @@ export async function openEditor(page) {
   currentPage = page;
   fillReady = null;
   titleEl.textContent = page.title;
+  paper.setAttribute("aria-label", `${page.title} coloring page`);
   paper.hidden = true;
   messageEl.textContent = "Loading…";
 

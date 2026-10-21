@@ -9,7 +9,7 @@
 //   "palettes"       - { active: "<palette id>", list: [{ id, name, colors: ["#rrggbb", ...] }] }
 // The built-in "Classic" palette is always there and can't be changed.
 
-import { hexToRgb, normalizeHex } from "./color.js?v=20261021022059";
+import { hexToRgb, normalizeHex } from "./color.js?v=20261021155109";
 
 export const DEFAULT_COLORS = [
   // reds and pinks
@@ -27,6 +27,11 @@ export const DEFAULT_COLORS = [
 ];
 
 export const CLASSIC = { id: "classic", name: "Classic", colors: DEFAULT_COLORS, builtin: true };
+const COLOR_NAMES = new Map(DEFAULT_COLORS.map((hex, i) => [hex, [
+  "Raspberry", "Red", "Coral pink", "Pink", "Terracotta", "Apricot", "Golden yellow", "Light yellow",
+  "Deep green", "Leaf green", "Lime green", "Mint green", "Navy", "Royal blue", "Ocean blue", "Sky blue",
+  "Purple", "Lilac", "Pale lavender", "Peach", "Brown", "Sand", "Grey", "White",
+][i]]));
 
 const MAX_RECENT = 10;       // remembered (and shown in the picker)
 const SHOWN_RECENT = 8;      // shown in the tool panel (two rows when the iPad is sideways)
@@ -195,7 +200,7 @@ export function makeSwatch(color) {
   swatch.className = "swatch";
   swatch.style.setProperty("--swatch", color);
   swatch.dataset.color = color;
-  swatch.setAttribute("aria-label", "Color " + color);
+  swatch.setAttribute("aria-label", (COLOR_NAMES.get(color.toLowerCase()) || "Custom color") + ", " + color);
   return swatch;
 }
 
@@ -227,7 +232,9 @@ function markSelected() {
   for (const container of [stripEl, recentEl]) {
     if (!container) continue;
     for (const swatch of container.children) {
+      if (!swatch.dataset.color) continue;
       swatch.classList.toggle("selected", swatch.dataset.color === current);
+      swatch.setAttribute("aria-pressed", String(swatch.dataset.color === current));
     }
   }
   if (moreButton) moreButton.style.setProperty("--current", current);

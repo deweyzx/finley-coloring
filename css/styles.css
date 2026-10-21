@@ -1,51 +1,212 @@
-/* ---------- THE LOOK: every color, font and size used in the app ----------
-   To restyle the whole app (like the magical storybook look planned for the
-   final step), change the values here. The rest of this file only uses these names. */
+/* Storybook, part 1. The approved icon supplies the materials.
+   All theme colors/fonts live here; fonts are bundled for offline use. */
 :root {
-  /* Colors */
-  --bg: #f6f3ee;            /* warm off-white background */
-  --surface: #ffffff;       /* cards and buttons */
-  --paper: #ffffff;         /* the coloring page itself (keep white) */
-  --desk: #e9e4dc;          /* the area around the picture */
-  --ink: #2f2a26;           /* main text */
-  --muted: #8a817a;         /* secondary text */
-  --accent: #6f9a8a;        /* calm sage green: selected things */
-  --hairline: #efe9e1;      /* thin borders */
-  --warning-bg: #fbe3dc;    /* warning box */
-  --warning-ink: #8a2f1c;
-  --danger: #c0392b;        /* "Erase my coloring" */
-  --backdrop: rgba(40, 32, 26, 0.45); /* dims the screen behind a question */
-  --rainbow: conic-gradient(#ff4d4d, #ffb703, #ffe066, #57cc99, #3a86ff, #7b2cbf, #f7a1c4, #ff4d4d); /* the "more colors" ring */
-
-  /* Shadows */
-  --shadow: 0 2px 10px rgba(60, 45, 30, 0.10);
-  --shadow-stack: rgba(60, 45, 30, 0.12);
-  --shadow-paper: 0 4px 24px rgba(60, 45, 30, 0.18);
-
-  /* Fonts */
-  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-title: var(--font-body);  /* titles: swap in a storybook font later */
-  --text-title: 24px;
+  /* Parchment (the icon's pages) */
+  --bg: #f3e8d0;
+  --bg-deep: #e7d6b2;
+  --surface: #fcf6ea;
+  --surface-2: #f8efdc;
+  --paper: #ffffff;            /* the coloring page itself always stays white */
+  --desk: #e9dcc0;
+  /* Leather (the icon's background and cover) */
+  --leather: #25482e;
+  --leather-light: #365c3e;
+  --leather-deep: #183621;
+  --on-leather: #f7e9cb;
+  --on-leather-soft: #e2cf9f;
+  /* Ink and text */
+  --ink: #1d3324;
+  --ink-soft: #33493b;
+  --muted: #5f553d;
+  /* Forest green for "selected" and the main button */
+  --accent: #2f6248;
+  --accent-deep: #1f4532;
+  --accent-text: #fff6e0;
+  /* Gilt (the icon's page edges) */
+  --gold: #c9995b;
+  --gold-light: #e8cb8c;
+  --gold-deep: #7d5a1f;        /* dark enough to be text on parchment */
+  --ivy: #5e8a5a;
+  --ivy-leaf: #a9c79d;
+  --hairline: #dcc79c;         /* decorative lines only */
+  --edge: #957d48;             /* outline of anything you can tap: 3:1 against the parchment */
+  --ribbon: #a8473c;
+  --ribbon-deep: #7f3029;
+  --focus: #1f6fb2;
+  --shadow-soft: 0 1px 2px rgba(74, 54, 22, 0.10), 0 4px 12px rgba(74, 54, 22, 0.10);
+  --shadow-lift: 0 2px 3px rgba(74, 54, 22, 0.10), 0 12px 28px rgba(74, 54, 22, 0.16);
+  --shadow-sheet: 0 1px 1px rgba(62, 44, 18, 0.12), 0 6px 14px rgba(62, 44, 18, 0.14);
+  --shadow-paper: 0 2px 3px rgba(62, 44, 18, 0.10), 0 18px 44px rgba(62, 44, 18, 0.22);
+  --font-title: "Literata", Georgia, serif;
+  --font-body: "Figtree", -apple-system, "Segoe UI", sans-serif;
+  /* type scale (iPad, 16px base, ratio ~1.25) */
+  --text-small: 15px;
   --text-normal: 17px;
-  --text-small: 14px;
-
-  /* Shapes and sizes */
-  --radius: 18px;
-  --button-size: 52px;      /* big enough for a finger or Pencil */
-  --swatch-size: 44px;      /* color circles */
-  --panel-width: 304px;     /* tool panel when the iPad is sideways (fits 5 swatches across) */
-  --preview-width: 128px;   /* brush preview (upright iPad) */
-  --preview-height: 76px;
-  --slider-height: 40px;    /* touch area of a slider */
-  --slider-thumb: 30px;     /* the round knob */
-  --toggle-height: 40px;    /* the on/off switches */
-  --brush-sample-height: 64px; /* sample strokes in the Brushes window */
-  --wheel-size: min(340px, 100%); /* the color picker's hue ring */
+  --text-large: 21px;
+  --text-title: 27px;
+  --text-hero: 35px;
+  --text-section: 24px;
+  --title-weight: 650;          /* titles */
+  --title-weight-soft: 500;     /* tagline and section headings */
+  --title-italic: italic;       /* fonts without a real italic set this to normal */
+  --button-size: 52px;
+  --swatch-size: 44px;
+  --radius-control: 26px;      /* pills and round buttons */
+  --radius-tile: 16px;         /* tool tiles */
+  --radius-panel: 28px;        /* the tool panel */
+  --radius-sheet: 3px;         /* paper is paper: nearly square */
+  --leather-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0.05  0 0 0 0 0  0 0 0 0.22 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  --paper-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.33  0 0 0 0 0.15  0 0 0 0.09 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  /* Shared visual values: future themes replace tokens, not component rules. */
+  --ink-shadow: #10261a;
+  --ivy-vein: #4f7a52;
+  --gilt-bottom: #b8843f;
+  --control-top: #fffdf8;
+  --control-bottom: #f4ead4;
+  --control-green-top: #3a7457;
+  --panel-top-color: #fdf8ee;
+  --panel-bottom-color: #f8eedb;
+  --bar-bottom: #f6ecd7;
+  --desk-light: #efe4cc;
+  --desk-deep: #d9c9a7;
+  --sheet-under: #fbf8f1;
+  --switch-off: #857652;
+  --slider-track-color: #c9b387;
+  --disabled-edge: #c4ae80;
+  --disabled-ink: #8f8468;
+  --swatch-inner-edge: rgba(60,45,20,0.6);
+  --picker-handle-edge: rgba(0,0,0,0.35);
+  --white-shine: rgba(255,255,255,0.5);
+  --white-soft: rgba(255,255,255,0.12);
+  --clear: transparent;
+  --gold-rule: rgba(232,203,140,0.55);
+  --gold-rule-soft: rgba(232,203,140,0.22);
+  --shadow: var(--shadow-soft);
+  --shadow-stack: rgba(60,45,30,0.12);
+  --shadow-selected: 0 6px 14px rgba(31,69,50,0.30);
+  --shadow-cover: 0 8px 22px rgba(24,54,33,0.28);
+  --shadow-medallion: 0 6px 14px rgba(0,0,0,0.35);
+  --shadow-knob: 0 3px 8px rgba(74,54,22,0.28);
+  --shadow-track: inset 0 1px 2px rgba(74,54,22,0.20);
+  --shadow-toggle: inset 0 1px 2px rgba(0,0,0,0.25);
+  --shadow-swatch: inset 0 -3px 5px rgba(0,0,0,0.12), 0 2px 4px rgba(74,54,22,0.18);
+  --warning-bg: #fbe3dc;
+  --warning-ink: #8a2f1c;
+  --danger: #a43128;
+  --backdrop: rgba(40,32,26,0.45);
+  --debug-bg: rgba(20,20,30,0.82);
+  --debug-ink: #e8f6ff;
+  --debug-button-ink: #14141e;
+  --rainbow: conic-gradient(#ff4d4d,#ffb703,#ffe066,#57cc99,#3a86ff,#7b2cbf,#f7a1c4,#ff4d4d);
+  --radius: 20px;
+  --panel-width: 304px;
+  --preview-width: 140px;
+  --preview-height: 108px;
+  --slider-height: 50px;
+  --slider-thumb: 24px;       /* visible knob; the whole 50px row is still easy to touch */
+  --slider-gap: 20px;         /* room for the knob at either end, clear of label and value */
+  --toggle-height: 48px;
+  --brush-sample-height: 64px;
+  --wheel-size: min(340px,100%);
   --app-dialog-width: 620px;
   --app-icon-size: 64px;
   --app-section-gap: 20px;
   --app-dialog-padding: 24px;
+  --shelf-padding: 34px;
+  --collection-gap: 34px;
+  --cover-padding-top: 34px;
+  --cover-padding-bottom: 30px;
+  --header-icon-size: 84px;
+  --continue-width: 108px;
+  --continue-height: 144px;
+  --control-gap: 12px;
+  --panel-padding: 20px;
+  --panel-gap: 12px;
+  --swatch-gap: 12px;
+  --tool-gap: 10px;
+  --thumbnail-inset: 8%;
+  --focus-width: 3px;
+  --focus-offset: 3px;
+  --ribbon-width: 22px;
+  --ribbon-height: 40px;
+  --topbar-height: 80px;
+  --topbar-padding: 14px;
+  --panel-inline-padding: 22px;
+  --panel-sideways-padding: 16px;
+  --switch-width: 50px;
+  --switch-height: 30px;
+  --switch-knob: 24px;
+  --switch-inset: 3px;
+  --slider-label-width: 66px;
+  --slider-value-width: 50px;
+  --slider-label-sideways: 58px;
+  --recent-row-height: 58px;
+  --text-debug: 13px;
+  --font-debug: ui-monospace,Menlo,Consolas,monospace;
+
 }
+
+/* latin-ext */
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(../fonts/figtree-normal-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Figtree';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(../fonts/figtree-normal-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin-ext */
+@font-face {
+  font-family: 'Literata';
+  font-style: italic;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(../fonts/literata-italic-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Literata';
+  font-style: italic;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(../fonts/literata-italic-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* latin-ext */
+@font-face {
+  font-family: 'Literata';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(../fonts/literata-normal-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* latin */
+@font-face {
+  font-family: 'Literata';
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: swap;
+  src: url(../fonts/literata-normal-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+
 
 /* Library settings stay outside the coloring screen, so backups/updates never cover drawing. */
 #gallery-screen .titles { flex: 1; min-width: 0; }
@@ -472,8 +633,8 @@ a.page-card { text-decoration: none; }
   max-width: min(620px, calc(100% - 20px));
   padding: 8px 12px 10px;
   border-radius: 10px;
-  background: rgba(20, 20, 30, 0.82);
-  color: #e8f6ff;
+  background: var(--debug-bg);
+  color: var(--debug-ink);
   pointer-events: none; /* the log never blocks touches... */
 }
 .touch-debug-head {
@@ -490,14 +651,14 @@ a.page-card { text-decoration: none; }
   padding: 8px 14px;
   border: none;
   border-radius: 999px;
-  background: #e8f6ff;
-  color: #14141e;
+  background: var(--debug-ink);
+  color: var(--debug-button-ink);
   font: inherit;
   cursor: pointer;
 }
 .touch-debug pre {
   margin: 0;
-  font: 13px/1.4 ui-monospace, Menlo, Consolas, monospace;
+  font: var(--text-debug)/1.4 var(--font-debug);
   white-space: pre-wrap;
 }
 
@@ -842,7 +1003,7 @@ a.page-card { text-decoration: none; }
   margin: -15px 0 0 -15px;
   border: 4px solid var(--surface);
   border-radius: 50%;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35), var(--shadow);
+  box-shadow: 0 0 0 1px var(--picker-handle-edge), var(--shadow);
   pointer-events: none;
 }
 .picker-side {
@@ -959,7 +1120,7 @@ button.compare-swatch { cursor: pointer; }
   border-radius: 50%;
   background: var(--danger);
   color: var(--surface);
-  font-size: 17px;
+  font-size: var(--text-normal);
   line-height: 21px;
   text-align: center;
 }
@@ -973,7 +1134,7 @@ button.compare-swatch { cursor: pointer; }
   background: var(--surface);
   color: var(--ink);
   font: inherit;
-  font-size: 17px; /* 16px or more stops Safari zooming in when she taps the box */
+  font-size: var(--text-normal); /* 16px or more stops Safari zooming in when she taps the box */
   -webkit-user-select: text;
   user-select: text;
 }
@@ -1067,4 +1228,157 @@ button.compare-swatch { cursor: pointer; }
   #picker-recent { grid-column: 2; grid-row: 1; }
   .picker-section:not(#picker-recent) { grid-column: 2; grid-row: 2; }
   .dialog.picker > .dialog-buttons { grid-column: 2; grid-row: 3; align-self: end; }
+}
+
+/* ---------- Approved Storybook screens (part 1) ---------- */
+body {
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+  background: var(--paper-grain), radial-gradient(120% 70% at 50% 10%, var(--surface-2), var(--bg) 55%, var(--bg-deep));
+}
+button, a, [role="slider"] { -webkit-tap-highlight-color: var(--clear); }
+button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: var(--focus-offset);
+}
+.cover-band :focus-visible { outline-color: var(--gold-light); }
+#gallery-screen { background: inherit; }
+.cover-band {
+  position: relative;
+  flex: none;
+  padding: calc(var(--cover-padding-top) + env(safe-area-inset-top)) calc(var(--shelf-padding) + env(safe-area-inset-right)) var(--cover-padding-bottom) calc(var(--shelf-padding) + env(safe-area-inset-left));
+  color: var(--on-leather);
+  background: var(--leather-grain), radial-gradient(90% 140% at 30% 0%, var(--leather-light), var(--leather) 55%, var(--leather-deep));
+  box-shadow: 0 1px 0 var(--ink-shadow), var(--shadow-cover);
+  z-index: 1;
+}
+.cover-band::before {
+  content: ""; position: absolute; inset: var(--control-gap); border-radius: var(--radius-tile); pointer-events: none;
+  box-shadow: inset 0 0 0 1px var(--gold-rule), inset 0 0 0 6px var(--leather), inset 0 0 0 7px var(--gold-rule-soft);
+}
+.cover-band::after {
+  content: ""; position: absolute; inset: auto 0 -4px; height: 4px;
+  background: linear-gradient(var(--gold-light),var(--gilt-bottom));
+}
+.band-row { position: relative; display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "med title title" "med tag actions"; align-items: center; gap: 6px 20px; }
+.medallion { grid-area: med; width: var(--header-icon-size); height: var(--header-icon-size); border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 2px var(--leather-deep),0 0 0 3.5px var(--gold-light),var(--shadow-medallion); }
+.medallion img { display: block; width: 100%; height: 100%; transform: scale(1.35); }
+.band-titles { display: contents; }
+.band-titles h1 { grid-area: title; margin: 0; font: var(--title-weight) var(--text-hero)/1.1 var(--font-title); }
+.library-tagline { grid-area: tag; margin: 0; font: italic var(--title-weight-soft) var(--text-large)/1.2 var(--font-title); color: var(--on-leather-soft); }
+.band-actions { grid-area: actions; display: flex; gap: var(--control-gap); }
+.vine { position: absolute; pointer-events: none; z-index: 1; }
+.vine.left { left: 4px; bottom: -58px; width: 250px; height: 90px; }
+.vine.right { right: 10px; bottom: -40px; width: 170px; height: 70px; transform: scaleX(-1); }
+.library-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 26px calc(var(--shelf-padding) + env(safe-area-inset-right)) calc(40px + env(safe-area-inset-bottom)) calc(var(--shelf-padding) + env(safe-area-inset-left)); }
+.library-heading { display: flex; align-items: center; gap: 14px; margin: 34px 0 20px; }
+.section-titles { min-width: 0; }
+.section-titles h2 { margin: 0; font: italic var(--title-weight-soft) var(--text-section)/1.2 var(--font-title); color: var(--ink-soft); }
+.section-rule { flex: 1; height: 10px; min-width: 20px; background: radial-gradient(circle,var(--gold) 0 2.5px,var(--clear) 3px) left center / 10px 10px no-repeat,linear-gradient(90deg,var(--gold),var(--clear)) 14px center / 100% 1px no-repeat; }
+.gallery-grid { padding: 0; overflow: visible; grid-template-columns: repeat(3,minmax(0,1fr)); gap: var(--collection-gap); }
+.page-card, .page-card.stacked { display: block; position: relative; padding: 0; background: var(--clear); border-radius: var(--radius-sheet); box-shadow: none; }
+.collection-stack { position: relative; aspect-ratio: 3/4; }
+.sheet-under { position: absolute; inset: 0; background: var(--sheet-under); border-radius: var(--radius-sheet); box-shadow: var(--shadow-sheet); }
+.sheet-1 { transform: rotate(-3deg) translate(-4px,3px); }
+.sheet-2 { transform: rotate(2.2deg) translate(5px,2px); }
+.collection-stack .thumb { position: absolute; inset: 0; border: 0; border-radius: var(--radius-sheet); box-shadow: var(--shadow-lift); }
+.thumb img { padding: var(--thumbnail-inset); }
+.in-progress .thumb img, .continue-picture img { padding: 0; }
+.page-name { display: block; padding: 0; margin: 16px 2px 0; font: var(--title-weight) var(--text-large)/1.2 var(--font-title); }
+.card-detail { display: block; margin: 3px 2px 0; padding: 0; font-size: var(--text-small); color: var(--muted); }
+.ribbon { position: absolute; top: -5px; right: 18px; width: var(--ribbon-width); height: var(--ribbon-height); z-index: 2; background: linear-gradient(90deg,var(--ribbon-deep),var(--ribbon) 40%,var(--ribbon)); clip-path: polygon(0 0,100% 0,100% 100%,50% 78%,0 100%); }
+.continue-card { display: flex; align-items: center; gap: 24px; margin-top: 10px; padding: 18px 24px 18px 18px; border-radius: var(--radius); background: var(--surface); box-shadow: inset 0 0 0 1px var(--hairline),var(--shadow-lift); }
+.continue-picture { position: relative; flex: none; width: var(--continue-width); height: var(--continue-height); }
+.continue-picture .thumb { width: 100%; height: 100%; border: 0; border-radius: var(--radius-sheet); transform: rotate(-2deg); box-shadow: var(--shadow-sheet); }
+.continue-picture .ribbon { right: 8px; }
+.continue-copy { min-width: 0; }
+.continue-copy .where { margin: 0; font-size: var(--text-small); color: var(--gold-deep); font-weight: 700; }
+.continue-copy h2 { margin: 2px 0; font: var(--title-weight) var(--text-title)/1.2 var(--font-title); }
+.continue-card > .text-button { margin-left: auto; }
+.icon-button, .text-button, .tool-button, .more-colors {
+  color: var(--ink-soft);
+  background: linear-gradient(var(--control-top),var(--control-bottom));
+  box-shadow: inset 0 0 0 1px var(--edge),inset 0 1px 0 var(--white-shine),var(--shadow-soft);
+}
+.text-button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: var(--button-size); padding: 0 22px; border: none; border-radius: var(--radius-control); font: 700 var(--text-normal)/1.1 var(--font-body); text-decoration: none; white-space: nowrap; }
+.text-button.primary, .tool-button.selected { background: linear-gradient(var(--control-green-top),var(--accent) 60%,var(--accent-deep)); color: var(--accent-text); box-shadow: inset 0 1px 0 var(--white-soft),inset 0 0 0 1px var(--gold-rule),var(--shadow-selected); }
+.text-button.on-leather { color: var(--on-leather); background: linear-gradient(var(--white-soft),var(--clear)); box-shadow: inset 0 0 0 1px var(--gold-rule),inset 0 1px 0 var(--white-soft); }
+#app-options { font-size: var(--text-normal); }
+#coloring-screen .topbar { min-height: var(--topbar-height); padding-block: calc(var(--topbar-padding) + env(safe-area-inset-top)) var(--topbar-padding); background: linear-gradient(var(--surface),var(--bar-bottom)); box-shadow: 0 1px 0 var(--hairline),var(--shadow-soft); z-index: 1; }
+.topbar h1 { flex: 1; font-weight: var(--title-weight); }
+#start-over { background: var(--clear); box-shadow: inset 0 0 0 1.5px var(--edge); }
+.history-buttons { margin-left: 0; gap: 10px; }
+.icon-button:disabled { opacity: 1; background: var(--clear); color: var(--disabled-ink); box-shadow: inset 0 0 0 1.5px var(--disabled-edge); }
+.canvas-area { background: var(--paper-grain),radial-gradient(100% 90% at 50% 40%,var(--desk-light),var(--desk) 70%,var(--desk-deep)); }
+.paper { border-radius: var(--radius-sheet); }
+.paper::before { content: ""; position: absolute; inset: 0; border-radius: var(--radius-sheet); background: var(--sheet-under); transform: rotate(-1.2deg) translate(-6px,5px); z-index: -1; box-shadow: var(--shadow-soft); pointer-events: none; }
+.tool-panel { position: relative; z-index: 1; gap: var(--panel-gap); padding: var(--panel-padding) calc(var(--panel-inline-padding) + env(safe-area-inset-right)) calc(var(--panel-padding) + env(safe-area-inset-bottom)) calc(var(--panel-inline-padding) + env(safe-area-inset-left)); background: linear-gradient(var(--panel-top-color),var(--panel-bottom-color)); border: 0; border-radius: var(--radius-panel) var(--radius-panel) 0 0; box-shadow: 0 -1px 0 var(--hairline),var(--shadow-lift); }
+.panel-top { gap: 22px; align-items: stretch; }
+.tool-column { gap: 10px; }
+.tools { gap: var(--tool-gap); }
+.tool-button { border-radius: var(--radius-tile); }
+.toggle-switch, .toggle-switch.on { height: var(--toggle-height); color: var(--ink-soft); border: none; border-radius: var(--radius-tile); background: var(--surface); box-shadow: inset 0 0 0 1px var(--edge); font: 700 var(--text-normal)/1 var(--font-body); }
+.toggle-switch > svg { color: var(--accent); }
+.toggle-switch.faded { opacity: 1; }
+.toggle-switch .toggle-state, .toggle-switch.on .toggle-state { position: relative; width: var(--switch-width); min-width: var(--switch-width); height: var(--switch-height); padding: 0; font-size: 0; border-radius: var(--radius-control); background: var(--switch-off); box-shadow: var(--shadow-toggle); }
+.toggle-switch.on .toggle-state { background: var(--accent); }
+.toggle-state::after { content: ""; position: absolute; top: var(--switch-inset); left: var(--switch-inset); width: var(--switch-knob); height: var(--switch-knob); border-radius: 50%; background: linear-gradient(var(--paper),var(--control-bottom)); box-shadow: var(--shadow-soft); }
+.toggle-switch.on .toggle-state::after { left: auto; right: var(--switch-inset); }
+.brush-controls { column-gap: 18px; }
+.brush-preview { border-radius: var(--radius-tile); background: var(--paper); box-shadow: inset 0 0 0 1px var(--edge),var(--shadow-soft); }
+.slider { min-height: var(--slider-height); touch-action: none; gap: var(--slider-gap); cursor: pointer; }
+.slider-label { width: var(--slider-label-width); color: var(--ink-soft); font-size: var(--text-normal); font-weight: 700; }
+.slider-value { width: var(--slider-value-width); font-size: var(--text-large); font-weight: 700; }
+.slider-track { min-width: 32px; }
+.slider-track::before { background: var(--slider-track-color); box-shadow: var(--shadow-track); }
+.slider-thumb { background: linear-gradient(var(--paper),var(--control-bottom)); box-shadow: 0 0 0 2.5px var(--gold-deep),var(--shadow-knob); }
+.brush-controls.disabled .slider { opacity: 1; color: var(--muted); }
+.brush-controls.disabled .slider-label, .brush-controls.disabled .slider-value { color: var(--muted); }
+.recent-colors { display: flex; gap: var(--swatch-gap); overflow-x: auto; overflow-y: hidden; flex-wrap: nowrap; padding: 7px; min-height: var(--recent-row-height); }
+.recent-colors .swatch { width: var(--swatch-size); height: var(--swatch-size); flex: none; }
+.palette { gap: var(--swatch-gap); padding: 8px; }
+.swatch { border: 0; background: radial-gradient(circle at 32% 28%,var(--white-shine) 0 12%,var(--clear) 36%),var(--swatch); box-shadow: inset 0 0 0 1px var(--swatch-inner-edge),var(--shadow-swatch); }
+.swatch.selected { transform: translateY(-2px); box-shadow: 0 0 0 3px var(--surface),0 0 0 6px var(--accent-deep),var(--shadow-swatch); }
+.more-colors { border: 0; border-radius: var(--radius-control); font-weight: 700; }
+.more-colors-label { color: var(--ink-soft); }
+.dialog h2 { font-weight: var(--title-weight); }
+.dialog-button { font-weight: 700; }
+.dialog-button.secondary { box-shadow: inset 0 0 0 1px var(--edge); }
+
+@media (min-width: 1000px) { .gallery-grid { grid-template-columns: repeat(4,minmax(0,1fr)); } }
+@media (orientation: landscape) {
+  :root { --preview-height: 54px; --panel-padding: 12px; --panel-gap: 4px; --swatch-gap: 10px; --tool-gap: 0px; }
+  .tool-panel { border-radius: var(--radius-panel) 0 0 var(--radius-panel); width: calc(var(--panel-width) + env(safe-area-inset-right)); padding-left: var(--panel-sideways-padding); padding-right: calc(var(--panel-sideways-padding) + env(safe-area-inset-right)); overflow-y: auto; }
+  .panel-top { gap: 8px; }
+  .tool-column { gap: 6px; }
+  .brush-controls { grid-template-columns: 1fr; row-gap: 2px; }
+  .brush-preview { width: 100%; height: var(--preview-height); margin-bottom: 4px; }
+  .slider-label { width: var(--slider-label-sideways); }
+  .recent-colors { min-height: var(--recent-row-height); max-height: none; grid-template-columns: none; }
+  .palette { grid-template-columns: repeat(5,var(--swatch-size)); padding: 8px 6px; }
+  .more-colors { min-height: var(--button-size); }
+}
+@media (max-width: 680px) {
+  :root { --shelf-padding: 22px; --collection-gap: 24px; --header-icon-size: 64px; --text-hero: 29px; --preview-width: 104px; }
+  .band-row { grid-template-columns: auto 1fr; grid-template-areas: "med title" "med tag" "actions actions"; gap: 12px 18px; }
+  .band-actions { justify-content: flex-end; }
+  .gallery-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .continue-card { flex-wrap: wrap; gap: 18px; }
+  .continue-copy { flex: 1; }
+  .continue-card > .text-button { margin-left: auto; }
+  .panel-top { flex-wrap: wrap; gap: 14px; }
+  .tool-column { flex: 1; }
+  .brush-controls { flex-basis: 100%; }
+  #coloring-screen .topbar { flex-wrap: wrap; gap: 8px; }
+  #page-title { flex-basis: calc(100% - 80px); }
+  #export-button { margin-left: auto; }
+}
+/* In a narrow upright window, give sliders their own row before the preview squeezes them. */
+@media (orientation: portrait) and (max-width: 740px) {
+  .panel-top { flex-wrap: wrap; }
+  .tool-column { flex: 1; }
+  .brush-controls { flex-basis: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-card, .thumb img, .tool-button, .swatch, .brush-controls, .toggle-switch { transition: none; }
 }

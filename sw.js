@@ -1,7 +1,7 @@
 // sw.js - keeps the app and downloaded outlines available without Wi-Fi.
 // This helper runs separately from drawing. It never opens or deletes her artwork database.
-const VERSION = "20261021022059";
-importScripts("./offline-assets.js?v=20261021022059");
+const VERSION = "20261021155109";
+importScripts("./offline-assets.js?v=20261021155109");
 const ASSETS = self.FINLEY_OFFLINE;
 if (ASSETS.version !== VERSION) throw new Error("The offline files belong to different updates.");
 const ROOT = self.registration.scope;
@@ -18,7 +18,7 @@ async function checkedFetch(url, hash) {
   const response = await fetch(url, { cache: "reload" });
   if (!response.ok || response.type === "opaque") throw new Error("This file couldn't be downloaded.");
   // Windows checkouts and GitHub can use different line endings for the same text.
-  const text = /\.(?:html|css|js|svg|webmanifest)$/i.test(new URL(url).pathname);
+  const text = /\.(?:html|css|js|svg|webmanifest|txt)$/i.test(new URL(url).pathname);
   const bytes = text ? new TextEncoder().encode((await response.clone().text()).replace(/\r\n/g, "\n")) : await response.clone().arrayBuffer();
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   const actual = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, "0")).join("");

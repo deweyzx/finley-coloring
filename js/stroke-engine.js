@@ -29,7 +29,7 @@
 //
 // The brushes themselves are described in brushes.js.
 
-import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE, GLITTER, GLITTER_SIZE, CLOUD, CLOUD_SIZE } from "./brushes.js?v=20261021022059";
+import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE, GLITTER, GLITTER_SIZE, CLOUD, CLOUD_SIZE } from "./brushes.js?v=20261021155109";
 
 export class StrokeEngine {
   constructor(width, height) {

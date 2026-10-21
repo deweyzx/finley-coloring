@@ -5,35 +5,81 @@
   <!-- "user-scalable=no" stops Safari's own pinch-zoom; the app will do its own zooming on the picture. -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>Finley's Coloring Book</title>
-  <meta name="theme-color" content="#f6f3ee">
+  <meta name="theme-color" content="#f3e8d0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Coloring Book">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-  <link rel="stylesheet" href="css/styles.css?v=20261021022059">
+  <link rel="preload" href="fonts/literata-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/figtree-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/styles.css?v=20261021155109">
   <!-- type="module" lets our JavaScript files import from each other. -->
-  <script type="module" src="js/app.js?v=20261021022059"></script>
+  <script type="module" src="js/app.js?v=20261021155109"></script>
 </head>
 <body>
 
+  <!-- Shared decorative ivy; it never receives touches or screen-reader focus. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="storybook-ivy" viewBox="-14 -14 28 28">
+      <path d="M0 -12 C2.5 -9.5 5 -7.5 6.5 -6.5 C10 -8 13.5 -4.5 12 -1 C11 1.5 9.5 3 8.5 4 C10.5 7.5 7.5 10.5 4.5 9.5 C2.5 9 1 9.5 0 11.5 C-1 9.5 -2.5 9 -4.5 9.5 C-7.5 10.5 -10.5 7.5 -8.5 4 C-9.5 3 -11 1.5 -12 -1 C-13.5 -4.5 -10 -8 -6.5 -6.5 C-5 -7.5 -2.5 -9.5 0 -12 Z" fill="var(--ivy-leaf)" stroke="var(--ivy-vein)" stroke-width="1.1" stroke-linejoin="round"/>
+      <path d="M0 11 V-9 M0 4 L-8 -4 M0 4 L8 -4 M0 6 L-7 7 M0 6 L7 7" fill="none" stroke="var(--ivy-vein)" stroke-width="0.8" stroke-linecap="round" opacity="0.7"/>
+    </symbol>
+  </defs>
+</svg>
+
   <!-- SCREEN 1: the library (categories, sub-categories and pages all use this screen) -->
   <section id="gallery-screen" class="screen">
-    <header class="topbar">
-      <a id="library-back" class="icon-button" href="#/" aria-label="Back" hidden>
-        <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
-          <path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </a>
-      <div class="titles">
-        <p id="library-crumb" class="crumb" hidden></p>
-        <h1 id="library-title">Finley's Coloring Book</h1>
+    <header class="cover-band">
+      <div class="band-row">
+        <div class="medallion" aria-hidden="true"><img src="icons/icon-192.png" alt=""></div>
+        <div class="band-titles">
+          <h1 id="library-title">Finley's Coloring Book</h1>
+          <p class="library-tagline">Pick a page and make it bloom</p>
+        </div>
+        <div class="band-actions">
+          <!-- The working Themes button comes in its own later checkpoint. -->
+          <button id="app-options" class="text-button on-leather" type="button">
+            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M7 18 H17.5 a4 4 0 0 0 .5 -8 a6 6 0 0 0 -11.5 -1.5 A4.5 4.5 0 0 0 7 18 Z M12 10 V16 M9.5 13.5 L12 16 L14.5 13.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            App &amp; offline
+          </button>
+        </div>
       </div>
-      <button id="app-options" class="text-button" type="button">App &amp; offline</button>
+    <!-- ivy trailing off the cover onto the page -->
+    <svg class="vine left" viewBox="0 0 250 90" aria-hidden="true">
+      <path d="M8 2 C 14 30 40 44 76 40 S 150 52 196 74" fill="none" stroke="var(--ivy-vein)" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M60 40 c 4 12 18 14 20 4 c 1 -7 -8 -9 -10 -3" fill="none" stroke="var(--ivy-vein)" stroke-width="1.1" stroke-linecap="round"/>
+      <use href="#storybook-ivy" x="2" y="8" width="26" height="26" transform="rotate(-10 15 21)"/>
+      <use href="#storybook-ivy" x="38" y="34" width="22" height="22" transform="rotate(30 49 45)"/>
+      <use href="#storybook-ivy" x="98" y="30" width="20" height="20" transform="rotate(-30 108 40)"/>
+      <use href="#storybook-ivy" x="140" y="50" width="18" height="18" transform="rotate(20 149 59)"/>
+      <use href="#storybook-ivy" x="186" y="64" width="14" height="14" transform="rotate(55 193 71)"/>
+    </svg>
+    <svg class="vine right" viewBox="0 0 170 70" aria-hidden="true">
+      <path d="M6 2 C 12 26 44 34 84 30 S 140 44 160 56" fill="none" stroke="var(--ivy-vein)" stroke-width="1.6" stroke-linecap="round"/>
+      <use href="#storybook-ivy" x="0" y="8" width="22" height="22" transform="rotate(20 11 19)"/>
+      <use href="#storybook-ivy" x="62" y="24" width="18" height="18" transform="rotate(-25 71 33)"/>
+      <use href="#storybook-ivy" x="128" y="38" width="15" height="15" transform="rotate(40 135 45)"/>
+    </svg>
     </header>
     <p id="library-notice" class="notice" hidden></p>
-    <main id="gallery-grid" class="gallery-grid"></main>
+    <main id="library-scroll" class="library-scroll">
+      <section id="continue-card" class="continue-card" aria-labelledby="continue-title" hidden>
+        <div class="continue-picture"><div class="thumb"><img id="continue-image" alt=""></div><span class="ribbon" aria-hidden="true"></span></div>
+        <div class="continue-copy"><p class="where">Where you left off</p><h2 id="continue-title"></h2><p id="continue-meta" class="card-detail"></p></div>
+        <a id="continue-open" class="text-button primary" href="#/">Keep coloring</a>
+      </section>
+      <div class="library-heading">
+        <a id="library-back" class="icon-button" href="#/" aria-label="Back" hidden>
+          <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+        <div class="section-titles"><p id="library-crumb" class="crumb" hidden></p><h2 id="library-section-title">Collections</h2></div>
+        <span class="section-rule" aria-hidden="true"></span>
+      </div>
+      <div id="gallery-grid" class="gallery-grid"></div>
+    </main>
   </section>
 
   <!-- SCREEN 2: coloring one page (hidden until a page is picked) -->
@@ -79,7 +125,7 @@
       <div id="canvas-area" class="canvas-area">
         <!-- The "paper" holds the stacked layers. The line art canvas sits ON TOP of the color canvas,
              so coloring can never cover the black lines. -->
-        <div id="paper" class="paper" hidden>
+        <div id="paper" class="paper" role="img" aria-label="Coloring page" hidden>
           <canvas id="color-canvas"></canvas>
           <!-- The brush stroke being drawn right now. It joins the color layer when the Pencil lifts. -->
           <canvas id="stroke-canvas"></canvas>
@@ -100,12 +146,12 @@
         </div>
       </div>
 
-      <aside class="tool-panel">
+      <aside class="tool-panel" aria-label="Tools and colors">
         <div class="panel-top">
           <!-- Tools: fill, then one button per brush (added by editor.js from brushes.js).
                Step 5 adds undo and redo. -->
           <div class="tool-column">
-            <div id="tools" class="tools">
+            <div id="tools" class="tools" role="group" aria-label="Drawing tools">
               <button class="tool-button" type="button" data-tool="fill" aria-label="Fill">
                 <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true">
                   <path d="M5 11 L11 5 L18 12 L12 18 Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
@@ -124,7 +170,7 @@
                 <circle cx="12" cy="15.5" r="1.5" fill="currentColor"/>
               </svg>
               <span class="toggle-label">Stay inside lines</span>
-              <span class="toggle-state">On</span>
+              <span class="toggle-state" aria-hidden="true">On</span>
             </button>
 
             <!-- Build up color: when on, a new stroke over color deepens it (layering and
@@ -135,22 +181,22 @@
                 <circle cx="14.5" cy="12" r="5.5" fill="currentColor" fill-opacity="0.4" stroke="currentColor" stroke-width="1.5"/>
               </svg>
               <span class="toggle-label">Build up color</span>
-              <span class="toggle-state">On</span>
+              <span class="toggle-state" aria-hidden="true">On</span>
             </button>
           </div>
 
           <!-- Brush controls: a live preview and the size and opacity sliders. -->
           <div id="brush-controls" class="brush-controls">
-            <canvas id="brush-preview" class="brush-preview" aria-label="Brush preview"></canvas>
+            <canvas id="brush-preview" class="brush-preview" aria-hidden="true"></canvas>
             <div id="size-slider"></div>
             <div id="opacity-slider"></div>
           </div>
         </div>
         <!-- Recently used colors (filled in by palette.js; hidden until she has painted) -->
-        <div id="recent-colors" class="recent-colors" aria-label="Recently used colors" hidden></div>
+        <div id="recent-colors" class="recent-colors" role="group" aria-label="Recently used colors" hidden></div>
         <!-- Color swatches of the active palette (filled in by palette.js). The first item is the
              button that opens the full color picker. -->
-        <div id="palette" class="palette">
+        <div id="palette" class="palette" role="group" aria-label="Color palette">
           <button id="more-colors" class="more-colors" type="button" aria-label="More colors: open the color picker">
             <span class="more-colors-dot"></span>
             <span class="more-colors-label">More</span>

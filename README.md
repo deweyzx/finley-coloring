@@ -19,6 +19,7 @@ Don't open `index.html` by double-clicking. Browsers block some features for fil
 | `sw.js`, `offline-assets.js` | Offline files and verified updates; generated file list |
 | `js/offline.js`, `js/backup.js` | App/offline window, downloads, updates and editable-coloring backups |
 | `css/styles.css` | All the looks: colors, sizes, layout |
+| `fonts/` | Local Literata/Figtree fonts and their free-font licenses; available offline |
 | `js/app.js` | Starts the app and picks the screen from the address (`#/flowers/tulips`) |
 | `js/library.js` | Reads `pages/pages.js` and works out each page's path, id and title |
 | `js/gallery.js` | The library screens: categories, sub-categories, pages |
@@ -281,8 +282,8 @@ The settings for each brush are in `js/brushes.js`, with comments explaining eac
 **Status: step 11 is complete (2026-10-21).** PC testing passed. The first iPad restore needed
 repair 173f41d; the same backup then recovered the coloring. Owen confirmed the final installed
 app checklist worked perfectly: all 10 pages saved offline, Airplane Mode launch, coloring
-persistence after leaving/reopening, and rotation. The next planned step is storybook themes;
-that design work has not started.
+persistence after leaving/reopening, and rotation. Step 12's Storybook library and coloring
+screen have passed Owen's PC review and are ready for the iPad check.
 
 The library's **App & offline** button has the controls below.
 
@@ -308,7 +309,7 @@ window. Installation is optional for testing offline access at http://localhost:
 
 ### What works offline
 
-The app, library list, small thumbnails and SVG example pages download during setup. Opening
+The app, bundled fonts, library list, small thumbnails and SVG example pages download during setup. Opening
 any real page online saves its outline. **Save all pages offline** downloads the remaining
 outlines, two at a time; it resumes without re-downloading successful pages. It doesn't silently
 fetch full-sized images for hundreds of unopened pages. The window reports how many pages are
@@ -376,8 +377,53 @@ this issue. The repair copies the backup's compressed data independently of the 
 
 ### Project checkpoint and next step
 
-Latest published app code: **173f41d**, including the accepted iPad restore repair. Home Screen
-installation and offline coloring are complete and accepted on Finley's iPad. The next planned
-step is **12: Storybook design and themes**, including Storybook, Midnight Forest, Ocean Dreams,
-Autumn Cottage and a minimal look. Step 12 has not started. CLAUDE.md and AGENTS.md contain the
-full implementation history, current settings and next-session notes.
+Latest checkpoint: **Step 12 part 1, version 20261021155109**, the Storybook library/coloring
+design including the slider repair. **Owen's PC review passed; the iPad check is pending.**
+Home Screen installation and offline coloring were accepted on Finley's iPad in step 11,
+including restore repair 173f41d.
+CLAUDE.md and AGENTS.md contain matching implementation history, settings and next-session notes.
+
+## Storybook design (step 12, part 1)
+
+The library now looks like a green book cover above parchment shelves: white paper stacks,
+progress ribbons, and a **Where you left off** card for the most recently colored page.
+The card stays hidden until there is saved coloring. A red ribbon means coloring is in progress.
+Categories, page names and her existing coloring stay the same.
+
+The coloring screen uses matching parchment controls around a white page. Buttons and recent
+colors stay large; the Size and Opacity sliders respond across their whole row. Keyboard users
+can use the arrow keys, Home/End and Page Up/Down after focusing a slider. Literata and Figtree
+fonts are included in the app, so they don't need Google Fonts or an internet connection.
+
+The slider knobs have been made smaller and spaced away from their labels and numbers after
+the first PC review. The full 50px row still responds to dragging. In a narrow upright window,
+the preview and sliders move below the tools to give them more room. Owen accepted this repair on PC.
+
+### Check this part on the PC
+
+1. Double-click `start-server.bat`, then open http://localhost:8000 in Chrome.
+2. If the previous design appears, go to **App & offline → Check for updates → Update app**
+   when offered. Close other local coloring-book tabs if asked. Keep your saved website data.
+3. Browse a collection, then a sub-category, open a real page, and use Back to return.
+4. Color a little and return to the library home. Its progress preview/ribbon and **Keep
+   coloring** should lead back to the saved picture. With no colored pages, there is no continue card.
+5. Try the tools, Stay inside lines, Build up color, Size and Opacity, undo/redo, More colors
+   and the Brushes window. Leave the page and reopen to confirm the coloring remains.
+6. Resize Chrome into a tall window and a wide window. Check that titles, buttons and colors
+   remain readable and reachable. On shorter windows the sideways panel can scroll.
+7. These PC checks have passed. The next check is on her iPad using the hosted app.
+
+### Check this part on her iPad
+
+1. Open the installed app while online. Choose **App & offline → Check for updates → Update app**
+   when offered. If the upload has only just finished, allow a few minutes for GitHub Pages.
+2. Check the library header, page stacks, progress ribbons and **Keep coloring** card.
+3. Open a colored page and check Size/Opacity at both ends with the Pencil and her finger.
+   Try drawing, undo/redo and More colors, then leave/reopen the page.
+4. Rotate upright and sideways. Text, knobs, values and buttons should stay clear and reachable.
+5. Report the results before the splash animation is built. Keep existing website data.
+
+Next comes the approved splash animation in its own part. After that, the **Themes** button
+starts with **Storybook only**, so you can test the selector first. Other themes will be added
+**one at a time**, with a test between each: Midnight Forest, Ocean Dreams, Autumn Cottage,
+and a clean minimal look.

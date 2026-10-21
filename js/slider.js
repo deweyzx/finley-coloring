@@ -12,7 +12,7 @@ export function createSlider(element, { label, min, max, curve = 1, format = Str
   element.classList.add("slider");
   element.innerHTML = `
     <span class="slider-label"></span>
-    <div class="slider-track" role="slider" tabindex="0">
+    <div class="slider-track">
       <div class="slider-fill"></div>
       <div class="slider-thumb"></div>
     </div>
@@ -23,7 +23,9 @@ export function createSlider(element, { label, min, max, curve = 1, format = Str
   const thumb = element.querySelector(".slider-thumb");
   const valueEl = element.querySelector(".slider-value");
   labelEl.textContent = label;
-  track.setAttribute("aria-label", label);
+  element.setAttribute("role", "slider");
+  element.setAttribute("aria-label", label);
+  element.tabIndex = 0;
 
   let range = { min, max };
   let value = min;
@@ -36,7 +38,10 @@ export function createSlider(element, { label, min, max, curve = 1, format = Str
     fill.style.width = `${t * 100}%`;
     thumb.style.left = `${t * 100}%`;
     valueEl.textContent = format(value);
-    track.setAttribute("aria-valuenow", String(value));
+    element.setAttribute("aria-valuenow", String(value));
+    element.setAttribute("aria-valuetext", format(value));
+    element.setAttribute("aria-valuemin", String(range.min));
+    element.setAttribute("aria-valuemax", String(range.max));
   }
 
   function setFromPointer(e) {
@@ -47,12 +52,23 @@ export function createSlider(element, { label, min, max, curve = 1, format = Str
     onChange(value);
   }
 
-  track.addEventListener("pointerdown", (e) => {
-    track.setPointerCapture(e.pointerId);
+  element.addEventListener("pointerdown", (e) => {
+    if (element.getAttribute("aria-disabled") === "true") return;
+    element.setPointerCapture(e.pointerId);
     setFromPointer(e);
   });
-  track.addEventListener("pointermove", (e) => {
-    if (track.hasPointerCapture(e.pointerId)) setFromPointer(e);
+  element.addEventListener("pointermove", (e) => {
+    if (element.hasPointerCapture(e.pointerId)) setFromPointer(e);
+  });
+  element.addEventListener("keydown", (e) => {
+    if (element.getAttribute("aria-disabled") === "true") return;
+    const steps = { ArrowRight: 0.01, ArrowUp: 0.01, ArrowLeft: -0.01, ArrowDown: -0.01, PageUp: 0.1, PageDown: -0.1 };
+    if (!(e.key in steps) && e.key !== "Home" && e.key !== "End") return;
+    e.preventDefault();
+    const t = e.key === "Home" ? 0 : e.key === "End" ? 1 : Math.min(1, Math.max(0, toPosition(value) + steps[e.key]));
+    value = fromPosition(t);
+    show();
+    onChange(value);
   });
 
   return {

@@ -64,7 +64,7 @@ def asset(path, versioned=False):
     content = path.read_bytes()
     # Git on Windows may check out CRLF while GitHub serves LF. Both represent the
     # same text; verify a consistent line-ending form instead of rejecting a good upload.
-    if path.suffix.lower() in (".html", ".css", ".js", ".svg", ".webmanifest"):
+    if path.suffix.lower() in (".html", ".css", ".js", ".svg", ".webmanifest", ".txt"):
         content = content.replace(b"\r\n", b"\n")
     return {"url": relative + (f"?v={VERSION}" if versioned else ""),
             "hash": hashlib.sha256(content).hexdigest()}
@@ -74,6 +74,8 @@ shell += [asset(p, True) for p in sorted((root / "js").glob("*.js"))]
 shell += [asset(p, True) for p in sorted((root / "css").glob("*.css"))]
 shell += [asset(root / "pages/pages.js", True)]
 shell += [asset(root / "icons" / name) for name in ("apple-touch-icon.png", "icon-192.png", "icon-512.png")]
+shell += [asset(p) for p in sorted((root / "fonts").rglob("*.woff2"))]
+shell += [asset(p) for p in sorted((root / "fonts").glob("*-OFL.txt"))]
 shell += [asset(p) for p in sorted((root / "thumbs").rglob("*.png"))]
 shell += [asset(p) for p in sorted((root / "pages").rglob("*.svg"))]
 pages = [asset(p) for p in sorted((root / "pages").rglob("*"))
