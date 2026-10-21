@@ -248,7 +248,7 @@ New in step 10 (batch 2):
 
 Both looks are part of the picture itself, so they also show in a picture saved to Photos.
 
-New in step 10 (batch 3):
+New in step 10 (batch 3; the full brush collection is confirmed working on Finley's iPad):
 
 - **Blender** picks up the color where the stroke starts and carries it along, gradually mixing
   with the colors it crosses. Start in yellow and drag into green to pull a yellow trail into it;

@@ -17,7 +17,7 @@ table, and any decisions that changed.
   smooth with Pencil and finger, recents and palettes work, both layouts good, survives closing Safari.
 - **Done and committed:** step 9, export to Photos - checked on the iPad: share sheet, "Save
   Image", "Download instead" and touch-and-hold all work, upright and sideways.
-- **In progress:** step 10, the brush collection, in three batches (see the plan below). Each
+- **Done and committed:** step 10, all three brush batches, confirmed working on Finley's iPad. Each
   batch: build, Owen tests on PC, commit + push, iPad test, and only then the next batch.
   **Batch 1 (airbrush, smooth hair, watercolor, splatter) is committed** (passed Owen's PC test:
   Brushes window, line-lock, sliders/preview, hold-to-spray, watercolor glaze, undo/redo,
@@ -59,15 +59,16 @@ table, and any decisions that changed.
   (identical results), wider spacing for watercolor (0.3) / glitter (0.16) / metallic (0.16),
   **new max sizes: watercolor 130 (was 160), glitter 120 (was 150), metallic 60 (was 120)**; all
   others unchanged. **iPad confirmed:** Owen reports all three are smooth. Batches 1 and 2
-  are complete. **Batch 3 (Blender and Blur) passed Owen's PC test and is committed for the iPad check:** existing-paint
+  are complete. **Batch 3 (Blender and Blur) is complete and confirmed on her iPad:** existing-paint
   tools, maximum size 48 each (default 30 / 65%), pressure and gentle tilt, line-lock, undo/redo,
   auto-save and export. Owen confirmed on 2026-10-21: "works good on the computer".
-  iPad result: no lag, but both tools needed too much pressure; Blender's color result and the
+  First iPad check: no lag, but both tools needed too much pressure; Blender's color result and the
   icons/previews were not accepted. Owen supplied IMG_6831.MOV showing Pigment smoothing green
-  and yellow pencil strokes. **Revisions approved on PC and committed for iPad retest:** lighter pressure,
+  and yellow pencil strokes. **Revisions approved on PC and iPad (4341706):** lighter pressure,
   paint-pickup/carrying Blender (yellow trails into green), wider Blur, matching outlined
   tool icons and curved previews. Owen approved the color-carrying result on 2026-10-21
-  ("perfect! thank you!"). Waiting for Finley's iPad retest of pressure, color trails and speed. Step 11 waits.
+  ("perfect! thank you!"). The subsequent iPad retest passed: "everything works perfectly! thank you!"
+  (2026-10-21). Step 10 is complete. Step 11 is next, awaiting Owen's request to start.
   Steps 11 and 12 have not started.
 
 ## How to work with Owen
@@ -112,7 +113,7 @@ table, and any decisions that changed.
 | 7 | Auto-save (IndexedDB) + her progress shown on library thumbnails; Start over | ✅ |
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | ✅ |
 | 9 | Export the finished picture to Photos | ✅ |
-| 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | batches 1–2 ✅ iPad; batch 3 revisions committed, iPad retest pending |
+| 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | ✅ all three batches confirmed on iPad |
 | 11 | Installable + offline (manifest, service worker, icons) | |
 | 12 | Magical storybook look, Themes, polish | |
 
@@ -461,7 +462,8 @@ table, and any decisions that changed.
 - **Status:** original batch 3 passed PC and was committed as a96c03b. Her iPad: both tools
   smooth, but pressure too weak until pressing hard, Blender's color result unlike Pigment, and
   icons disliked. Owen approved the revisions below on PC (2026-10-21: "perfect! thank you!");
-  committed for the iPad retest. Await Finley's pressure, color-carrying and speed feedback.
+  committed as 4341706. Owen then confirmed the iPad retest: "everything works perfectly!
+  thank you!" (2026-10-21). Batch 3 and step 10 are complete; step 11 awaits his request.
   Batches 1/2, including watercolor 130 / glitter 120 / metallic 60, are confirmed smooth.
 - **Implementation:** `js/blend-engine.js` exports `PaintEngine`, extending the original
   `StrokeEngine`. Ordinary brushes delegate unchanged to that engine. `modify: "blender"` /
@@ -534,13 +536,10 @@ table, and any decisions that changed.
   and paint-memory restore, lossless PNG; actual UI pointer strokes, undo/redo, reload persistence,
   export preview/download and portrait/landscape cards. Before/after sample sheet generated from
   actual tool output. Browser tests use an isolated profile, not Owen's saved coloring.
-- **Not verified:** revised Pencil pressure/tilt feel and speed on Finley's iPad. Original batch 3 was smooth. CPU throttling
-  and PC timing are estimates, not proof. The carrying version does more work than local
-  softening (latest 4x CPU-throttled 2300 screen-px/s check: Blender 48 ~1.2s work per simulated
-  second, first update 34ms, slowest later 30ms; Blur unchanged ~0.62s, later 21ms). Do not claim
-  that this proves iPad smoothness; improve further if her retest reports lag. She should simply
-  try them and report smooth/laggy;
-  do not send her back through repeated Speed tests.
+- **iPad acceptance:** Owen confirmed the final version works perfectly (2026-10-21), after
+  being asked to check light pressure, color trails and fast strokes at size 48. No further
+  tuning or speed logs are needed unless she reports a new problem. Earlier CPU-throttled
+  measurements were estimates; the actual iPad acceptance is the result to use. Step 10 done.
 - Tweakable sampling controls are in `js/settings.js`: `blendRadiusShare`, `blendMaxRadius`,
   `blendCarryDistance`, `blendTipGrid`, `blendTipPixels`, `blendPigmentWeight`, `blurRadiusShare`, `blurMaxRadius`, `blendCacheTiles`.
 

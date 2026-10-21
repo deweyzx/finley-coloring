@@ -2,22 +2,22 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610210116";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610210116";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610210116";
-import { setupColorPicker } from "./color-picker.js?v=202610210116";
-import { setupSavePicture } from "./save-picture.js?v=202610210116";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610210116";
-import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=202610210116";
-import { createSlider } from "./slider.js?v=202610210116";
-import { History } from "./history.js?v=202610210116";
-import { Viewport } from "./viewport.js?v=202610210116";
-import { setupInput } from "./touch-input.js?v=202610210116";
-import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=202610210116";
-import { runSpeedTest } from "./speed-test.js?v=202610210116";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610210116";
-import { SETTINGS } from "./settings.js?v=202610210116";
-import { hexToHsv, hsvToHex } from "./color.js?v=202610210116";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610210127";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610210127";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610210127";
+import { setupColorPicker } from "./color-picker.js?v=202610210127";
+import { setupSavePicture } from "./save-picture.js?v=202610210127";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610210127";
+import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=202610210127";
+import { createSlider } from "./slider.js?v=202610210127";
+import { History } from "./history.js?v=202610210127";
+import { Viewport } from "./viewport.js?v=202610210127";
+import { setupInput } from "./touch-input.js?v=202610210127";
+import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=202610210127";
+import { runSpeedTest } from "./speed-test.js?v=202610210127";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610210127";
+import { SETTINGS } from "./settings.js?v=202610210127";
+import { hexToHsv, hsvToHex } from "./color.js?v=202610210127";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");

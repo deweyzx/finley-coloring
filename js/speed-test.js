@@ -13,8 +13,8 @@
 //            takes longer than about two screen refreshes (33 ms).
 // Nothing is kept: her picture isn't touched, and the stroke layer is cleared after each stroke.
 
-import { BRUSHES } from "./brushes.js?v=202610210116";
-import { StrokeEngine } from "./stroke-engine.js?v=202610210116";
+import { BRUSHES } from "./brushes.js?v=202610210127";
+import { StrokeEngine } from "./stroke-engine.js?v=202610210127";
 
 const SCREEN_SPEED = 600; // screen pixels per second: a quick, sweeping stroke
 const SHARES = [1, 0.85, 0.7, 0.55, 0.4, 0.25]; // sizes tried, as shares of the biggest size
