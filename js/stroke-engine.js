@@ -29,7 +29,7 @@
 //
 // The brushes themselves are described in brushes.js.
 
-import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE, GLITTER, GLITTER_SIZE, CLOUD, CLOUD_SIZE } from "./brushes.js?v=202610202151";
+import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE, GLITTER, GLITTER_SIZE, CLOUD, CLOUD_SIZE } from "./brushes.js?v=202610202202";
 
 export class StrokeEngine {
   constructor(width, height) {
@@ -65,6 +65,10 @@ export class StrokeEngine {
     this.seed = (Math.random() * 4294967296) >>> 0 || 1;
     this.rand = makeRandom(this.seed);
     this.bristleTable = brush.bristles ? makeBristles(this.rand) : null;
+    // Smooth hair (hair streaks and nothing else special) uses its own quick loop, with the hair
+    // pattern worked out once here into a fine table (16 steps across each hair).
+    this.fastHair = !!(brush.bristles && !brush.wash && !brush.grain && !brush.noise && !brush.flow && !brush.soft && !brush.scatter && !brush.effect);
+    this.hairFine = this.fastHair ? makeHairTable(this.bristleTable, brush.bristles.strength) : null;
     this.washShift = [Math.floor(this.rand() * WASH_SIZE), Math.floor(this.rand() * WASH_SIZE)];
     // Watercolor rims: how far in from the edge the darker pooling reaches.
     this.rimRadius = brush.wash ? Math.round(clamp(settings.size * brush.wash.rimWidth, 3, 18)) : 0;
@@ -302,6 +306,16 @@ export class StrokeEngine {
     const sy = this.washShift[1];
     let rng = this.seed ^ ((x0 * 73856093) ^ (y0 * 19349663)); // quick random numbers for speckle
     if (rng === 0) rng = 1;
+
+    if (this.fastHair) {
+      // Smooth hair: the same strokes and hair streaks, worked out the quick way (see hairRows).
+      const changed = hairRows(this, cx, cy, x0, y0, x1, y1, cos, sin, rLong, rShort, qa, qbRow, qcRow, peak, inner, edge, nx, ny, bristleWidth);
+      if (changed) {
+        this.box = growBox(this.box, changed[0], changed[1], changed[2], changed[3]);
+        this.dirty = growBox(this.dirty, changed[0], changed[1], changed[2], changed[3]);
+      }
+      return;
+    }
 
     if (this.fastSpray) {
       // Airbrush: the same soft, speckled spray, worked out the quick way (see sprayRows).
@@ -1086,6 +1100,81 @@ function sprayRows(engine, cx, cy, x0, y0, x1, y1, cos, sin, rLong, rShort, qa, 
       if (next > c) cov[i] = next > cap ? cap : next;
     }
   }
+}
+
+// ---------- The quick smooth hair ----------
+// Smooth hair stamps many overlapping dabs, and for every pixel works out which brush hair passes
+// over it. This loop gives the same result with much less work:
+//   - the hair pattern across the brush comes from a table made once per stroke (makeHairTable),
+//     16 steps per hair, instead of being worked out (with rounding and a smooth curve) per pixel,
+//   - the position in the oval and across the stroke is stepped along each row,
+//   - the square root is only needed near the dab's soft edge,
+//   - pixels the dab can't make any stronger are skipped first.
+
+// For each of 64 hairs x 16 steps: how much of the paint gets through there (1 = all).
+function makeHairTable(hairs, strength) {
+  const table = new Float32Array(1024);
+  for (let j = 0; j < 1024; j++) {
+    const pos = j / 16;
+    const i0 = Math.floor(pos);
+    const f = pos - i0;
+    const b0 = hairs[i0 & 63];
+    const hair = b0 + (hairs[(i0 + 1) & 63] - b0) * f * f * (3 - 2 * f);
+    table[j] = 1 - strength * (1 - hair);
+  }
+  return table;
+}
+
+// Returns the area of pixels it changed ([x0, y0, x1, y1]), or null if none.
+function hairRows(engine, cx, cy, x0, y0, x1, y1, cos, sin, rLong, rShort, qa, qbRow, qcRow, peak, inner, edge, nx, ny, bw) {
+  const W = engine.width;
+  const cov = engine.coverage;
+  const clip = engine.clip;
+  const table = engine.hairFine;
+  const inner2 = inner * inner;
+  const ua = cos / rLong; // how u, v and the hair position change from one pixel to the next
+  const va = -sin / rShort;
+  const ha = (nx / bw) * 16;
+  let cx0 = W;
+  let cx1 = -1;
+  let cy0 = engine.height;
+  let cy1 = -1;
+  for (let y = y0; y <= y1; y++) {
+    const dy = y + 0.5 - cy;
+    const qb = qbRow * dy;
+    const qc = qcRow * dy * dy - 1;
+    const disc = qb * qb - 4 * qa * qc;
+    if (disc < 0) continue;
+    const root = Math.sqrt(disc);
+    const xs = Math.max(x0, Math.floor(cx + (-qb - root) / (2 * qa) - 0.5));
+    const xe = Math.min(x1, Math.ceil(cx + (-qb + root) / (2 * qa) - 0.5));
+    if (xs > xe) continue;
+    const dx0 = xs + 0.5 - cx;
+    let u = (dx0 * cos + dy * sin) / rLong;
+    let v = (-dx0 * sin + dy * cos) / rShort;
+    let h = ((dx0 * nx + dy * ny) / bw + 32) * 16; // the hair position, in 16ths of a hair
+    const row = y * W;
+    const clipRow = clip ? (y - clip.y) * clip.w - clip.x : 0;
+    for (let x = xs; x <= xe; x++, u += ua, v += va, h += ha) {
+      if (clip && clip.mask[clipRow + x] === 0) continue; // outside the locked area
+      const i = row + x;
+      const hairK = table[(h | 0) & 1023];
+      const most = peak * hairK; // the strongest this dab can make this spot
+      const c = cov[i];
+      if (c >= most) continue;
+      const d2 = u * u + v * v;
+      if (d2 >= 1) continue;
+      const value = d2 <= inner2 ? most : ((1 - Math.sqrt(d2)) / edge) * most;
+      if ((value | 0) > c) {
+        cov[i] = value;
+        if (x < cx0) cx0 = x;
+        if (x > cx1) cx1 = x;
+        if (y < cy0) cy0 = y;
+        cy1 = y;
+      }
+    }
+  }
+  return cx1 < 0 ? null : [cx0, cy0, cx1, cy1];
 }
 
 // Averages each pixel with its neighbours up to `r` pixels away (twice, for a smooth result).

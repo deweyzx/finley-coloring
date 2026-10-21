@@ -45,8 +45,16 @@ table, and any decisions that changed.
   than a laggy brush**, and keep looks unchanged. **Committed (for the iPad run):** a **Speed test**
   button in the touch log (measures every brush on the device, reports the largest smooth size),
   a 60-per-second drawing pace for brushes that aren't small on screen, a per-stroke split of the
-  work (dabs vs drawing) in the log. **Next:** Owen runs the Speed test on her iPad -> set each
-  brush's `sizeRange` max from the results. Batch 3 only after that.
+  work (dabs vs drawing) in the log. **Speed test on her iPad (Sunflower page):** every brush
+  smooth at its biggest size except smooth hair (149% at 200, 95% at 110, 50% at 50). **Then
+  (committed):** smooth hair made ~4x lighter with the same look (quick loop `hairRows` + spacing
+  0.12; before/after shown to Owen); the Speed test now draws on the real (visible) stroke layer
+  in white and uses the app's real guess-ahead distance, because the first version said glitter /
+  metallic / watercolor were smooth while real strokes had shown 92-100% (those real strokes were
+  also before the 60-per-second pace); each stroke's log line now shows its speed (screen px/s).
+  All max sizes kept. **Waiting:** Speed test again on a real PNG page (Daffodils) at her usual
+  zoom + real strokes with watercolor 160 / glitter 150 / metallic 120 / smooth hair 200 to
+  compare. Batch 3 only after that.
   Batch 3 only after Owen has tested batch 2 on her iPad.
 
 ## How to work with Owen
@@ -398,6 +406,22 @@ table, and any decisions that changed.
   27 + 56; watercolor 160: 37 + 41; watercolor 100: 23 + 25 (smooth on her iPad); marker 120:
   27 + 23. Smooth hair: an exact skip (using the hair passing over a pixel) didn't help - its
   soft edges and streaks rarely make a pixel "full".
+- **Smooth hair made lighter (same look):** what was expensive: (1) the hair-streak maths per
+  pixel per dab (about half of the dab work), (2) the number of dabs (spacing 0.06 = 3x the
+  marker's at size 200). Fixes: `hairRows()` - its own inner loop (hair pattern from a per-stroke
+  table, `makeHairTable()`, 64 hairs x 16 steps; oval position and hair position stepped along
+  each row; square root only near the soft edge; skip pixels it can't make stronger) - looks the
+  same as batch 1 (avg 0.26/255, max 3); then spacing 0.06 -> 0.12 (vs batch 1: avg 0.69/255,
+  0.27% of pixels differ by > 10, at the thin tips; indistinguishable in a 2x before/after).
+  PC ms per second of fast drawing at zoom 0.23: size 50: 65 -> ~25, 110: 103 -> 24, 200: 153
+  -> 41 (her iPad ran ~10x the PC number as a %: 149% at 200 before).
+- **Speed test vs real strokes:** the first version drew on a hidden layer with a tiny guess
+  ahead; it said glitter 150 / metallic 120 / watercolor 160 were smooth (16-22%) while real
+  strokes had shown 92-100% (taken before the 60-per-second pace, which halves drawing at those
+  sizes - but not enough to explain 5x). Now: real stroke layer (drawn white, cleared after),
+  real guess-ahead distance (`predictAheadMs` x speed, capped at `predictMaxPx`). Note: the
+  Sunflower/Mandala pages are SVG placeholders at 1536 x 2048; real pages are 2048 x 2732, so run
+  the test on a real page. Stroke log lines show "at N px/s" (the test uses 600 screen px/s).
 - **Brush warm-up** (`warmUpBrushes()` in editor.js): 300 ms after the first page opens, each brush
   draws two tiny practice strokes on a hidden 160 px canvas, one brush every 30 ms (each step
   1-13 ms on the PC), pausing while she draws. Why: the first airbrush stroke on her iPad showed

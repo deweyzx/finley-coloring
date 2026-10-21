@@ -2,21 +2,21 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610202151";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610202151";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610202151";
-import { setupColorPicker } from "./color-picker.js?v=202610202151";
-import { setupSavePicture } from "./save-picture.js?v=202610202151";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610202151";
-import { StrokeEngine } from "./stroke-engine.js?v=202610202151";
-import { createSlider } from "./slider.js?v=202610202151";
-import { History } from "./history.js?v=202610202151";
-import { Viewport } from "./viewport.js?v=202610202151";
-import { setupInput } from "./touch-input.js?v=202610202151";
-import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=202610202151";
-import { runSpeedTest } from "./speed-test.js?v=202610202151";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610202151";
-import { SETTINGS } from "./settings.js?v=202610202151";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610202202";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610202202";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610202202";
+import { setupColorPicker } from "./color-picker.js?v=202610202202";
+import { setupSavePicture } from "./save-picture.js?v=202610202202";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610202202";
+import { StrokeEngine } from "./stroke-engine.js?v=202610202202";
+import { createSlider } from "./slider.js?v=202610202202";
+import { History } from "./history.js?v=202610202202";
+import { Viewport } from "./viewport.js?v=202610202202";
+import { setupInput } from "./touch-input.js?v=202610202202";
+import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=202610202202";
+import { runSpeedTest } from "./speed-test.js?v=202610202202";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610202202";
+import { SETTINGS } from "./settings.js?v=202610202202";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -625,6 +625,8 @@ function startStroke(e) {
     draw: 0, // of the work: drawing the stroke on screen
     slowest: 0,
     lags: [], // for each Pencil event: newest position sensed -> handled (ms)
+    path: 0, // how far the Pencil moved on screen (px), for its speed
+    lastXY: null,
     events: 0,
     samples: 0,
     updates: 0,
@@ -683,6 +685,9 @@ function continueStroke(e) {
   const samples = coalesced.length ? coalesced : [e];
   let p = null;
   for (const sample of samples) {
+    const last = s.timing.lastXY;
+    if (last) s.timing.path += Math.hypot(sample.clientX - last[0], sample.clientY - last[1]);
+    s.timing.lastXY = [sample.clientX, sample.clientY];
     p = readPoint(sample);
     if (s.waiting) s.pending.push(p);
     else engine.addPoint(p);
@@ -776,7 +781,8 @@ function finishStroke() {
     const lags = t.lags.slice().sort((a, b) => a - b);
     const at = (share) => (lags.length ? Math.round(lags[Math.min(lags.length - 1, Math.floor(share * lags.length))]) : 0);
     debugLog(
-      `${t.brush} ${Math.round(t.size)}: ${(length / 1000).toFixed(1)} s, work ${Math.round(t.work)} ms ` +
+      `${t.brush} ${Math.round(t.size)}: ${(length / 1000).toFixed(1)} s at ${Math.round((t.path * 1000) / Math.max(1, length))} px/s, ` +
+        `work ${Math.round(t.work)} ms ` +
         `(${Math.round((100 * t.work) / Math.max(1, length))}%: dabs ${Math.round(t.dabs)}, drawing ${Math.round(t.draw)}), ` +
         `slowest ${Math.round(t.slowest)} ms\n` +
         `   Pencil→app: touch-down ${Math.round(t.startDelay)} ms, typical ${at(0.5)} ms, 90% under ${at(0.9)} ms, ` +
@@ -864,7 +870,9 @@ onSpeedTest(async () => {
     height: engine.height,
     scale: view.scale,
     wait: drawingWait,
-    parent: paper,
+    // how far ahead of the tip the app draws at this speed (the same as guessAhead below)
+    ahead: (scale, pageSpeed) => Math.min((pageSpeed * SETTINGS.predictAheadMs) / 1000, SETTINGS.predictMaxPx / scale),
+    strokeCtx,
     report: debugLog,
   });
 });

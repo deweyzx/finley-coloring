@@ -126,7 +126,7 @@ export const BRUSHES = {
     sizeRange: [2, 200],
     defaults: { size: 24, opacity: 0.85 },
     hardness: 0.55,
-    spacing: 0.06,
+    spacing: 0.12, // (was 0.06; with the quick loop it looks the same and is about 4x lighter)
     pressure: { size: [0.12, 1], opacity: [0.65, 1], curve: 0.8 },
     taper: { start: 0.35, length: 0.9 },
     bristles: { strength: 0.28, width: 0.05 },
