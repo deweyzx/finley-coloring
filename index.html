@@ -12,13 +12,57 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="preload" href="icons/enchanted-book-1024.png" as="image">
   <link rel="preload" href="fonts/literata-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/figtree-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/styles.css?v=20261021155109">
+  <link rel="stylesheet" href="css/styles.css?v=20261021162959">
   <!-- type="module" lets our JavaScript files import from each other. -->
-  <script type="module" src="js/app.js?v=20261021155109"></script>
+  <script type="module" src="js/splash.js?v=20261021162959"></script>
+  <script type="module" src="js/app.js?v=20261021162959"></script>
 </head>
 <body>
+
+  <!-- Opening cover: removed after the animation. A separate helper keeps it independent of drawing. -->
+<div class="opening-splash" id="opening-splash" role="button" tabindex="0" aria-label="Skip opening animation" hidden>
+  <div class="opening-cover" aria-hidden="true">
+    <div class="opening-face opening-front">
+      <div class="opening-leather-bg"></div>
+      <div class="opening-vignette"></div>
+      <div class="opening-key"></div>
+      <div class="opening-tooling"></div>
+      <svg class="opening-corner opening-tl" viewBox="0 0 64 64"><g fill="none" stroke="var(--gold-light)" stroke-width="1.5" stroke-linecap="round"><path d="M14 14 C 30 12 40 20 40 32 C 40 40 32 42 28 37 C 25 33 29 29 33 31"/><path d="M14 14 C 12 30 20 40 32 40"/></g><path d="M14 14 m-4 0 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0" fill="var(--gold-light)"/></svg>
+      <svg class="opening-corner opening-tr" viewBox="0 0 64 64"><g fill="none" stroke="var(--gold-light)" stroke-width="1.5" stroke-linecap="round"><path d="M14 14 C 30 12 40 20 40 32 C 40 40 32 42 28 37 C 25 33 29 29 33 31"/><path d="M14 14 C 12 30 20 40 32 40"/></g><path d="M14 14 m-4 0 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0" fill="var(--gold-light)"/></svg>
+      <svg class="opening-corner opening-bl" viewBox="0 0 64 64"><g fill="none" stroke="var(--gold-light)" stroke-width="1.5" stroke-linecap="round"><path d="M14 14 C 30 12 40 20 40 32 C 40 40 32 42 28 37 C 25 33 29 29 33 31"/><path d="M14 14 C 12 30 20 40 32 40"/></g><path d="M14 14 m-4 0 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0" fill="var(--gold-light)"/></svg>
+      <svg class="opening-corner opening-br" viewBox="0 0 64 64"><g fill="none" stroke="var(--gold-light)" stroke-width="1.5" stroke-linecap="round"><path d="M14 14 C 30 12 40 20 40 32 C 40 40 32 42 28 37 C 25 33 29 29 33 31"/><path d="M14 14 C 12 30 20 40 32 40"/></g><path d="M14 14 m-4 0 a4 4 0 1 0 8 0 a4 4 0 1 0 -8 0" fill="var(--gold-light)"/></svg>
+      <svg class="opening-vine opening-bl" viewBox="0 0 440 560" style="--opening-vine-delay:0.15s"></svg>
+      <svg class="opening-vine opening-tr" viewBox="0 0 440 560" style="--opening-vine-delay:0.3s"></svg>
+      <div class="opening-medallion"><div class="opening-glow"></div><div class="opening-rim"></div><div class="opening-art"></div><div class="opening-run"></div>
+        <div class="opening-twinkles" id="opening-twinkles"></div></div>
+      <div class="opening-magic">
+        <div class="opening-tip"><span class="opening-ring"></span><span class="opening-spark"><span class="opening-core"></span></span></div>
+        <svg class="opening-thread" viewBox="270 220 530 490" aria-hidden="true">
+          <defs><linearGradient id="opening-thread-gold" gradientUnits="userSpaceOnUse" x1="300" y1="240" x2="780" y2="690"><stop offset="0" stop-color="var(--opening-thread-1)"/><stop offset="0.5" stop-color="var(--opening-thread-2)"/><stop offset="1" stop-color="var(--opening-thread-3)"/></linearGradient></defs>
+          <path id="opening-thread-path" class="opening-glow-line" pathLength="1000" d="M544 598 C 640 690 790 610 768 470 S 630 236 500 258 S 288 390 400 478 S 488 506 500 500"/>
+          <path class="opening-body" pathLength="1000" d="M544 598 C 640 690 790 610 768 470 S 630 236 500 258 S 288 390 400 478 S 488 506 500 500"/>
+          <path class="opening-hair" pathLength="1000" d="M544 598 C 640 690 790 610 768 470 S 630 236 500 258 S 288 390 400 478 S 488 506 500 500"/>
+        </svg>
+        <div class="opening-dust" id="opening-dust"></div>
+        <div class="opening-head"><span class="opening-spark"><span class="opening-core"></span></span></div>
+        <div class="opening-land"><span class="opening-spark"><span class="opening-core"></span></span></div>
+      </div>
+    </div>
+  </div>
+  <div class="opening-iris"></div>
+  <div class="opening-lights-up"></div>
+</div>
+<svg id="opening-defs" width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="opening-ivy" viewBox="-14 -14 28 28">
+      <path d="M0 -12 C2.5 -9.5 5 -7.5 6.5 -6.5 C10 -8 13.5 -4.5 12 -1 C11 1.5 9.5 3 8.5 4 C10.5 7.5 7.5 10.5 4.5 9.5 C2.5 9 1 9.5 0 11.5 C-1 9.5 -2.5 9 -4.5 9.5 C-7.5 10.5 -10.5 7.5 -8.5 4 C-9.5 3 -11 1.5 -12 -1 C-13.5 -4.5 -10 -8 -6.5 -6.5 C-5 -7.5 -2.5 -9.5 0 -12 Z" fill="var(--opening-leaf)" stroke="var(--opening-leaf-edge)" stroke-width="1" stroke-linejoin="round"/>
+      <path d="M0 11 V-9 M0 4 L-8 -4 M0 4 L8 -4 M0 6 L-7 7 M0 6 L7 7" fill="none" stroke="var(--opening-leaf-vein)" stroke-width="0.8" stroke-linecap="round" opacity="0.8"/>
+    </symbol>
+  </defs>
+</svg>
 
   <!-- Shared decorative ivy; it never receives touches or screen-reader focus. -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">

@@ -2,23 +2,23 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=20261021155109";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=20261021155109";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=20261021155109";
-import { setupColorPicker } from "./color-picker.js?v=20261021155109";
-import { setupSavePicture } from "./save-picture.js?v=20261021155109";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=20261021155109";
-import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=20261021155109";
-import { createSlider } from "./slider.js?v=20261021155109";
-import { History } from "./history.js?v=20261021155109";
-import { Viewport } from "./viewport.js?v=20261021155109";
-import { setupInput } from "./touch-input.js?v=20261021155109";
-import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=20261021155109";
-import { runSpeedTest } from "./speed-test.js?v=20261021155109";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=20261021155109";
-import { SETTINGS } from "./settings.js?v=20261021155109";
-import { hexToHsv, hsvToHex } from "./color.js?v=20261021155109";
-import { rememberPageForOffline } from "./offline.js?v=20261021155109";
+import { loadImage, drawLineArt } from "./lineart.js?v=20261021162959";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=20261021162959";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=20261021162959";
+import { setupColorPicker } from "./color-picker.js?v=20261021162959";
+import { setupSavePicture } from "./save-picture.js?v=20261021162959";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=20261021162959";
+import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=20261021162959";
+import { createSlider } from "./slider.js?v=20261021162959";
+import { History } from "./history.js?v=20261021162959";
+import { Viewport } from "./viewport.js?v=20261021162959";
+import { setupInput } from "./touch-input.js?v=20261021162959";
+import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=20261021162959";
+import { runSpeedTest } from "./speed-test.js?v=20261021162959";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=20261021162959";
+import { SETTINGS } from "./settings.js?v=20261021162959";
+import { hexToHsv, hsvToHex } from "./color.js?v=20261021162959";
+import { rememberPageForOffline } from "./offline.js?v=20261021162959";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");

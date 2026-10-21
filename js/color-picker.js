@@ -9,13 +9,13 @@
 //
 // The data (current color, recent colors, palettes) lives in palette.js.
 
-import { hsvToRgb, hsvToHex, hexToHsv } from "./color.js?v=20261021155109";
+import { hsvToRgb, hsvToHex, hexToHsv } from "./color.js?v=20261021162959";
 import {
   currentColor, selectColor, onPaletteChange, allPalettes, activePalette, setActivePalette,
   createPalette, renamePalette, deletePalette, addColorToPalette, removeColorFromPalette,
   recentColors, makeSwatch, suggestedPaletteName, LIMITS,
-} from "./palette.js?v=20261021155109";
-import { askText, askConfirm } from "./dialogs.js?v=20261021155109";
+} from "./palette.js?v=20261021162959";
+import { askText, askConfirm } from "./dialogs.js?v=20261021162959";
 
 // Sizes as fractions of the wheel's width.
 const RING_INNER = 0.36;

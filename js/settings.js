@@ -2,6 +2,15 @@
 // Sizes are in page pixels (a page is about 2048 x 2732 pixels).
 
 export const SETTINGS = {
+  // ---------- Opening animation (step 12, part 2) ----------
+  // The approved sequence lasts about 2.9 seconds; its individual cues live in the
+  // --opening-* CSS variables. These limits keep skipping and failed image loads gentle.
+  splashSkipMs: 300,
+  splashReducedMs: 1350,
+  splashImageWaitMs: 600,
+  splashCleanupSlackMs: 80,
+  // Always release the app if an animation or image is interrupted.
+  splashSafetyMs: 6000,
   // ---------- Offline access and backups (step 11) ----------
   // If the offline helper stops replying, let her try again instead of waiting forever.
   offlineReplyMs: 30000,

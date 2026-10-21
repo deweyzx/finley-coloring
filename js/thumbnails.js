@@ -6,8 +6,8 @@
 // appears on screen, we load the full page ONCE, shrink it to a small picture, and
 // save that in the database. After that, only the small picture is ever loaded.
 
-import { loadImage } from "./lineart.js?v=20261021155109";
-import { dbGet, dbPut } from "./storage.js?v=20261021155109";
+import { loadImage } from "./lineart.js?v=20261021162959";
+import { dbGet, dbPut } from "./storage.js?v=20261021162959";
 
 const THUMB_WIDTH = 480; // pixels; sharp enough for the cards on an iPad screen
 

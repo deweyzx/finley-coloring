@@ -10,7 +10,7 @@ table, and any decisions that changed.
 ## Resume here — current status (2026-10-21)
 
 - **Step 11 is complete and accepted on the iPad.** Steps 1–11 are finished.
-- **Step 12 part 1 passed Owen's PC test; iPad acceptance is pending.** Owen chose splash
+- **Step 12 part 1 is complete and accepted on PC and her iPad.** Owen chose splash
   **D**, font pairing **1 (Literata + Figtree)**, the new two-line header, "Where you left off",
   and bundling the fonts offline. Everything needed to continue is in "Step 12: approved design
   and build plan" at the end of this file. Owen said "Start part 1"; build in the
@@ -18,14 +18,24 @@ table, and any decisions that changed.
   Checkpoint version `20261021155109` contains the Storybook library/coloring restyle and bundled
   fonts, including the slider overlap repair. Owen accepted the repaired sliders with "looks good"
   on 2026-10-21, approving the checkpoint/upload under the agreed PC → commit/push → iPad flow.
-  Splash D and the Themes button are still later parts. Themes must start with Storybook alone,
+  After upload 0ff818a, Owen confirmed the iPad checklist "everything works good" (2026-10-21).
+  Part 2, Splash D, has now passed Owen's PC check and is checkpointed for the iPad test. The Themes button
+  is still a later part. Themes must start with Storybook alone,
   followed by one alternate theme at a time, with Owen testing each before the next is built.
-- **Latest reports:** after repair 173f41d, Owen said "everything returned". He then explicitly
+- **Latest report:** step 12 part 1 works on her iPad ("everything works good", 2026-10-21).
+  Owen then said "okay lets do it", authorizing part 2. The approved Splash D opening animation
+  passed local Chrome checks and Owen's PC review ("looks perfect", 2026-10-21), approving its
+  checkpoint/upload under the agreed workflow. Part 2 version `20261021162959` is ready for the
+  iPad check. Themes remain separate and later. A future brush-column request is recorded below;
+  it is not part of this checkpoint's UI implementation.
+- **Earlier step 11 acceptance:** after repair 173f41d, Owen said "everything returned". He then explicitly
   confirmed the entire final checklist "all worked perfectly": Save all pages offline showed
   10 of 10; the installed app reopened in Airplane Mode; a colored page opened, a new stroke
   survived leaving/reopening, and rotation worked. This supersedes older pending-retest notes.
-- **Latest app code checkpoint:** Step 12 part 1, version `20261021155109`, on main; iPad check
-  pending. Previous app checkpoint: 173f41d, Step 11 restore repair (`20261021022059`).
+- **Latest app code checkpoint:** Step 12 part 2, version `20261021162959`, on main; PC accepted,
+  iPad check pending. Previous checkpoint: 0ff818a, Step 12 part 1 (`20261021155109`), accepted
+  on her iPad. Earlier app checkpoint: 173f41d,
+  Step 11 restore repair (`20261021022059`).
   Earlier step 11 foundation: e6bc927. Full step 10 acceptance: f214dc9.
 - **Live app:** https://deweyzx.github.io/finley-coloring/ . Local project:
   `C:\Users\owen moran\Documents\Projects\coloring-app`; start `start-server.bat`, then
@@ -44,6 +54,8 @@ table, and any decisions that changed.
   current status and the full approved design/build section. Keep both guides synchronized
   whenever status, decisions or the step plan change. Step 12 part 1 includes the synchronized
   guides and README. Keep both guides synchronized as the work progresses.
+  The part 2 checkpoint includes part 1's iPad acceptance, part 2's PC acceptance, and the
+  deferred brush-column request in all three guides. Keep these guides synchronized.
 
 ### Accepted checkpoints
 
@@ -52,7 +64,8 @@ table, and any decisions that changed.
 | f214dc9 | Step 10 completion record, all brush batches | Finley's iPad: all accepted |
 | e6bc927 | Step 11 install/offline, icon, backup and updates | PC passed; initial iPad restore needed repair |
 | 173f41d | Independent restored bytes, matching-date repair, readback verification | iPad restore recovered; final offline/reopen checklist then passed |
-| Step 12 part 1, version 20261021155109 | Storybook library/coloring screens, offline fonts, accessible controls and slider repair | Owen's PC accepted; iPad check pending |
+| 0ff818a, Step 12 part 1, version 20261021155109 | Storybook library/coloring screens, offline fonts, accessible controls and slider repair | PC and her iPad accepted |
+| Step 12 part 2, version 20261021162959 | Approved opening cover, ivy/golden thread, skip and Reduce Motion | Owen's PC accepted; iPad check pending |
 
 ## Where we are
 
@@ -121,9 +134,10 @@ table, and any decisions that changed.
   book icon, offline pages, safe app updates, and .finley backup/transfer. Foundation e6bc927;
   Safari restore repair 173f41d. Owen confirmed both recovered coloring and the entire final
   installed-app offline/reopen/persistence/rotation checklist on 2026-10-21.
-- **Current:** step 12 part 1 passed Owen's PC test and is checkpointed for the iPad check.
+- **Current:** step 12 part 1 is committed/uploaded as 0ff818a and accepted on PC and her iPad.
   See "Step 12: approved design and build plan" for the exact
-  scope and local checks. Splash D follows at its own checkpoint; Themes starts with Storybook
+  scope and local checks. Part 2, Splash D, passed the PC check and is checkpointed for the iPad test, at its own
+  checkpoint; Themes starts with Storybook
   alone, then each alternate theme is built and tested separately.
 
 ## How to work with Owen
@@ -170,7 +184,7 @@ table, and any decisions that changed.
 | 9 | Export the finished picture to Photos | ✅ |
 | 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | ✅ all three batches confirmed on iPad |
 | 11 | Installable + offline (manifest, service worker, icons), coloring backup/transfer | ✅ PC and installed iPad app accepted, including offline/reopen |
-| 12 | Magical storybook look, Themes, polish | part 1 PC accepted, iPad check pending (splash D and themes later) |
+| 12 | Magical storybook look, Themes, polish | part 1 PC + iPad accepted; part 2 Splash D PC accepted, iPad check pending; themes later |
 
 ### Notes for future steps
 
@@ -212,6 +226,17 @@ table, and any decisions that changed.
   build order are in "Step 12: approved design and build plan" at the end of this file.**
 
 ## Brushes (step 4)
+
+### Saved future UI request: brush column (2026-10-21)
+
+Owen would like a column of individually displayed brushes, with each brush represented by
+its own distinctive icon or brush-type illustration, replacing the current brush chooser
+presentation. He explicitly said it does not need to be done now; save it for a future change.
+This is a visual chooser/layout request, not a change to brush textures or behavior. Review
+the exact layout/icon treatment with him when he asks to build it. Keep targets large for
+Pencil/finger and make selection clear. The current bar and Brushes window stay in use until
+then. Do not silently fold this redesign into the splash checkpoint or the planned Storybook
+window restyle; it is a separate deferred follow-up, not yet scheduled or implemented.
 
 - **Brush = a definition object** in `js/brushes.js` (`BRUSHES`): name, icon (inner SVG markup),
   `sizeRange`, `defaults` {size, opacity}, `hardness`, `spacing`, `pressure` {size:[min,1],
@@ -935,6 +960,7 @@ implementations. Use the current settings table and later optimization notes for
 | `js/app.js` | Router: address → screen |
 | `js/library.js` | Reads `pages/pages.js`, builds page objects |
 | `js/gallery.js` | Library screens, progress ribbons, collection stacks and actual most-recent continue card |
+| `js/splash.js` | Separate opening cover/thread helper: once per document, skip, Reduce Motion, cleanup |
 | `fonts/` | Bundled Literata/Figtree WOFF2 files, licenses and source record; cached offline |
 | `js/thumbnails.js` | Browser-made thumbnails (fallback) |
 | `js/storage.js` | IndexedDB (thumbnails, artwork, progress, progressThumbs); atomic backup merge |
@@ -1087,14 +1113,18 @@ Record this as actual iPad acceptance, not a local simulation. Keep .finley back
 assume Home Screen installation is cloud sync. If an unrelated future problem appears, use the
 safe update/backup workflow above rather than repeating the whole migration.
 
-**Step 12 part 1 is PC accepted and checkpointed for iPad testing:** see the next section.
+**Step 12 part 1 is complete and accepted on PC and her iPad:** see the next section.
 
 ## Step 12: approved design and build plan (2026-10-21)
 
 **Status:** Owen approved the browser mockups and authorized part 1: library and coloring
 screens. Part 1 (version `20261021155109`) passed local Chrome checks and Owen's PC review,
-including the slider repair ("looks good", 2026-10-21). Checkpoint/upload is approved for the
-iPad test. Keep Splash D and themes for their later checkpoints; wait for the iPad report.
+including the slider repair ("looks good", 2026-10-21). Committed and uploaded as 0ff818a;
+GitHub Pages deployment succeeded and the live stylesheet/fonts/offline list matched the
+local files. Owen then confirmed the iPad checklist "everything works good" on 2026-10-21.
+Part 1 is complete. Owen then authorized part 2 ("okay lets do it") and accepted the opening
+animation on PC ("looks perfect"). Part 2 version `20261021162959` is checkpointed for the
+iPad check. The separate brush-column idea is saved for later; no brush UI was redesigned here.
 
 ### Owen's choices
 
@@ -1246,7 +1276,7 @@ No text, about 2.9 s, shown when the app opens, then removed from the page.
 - Not yet checked on the real iPad: smoothness and timing feel. Splash colors should come
   from theme variables so each theme can recolor it.
 
-### Build order (part 1 PC accepted, iPad check pending)
+### Build order (part 1 PC + iPad accepted; part 2 PC accepted, iPad check pending)
 
 1. **Library and coloring screens:** new tokens and components in css/styles.css (all colors,
    fonts, sizes as variables), bundled fonts, header/continue card/collection stacks in
@@ -1302,11 +1332,13 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   overflow at 768×1024, 1024×768 and 390×844. After bulk downloading, a full offline reload
   loaded the bundled fonts and opened Daffodil plus both Tiger Lilies. No external HTTP(S)
   requests or browser JavaScript errors. These checks used separate test storage, not Owen's
-  saved coloring. Real iPad Safari, Pencil feel and VoiceOver remain for later acceptance.
-- **Owen's next check:** in the installed iPad app while online, App & offline → Check for
-  updates → Update app when offered; keep website data. Inspect the library, continue a colored
-  page, use tools/sliders/undo/colors, leave/reopen, and check both orientations. Confirm the
-  sliders remain clear and easy to drag with Pencil/finger. Wait for his iPad report before part 2.
+  saved coloring. The later iPad report below supplies acceptance of the requested device checks.
+  VoiceOver has not been checked, and do not report a new iPad offline-font test as separately run.
+- **iPad acceptance:** after update 0ff818a, Owen confirmed "everything works good" (2026-10-21)
+  in response to the requested checklist: library/progress/continue, Size/Opacity with Pencil
+  and finger including both endpoints, both orientations, coloring and leave/reopen. Record
+  part 1 as accepted; do not ask him to repeat it as a pending check. He subsequently authorized
+  Splash D in part 2 and accepted it on PC; its iPad check is pending. Themes stay separate and come afterward.
 - **Later theme rollout (explicit user instruction):** first implement the Themes button with
   Storybook alone and let Owen test. Then Midnight Forest, Ocean Dreams, Autumn Cottage and
   the minimal theme each get their own implementation/test round. Do not batch them.
@@ -1319,4 +1351,54 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   741×1000 and 681×1000; both knobs stay inside their rows and clear of labels/values. Dragging
   near the top of the full touch row still works. CSS only for this repair, plus version stamps.
   Owen confirmed the repaired sliders "looks good" on 2026-10-21. PC acceptance is complete;
-  checkpoint/upload follows that approval, with iPad acceptance still pending.
+  checkpoint 0ff818a was then uploaded and the iPad report also passed ("everything works good").
+
+### Part 2 implementation and handoff (2026-10-21)
+
+- **Authorization/status:** Owen said "okay lets do it" after part 1's iPad acceptance. Splash D
+  passed local checks, then Owen said "looks perfect" on 2026-10-21, approving the PC result
+  and checkpoint/upload under the agreed workflow. Version `20261021162959` is checkpointed
+  for the iPad test. Do not describe iPad acceptance as complete until he reports back.
+- **Approved sequence:** about 2.87 seconds: green leather, gold tooling/corner flourishes,
+  growing ivy, enchanted-book medallion and rim light, pencil-tip flare, golden thread with
+  aligned star/dust, landing flare and a soft parchment circle fading into the existing screen.
+  The 1024px approved icon is reused without modifying it. No text or extra controls were added.
+  The screenshot/mockup folder remains unchanged and is not an app dependency.
+- **Isolation:** `js/splash.js` is its own early module in index.html, independent of app.js.
+  It does not wait at top level or alter routing/drawing/saving. One opening per document
+  load/reload; browsing or returning from another app does not replay it. An existing direct
+  page/category address stays intact, so a refresh returns to that page after the animation.
+- **Safe skipping:** tap, Pencil touch, Space, Enter or Escape fades it in 300ms. Background
+  screens are inert while covered; skip events are consumed. A held pointer stays captured
+  until it lifts before the transparent cover is removed, preventing a stray mark/click.
+  Normal completion and skips remove the cover, its SVG definitions, timers and window/media
+  listeners, restore screen access, and return keyboard focus to an available app control.
+- **Reduce Motion:** follows the browser/system preference, including changes while open.
+  Finished cover/ivy/medallion stay still; moving thread, rim light and sparks are hidden.
+  The cover fades out over 1.35 seconds. A hidden/background document ends the intro without
+  starting it again when she returns.
+- **Failure handling:** opening markup starts hidden, so a missing helper leaves the app
+  accessible. Once shown, a 6-second guard releases it even if an animation is interrupted.
+  Artwork decoding waits at most 600ms. Timing limits live in settings.js; style/timeline,
+  size and material tokens live in :root in styles.css. All opening selectors are scoped
+  (`opening-*`), with finite animations. Leaf/dust geometry is measured once at setup, not
+  during coloring. Only opacity/transform and small SVG strokes animate; no moving blur/filter.
+- **Responsive art:** the 1000-unit stage scales with the medallion; the same path drives
+  thread/star/dust. Resize recalculates stage alignment and the parchment circle's coverage.
+  The medallion is 46vmin, capped at 380px. Materials use theme variables for later themes.
+- **Offline:** stamping now includes the existing `icons/enchanted-book-1024.png` (1,404,480
+  bytes) and new module. Generated list: 54 app/thumbnail assets, still 10 downloadable outlines.
+  Existing cache/update/backup behavior and coloring data format are unchanged.
+- **Local Chrome checks passed, isolated test storage:** natural finish/cleanup, portrait and
+  landscape frames plus pencil-tip alignment, all three skip keys without route changes,
+  held-touch skip without any changed canvas pixels, no replay on category navigation,
+  exact real Daffodil coloring after save/reopen, static Reduce Motion fade/cleanup, full
+  offline opening with cached artwork and Tiger Lily page, and working library if the helper
+  cannot load. No external HTTP(S) requests or browser JavaScript errors. Real iPad smoothness,
+  Pencil skip and VoiceOver have not yet been checked for this part.
+- **Owen's PC report:** "looks perfect" (2026-10-21). Next check: the installed iPad app online →
+  App & offline → Check for updates → Update app when offered. Watch a fresh opening in each
+  orientation, then try a tap/Pencil skip. Check that browsing does not replay it, and existing
+  coloring reopens normally. Keep website data. Wait for his iPad report before the next part.
+- **Next after this part:** the Themes button with Storybook alone and the remaining windows,
+  then each alternate theme separately. Do not build them during part 2.

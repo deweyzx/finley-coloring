@@ -23,6 +23,7 @@ Don't open `index.html` by double-clicking. Browsers block some features for fil
 | `js/app.js` | Starts the app and picks the screen from the address (`#/flowers/tulips`) |
 | `js/library.js` | Reads `pages/pages.js` and works out each page's path, id and title |
 | `js/gallery.js` | The library screens: categories, sub-categories, pages |
+| `js/splash.js` | The opening book animation, tap/key skip, Reduce Motion and cleanup |
 | `js/thumbnails.js` | Makes small preview pictures once, and saves them |
 | `js/storage.js` | IndexedDB: saved coloring, paint memory, progress and thumbnails |
 | `js/editor.js` | The coloring screen: tools, taps, fitting the page on screen |
@@ -283,7 +284,7 @@ The settings for each brush are in `js/brushes.js`, with comments explaining eac
 repair 173f41d; the same backup then recovered the coloring. Owen confirmed the final installed
 app checklist worked perfectly: all 10 pages saved offline, Airplane Mode launch, coloring
 persistence after leaving/reopening, and rotation. Step 12's Storybook library and coloring
-screen have passed Owen's PC review and are ready for the iPad check.
+screen have passed Owen's PC review and her iPad check.
 
 The library's **App & offline** button has the controls below.
 
@@ -377,11 +378,14 @@ this issue. The repair copies the backup's compressed data independently of the 
 
 ### Project checkpoint and next step
 
-Latest checkpoint: **Step 12 part 1, version 20261021155109**, the Storybook library/coloring
-design including the slider repair. **Owen's PC review passed; the iPad check is pending.**
+Latest app checkpoint: **Step 12 part 2, version 20261021162959**, the approved opening animation.
+**Owen's PC review passed; the iPad check is pending.** Previous checkpoint **0ff818a** delivered
+part 1's Storybook library/coloring design and slider repair, accepted on PC and iPad (2026-10-21).
 Home Screen installation and offline coloring were accepted on Finley's iPad in step 11,
 including restore repair 173f41d.
 CLAUDE.md and AGENTS.md contain matching implementation history, settings and next-session notes.
+This checkpoint includes the part 1 iPad acceptance, part 2 PC acceptance and future brush-column
+request. The brush chooser idea is recorded below and has not been implemented.
 
 ## Storybook design (step 12, part 1)
 
@@ -397,7 +401,8 @@ fonts are included in the app, so they don't need Google Fonts or an internet co
 
 The slider knobs have been made smaller and spaced away from their labels and numbers after
 the first PC review. The full 50px row still responds to dragging. In a narrow upright window,
-the preview and sliders move below the tools to give them more room. Owen accepted this repair on PC.
+the preview and sliders move below the tools to give them more room. Owen accepted this repair
+on PC and then confirmed the iPad checks worked too.
 
 ### Check this part on the PC
 
@@ -411,9 +416,11 @@ the preview and sliders move below the tools to give them more room. Owen accept
    and the Brushes window. Leave the page and reopen to confirm the coloring remains.
 6. Resize Chrome into a tall window and a wide window. Check that titles, buttons and colors
    remain readable and reachable. On shorter windows the sideways panel can scroll.
-7. These PC checks have passed. The next check is on her iPad using the hosted app.
+7. These PC checks and the following iPad checks have passed. Keep the lists for reference.
 
 ### Check this part on her iPad
+
+**Passed:** Owen reported "everything works good" after the upload. No repeat test is pending.
 
 1. Open the installed app while online. Choose **App & offline → Check for updates → Update app**
    when offered. If the upload has only just finished, allow a few minutes for GitHub Pages.
@@ -423,7 +430,45 @@ the preview and sliders move below the tools to give them more room. Owen accept
 4. Rotate upright and sideways. Text, knobs, values and buttons should stay clear and reachable.
 5. Report the results before the splash animation is built. Keep existing website data.
 
-Next comes the approved splash animation in its own part. After that, the **Themes** button
+The approved splash animation has passed the PC review in its own part. After that, the **Themes** button
 starts with **Storybook only**, so you can test the selector first. Other themes will be added
 **one at a time**, with a test between each: Midnight Forest, Ocean Dreams, Autumn Cottage,
 and a clean minimal look.
+
+## Opening animation (step 12, part 2)
+
+On a fresh opening or refresh, the green book cover appears with growing ivy, the enchanted
+book icon and a golden thread, then fades into your library or the page you had open. It takes
+about three seconds. Browsing between pages does not replay it.
+
+Tap anywhere to skip, or press **Space**, **Enter** or **Escape**. Holding the skip touch
+doesn't pass it through to the picture. With Reduce Motion enabled on the device, the cover
+stays still and fades gently instead. The animation is removed when finished and works offline
+after the app update is downloaded. Your coloring, palettes and brush settings stay as they are.
+
+### Check this part on the PC
+
+1. Double-click `start-server.bat` and open http://localhost:8000 in Chrome.
+2. If needed, choose **App & offline → Check for updates → Update app**. Keep website data.
+3. Refresh and let the entire opening play. Check the ivy, book icon, golden thread and fade.
+4. Refresh again and click to skip. Try Space, Enter and Escape on separate refreshes too.
+5. Try a tall window and a wide one. The thread should remain lined up with the book's Pencil.
+6. Open a real page and refresh there: the opening should finish on that same page. Color a
+   little, try undo/redo, leave and reopen; saved coloring should remain. Clicking through the
+   library should not restart the animation.
+7. Owen accepted the PC result ("looks perfect"). Next is the iPad check after updating the app.
+
+### Check the opening on her iPad
+
+1. While online, choose **App & offline → Check for updates → Update app** when offered.
+2. Close and reopen the installed app to watch the opening. Try upright and sideways.
+3. On another fresh opening, tap with a finger or Pencil to skip. The app should be usable
+   afterward, with no stray coloring. Browsing through the library should not replay the intro.
+4. Open a colored page and check that your work is still there. Report the result before the next part.
+
+## Saved idea for later: brush column
+
+Owen would like the brushes displayed individually in a column, each with its own distinctive
+icon or brush-type illustration, instead of the current brush chooser presentation. This is
+saved for a future UI change, not built or scheduled yet. We'll review the exact layout when
+that work starts; the brushes' drawing behavior stays the same.

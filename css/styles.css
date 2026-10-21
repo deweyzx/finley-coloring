@@ -144,6 +144,142 @@
   --text-debug: 13px;
   --font-debug: ui-monospace,Menlo,Consolas,monospace;
 
+  /* Opening animation D: materials, dimensions and timing for future themes. */
+  --opening-shade: var(--leather-deep);
+  --opening-stem: #7da36f;
+  --opening-rim-1: #f4dea2;
+  --opening-rim-2: #b98a47;
+  --opening-rim-3: #8f6631;
+  --opening-rim-4: #d8b46e;
+  --opening-rim-5: #f6e2a8;
+  --opening-thread-glow: var(--gold-light);
+  --opening-thread-hair: #fff7dc;
+  --opening-mask-solid: #000;
+  --opening-spark-white: #fffdf3;
+  --opening-spark-core: #fff8e2;
+  --opening-spine-shadow: rgba(4, 14, 8, 0.6);
+  --opening-spine-clear: rgba(4, 14, 8, 0);
+  --opening-spine-light: rgba(255, 255, 255, 0.08);
+  --opening-key-light: rgba(255, 246, 220, 0.10);
+  --opening-tooling-edge: rgba(232, 203, 140, 0.85);
+  --opening-clear: rgba(0, 0, 0, 0);
+  --opening-tooling-soft: rgba(232, 203, 140, 0.35);
+  --opening-rim-shadow: rgba(3, 12, 6, 0.55);
+  --opening-rim-edge: rgba(255, 240, 200, 0.35);
+  --opening-art-edge: rgba(60, 40, 12, 0.55);
+  --opening-art-shadow: rgba(0, 0, 0, 0.35);
+  --opening-light-clear: rgba(255, 250, 225, 0);
+  --opening-light-bright: rgba(255, 250, 225, 0.95);
+  --opening-halo: rgba(255, 220, 140, 0.30);
+  --opening-halo-clear: rgba(255, 220, 140, 0);
+  --opening-ripple-edge: rgba(255, 230, 170, 0.9);
+  --opening-ripple-glow: rgba(255, 220, 140, 0.4);
+  --opening-parchment-clear: rgba(243, 232, 208, 0);
+  --opening-spark-glow: rgba(255, 228, 160, 0.85);
+  --opening-spark-clear: rgba(236, 196, 110, 0);
+  --opening-mote-core: #fffbe8;
+  --opening-mote-clear: rgba(255, 226, 150, 0);
+  --opening-value-90deg: 90deg;
+  --opening-value-180deg: 180deg;
+  --opening-spine-width: 34px;
+  --opening-value-26px: 26px;
+  --opening-value-27px: 27px;
+  --opening-value-29px: 29px;
+  --opening-tooling-inset: 30px;
+  --opening-tooling-left: 46px;
+  --opening-value-14px: 14px;
+  --opening-value-1-5px: 1.5px;
+  --opening-value-9px: 9px;
+  --opening-value-10px: 10px;
+  --opening-corner-size: 64px;
+  --opening-corner-left: 40px;
+  --opening-corner-inset: 24px;
+  --opening-vine-width: 440px;
+  --opening-vine-height: 560px;
+  --opening-vine-left: 50px;
+  --opening-vine-inset: 42px;
+  --opening-vine-time: 1s;
+  --opening-rim-delay: 0.45s;
+  --opening-leaf-time: 0.42s;
+  --opening-ripple-time: 0.8s;
+  --opening-medallion-delay: 0.05s;
+  --opening-value-210deg: 210deg;
+  --opening-value-1px: 1px;
+  --opening-value-2px: 2px;
+  --opening-value-6px: 6px;
+  --opening-value-18px: 18px;
+  --opening-value-0deg: 0deg;
+  --opening-value-290deg: 290deg;
+  --opening-value-340deg: 340deg;
+  --opening-value-360deg: 360deg;
+  --opening-rim-time: 1.05s;
+  --opening-halo-time: 1.4s;
+  --opening-halo-delay: 0.3s;
+  --opening-twinkle-time: 0.75s;
+  --opening-magic-size: 1000px;
+  --opening-magic-margin: -500px;
+  --opening-tip-x: 544px;
+  --opening-tip-y: 598px;
+  --opening-thread-time: 0.9s;
+  --opening-ripple-size: 56px;
+  --opening-ripple-margin: -28px;
+  --opening-ripple-delay: 1.1s;
+  --opening-thread-left: 270px;
+  --opening-thread-top: 220px;
+  --opening-thread-width: 530px;
+  --opening-thread-height: 490px;
+  --opening-thread-delay: 1.2s;
+  --opening-head-fade-time: 0.95s;
+  --opening-head-twinkle-time: 0.5s;
+  --opening-landing-point: 500px;
+  --opening-value-76px: 76px;
+  --opening-landing-time: 0.55s;
+  --opening-landing-delay: 2s;
+  --opening-iris-size: 100px;
+  --opening-iris-margin: -50px;
+  --opening-iris-time: 0.6s;
+  --opening-iris-delay: 2.08s;
+  --opening-exit-time: 0.25s;
+  --opening-exit-delay: 2.62s;
+  --opening-lights-time: 0.7s;
+  --opening-value-0s: 0s;
+  --opening-value-minus-30deg: -30deg;
+  --opening-value-10deg: 10deg;
+  --opening-value-45deg: 45deg;
+  --opening-value-minus-25deg: -25deg;
+  --opening-value-minus-40deg: -40deg;
+  --opening-value-320deg: 320deg;
+  --opening-value-minus-45deg: -45deg;
+  --opening-value-30deg: 30deg;
+  --opening-art: url("../icons/enchanted-book-1024.png");
+  --opening-medallion-size: min(46vmin, var(--opening-medallion-max));
+  --opening-medallion-max: 380px;
+  --opening-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --opening-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --opening-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+  --opening-spark-size: 16px;
+  --opening-mote-size: 4px;
+  --opening-vignette: rgba(6,20,10,0.45);
+  --opening-leaf: #76a067;
+  --opening-leaf-edge: #2c5233;
+  --opening-leaf-vein: #3f6a45;
+  --opening-thread-1: #fff0c4;
+  --opening-thread-2: #e8c47a;
+  --opening-thread-3: #fbe5a8;
+  --opening-reduce-time: 1350ms;
+  --opening-skip-time: 300ms;
+  --opening-leaf-size: 36;
+  --opening-leaf-jitter: 6;
+  --opening-tip-spark-size: 50px;
+  --opening-head-spark-size: 42px;
+  --opening-tip-delay: 1.05s;
+  --opening-tip-time: 0.9s;
+  --opening-tendril-time: 0.45s;
+  --opening-medallion-time: 0.8s;
+  --opening-medallion-shadow-blur: 34px;
+  --opening-dust-time: 0.8s;
+
+
 }
 
 /* latin-ext */
@@ -1381,4 +1517,127 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
 }
 @media (prefers-reduced-motion: reduce) {
   .page-card, .thumb img, .tool-button, .swatch, .brush-controls, .toggle-switch { transition: none; }
+}
+
+
+/* Opening animation D. All selectors are scoped away from drawing and the library. */
+.opening-splash { position: fixed; inset: 0; z-index: 100; overflow: hidden; cursor: pointer; background: var(--leather); touch-action: none; outline: none; }
+.opening-splash :is(div,span,svg) { pointer-events: none; }
+.opening-leather-bg { position: absolute; inset: 0; background: var(--leather-grain),radial-gradient(75% 55% at 50% 42%,var(--leather-light),var(--leather) 50%,var(--leather-deep)); }
+.opening-vignette { position: absolute; inset: 0; background: radial-gradient(120% 90% at 50% 45%,var(--clear) 55%,var(--opening-vignette)); }
+/* A sparkle: a bright core with two soft light streaks (no clip-path, so edges glow) */
+.opening-spark { position: absolute; width: var(--opening-spark-size); height: var(--opening-spark-size); margin: calc(var(--opening-spark-size) / -2); }
+.opening-spark::before, .opening-spark::after { content: ""; position: absolute; left: 50%; top: 50%; border-radius: 50%; }
+.opening-spark::before { width: 100%; height: 14%; margin: -7% 0 0 -50%;
+  background: linear-gradient(var(--opening-value-90deg), var(--clear), var(--opening-spark-core) 50%, var(--clear)); }
+.opening-spark::after { width: 14%; height: 100%; margin: -50% 0 0 -7%;
+  background: linear-gradient(var(--opening-value-180deg), var(--clear), var(--opening-spark-core) 50%, var(--clear)); }
+.opening-spark .opening-core { position: absolute; inset: 22%; border-radius: 50%;
+  background: radial-gradient(circle, var(--opening-spark-white) 0 18%, var(--opening-spark-glow) 34%, var(--opening-spark-clear) 70%); }
+/* a tiny sharp mote, far away */
+.opening-mote { position: absolute; width: var(--opening-mote-size); height: var(--opening-mote-size); margin: calc(var(--opening-mote-size) / -2); border-radius: 50%;
+  background: radial-gradient(circle, var(--opening-mote-core) 0 35%, var(--opening-mote-clear) 72%); }
+
+
+  .opening-cover { position: absolute; inset: 0; }
+  .opening-cover .opening-face { position: absolute; inset: 0; overflow: hidden; }
+  .opening-front .opening-leather-bg { background-size: auto, 100% 100%; }
+  /* the hinge: a soft groove down the left edge, like the spine of the icon's cover */
+  .opening-front::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: var(--opening-spine-width); z-index: 1;
+    background: linear-gradient(var(--opening-value-90deg), var(--opening-spine-shadow), var(--opening-spine-clear) 70%), linear-gradient(var(--opening-value-90deg), var(--clear) var(--opening-value-26px), var(--opening-spine-light) var(--opening-value-27px), var(--clear) var(--opening-value-29px)); }
+  .opening-key { position: absolute; inset: 0; background: radial-gradient(70% 50% at 35% 25%, var(--opening-key-light), var(--clear) 70%); }
+  /* gold tooling, inset from the edges */
+  .opening-tooling { position: absolute; inset: var(--opening-tooling-inset) var(--opening-tooling-inset) var(--opening-tooling-inset) var(--opening-tooling-left); border-radius: var(--opening-value-14px);
+    box-shadow: inset 0 0 0 var(--opening-value-1-5px) var(--opening-tooling-edge), inset 0 0 0 var(--opening-value-9px) var(--opening-clear), inset 0 0 0 var(--opening-value-10px) var(--opening-tooling-soft); }
+  .opening-corner { position: absolute; width: var(--opening-corner-size); height: var(--opening-corner-size); }
+  .opening-corner.opening-tl { left: var(--opening-corner-left); top: var(--opening-corner-inset); } .opening-corner.opening-tr { right: var(--opening-corner-inset); top: var(--opening-corner-inset); transform: scaleX(-1); }
+  .opening-corner.opening-bl { left: var(--opening-corner-left); bottom: var(--opening-corner-inset); transform: scaleY(-1); } .opening-corner.opening-br { right: var(--opening-corner-inset); bottom: var(--opening-corner-inset); transform: scale(-1, -1); }
+
+  .opening-vine { position: absolute; width: var(--opening-vine-width); height: var(--opening-vine-height); overflow: visible; }
+  .opening-vine.opening-bl { left: var(--opening-vine-left); bottom: var(--opening-vine-inset); }
+  .opening-vine.opening-tr { right: var(--opening-spine-width); top: var(--opening-vine-inset); transform: scale(-1, -1); }
+  .opening-vine .opening-stem { fill: none; stroke: var(--opening-stem); stroke-width: 2.2; stroke-linecap: round; stroke-dasharray: 1 1; animation: intro-grow var(--opening-vine-time) var(--opening-vine-delay) var(--opening-ease-out) both; }
+  .opening-vine .opening-tendril { fill: none; stroke: var(--opening-stem); stroke-width: 1.2; stroke-linecap: round; stroke-dasharray: 1 1; animation: intro-grow var(--opening-tendril-time) var(--opening-tendril-delay) var(--opening-ease-out) both; }
+  .opening-vine .opening-leaf { transform-box: fill-box; transform-origin: center; animation: intro-pop var(--opening-leaf-time) var(--opening-leaf-delay) var(--opening-spring) both; }
+
+  /* the medallion: the icon in a gold rim, with light running around the rim */
+  .opening-medallion { position: absolute; left: 50%; top: 50%; width: var(--opening-medallion-size); height: var(--opening-medallion-size); margin: calc(var(--opening-medallion-size) / -2);
+     animation: intro-med-in var(--opening-medallion-time) var(--opening-medallion-delay) var(--opening-ease-out) both; }
+  .opening-medallion .opening-rim { position: absolute; inset: 0; border-radius: 50%;
+    background: conic-gradient(from var(--opening-value-210deg), var(--opening-rim-1), var(--opening-rim-2), var(--opening-rim-3), var(--opening-rim-4), var(--opening-rim-5), var(--opening-rim-2), var(--opening-rim-1));
+    box-shadow: 0 var(--opening-value-10px) var(--opening-medallion-shadow-blur) var(--opening-rim-shadow), 0 0 0 var(--opening-value-1px) var(--opening-rim-edge) inset; }
+  .opening-medallion .opening-art { position: absolute; inset: 7%; border-radius: 50%; overflow: hidden;
+    background: var(--opening-art) center 54% / 138% no-repeat; box-shadow: inset 0 0 0 var(--opening-value-2px) var(--opening-art-edge), inset 0 var(--opening-value-6px) var(--opening-value-18px) var(--opening-art-shadow); }
+  .opening-medallion .opening-run { position: absolute; inset: 0; border-radius: 50%;
+    background: conic-gradient(from var(--opening-value-0deg), var(--opening-light-clear) var(--opening-value-0deg) var(--opening-value-290deg), var(--opening-light-bright) var(--opening-value-340deg), var(--opening-light-clear) var(--opening-value-360deg));
+    -webkit-mask: radial-gradient(closest-side, var(--clear) 89%, var(--opening-mask-solid) 91%, var(--opening-mask-solid) 99%, var(--clear) 100%);
+    mask: radial-gradient(closest-side, var(--clear) 89%, var(--opening-mask-solid) 91%, var(--opening-mask-solid) 99%, var(--clear) 100%);
+    animation: intro-run var(--opening-rim-time) var(--opening-rim-delay) var(--opening-ease-in-out) both; }
+  .opening-medallion .opening-glow { position: absolute; inset: -40%; border-radius: 50%;
+    background: radial-gradient(closest-side, var(--opening-halo), var(--opening-halo-clear)); mix-blend-mode: screen;
+    animation: intro-glow var(--opening-halo-time) var(--opening-halo-delay) var(--opening-ease-out) both; }
+  .opening-twinkles .opening-spark { animation: intro-twinkle var(--opening-twinkle-time) var(--opening-delay) var(--opening-ease-out) both; }
+
+  .opening-magic { position: absolute; left: 50%; top: 50%; width: var(--opening-magic-size); height: var(--opening-magic-size); margin: var(--opening-magic-margin); transform: scale(var(--opening-magic-scale, 1)); pointer-events: none; }
+  /* the pencil tip catching light */
+  .opening-tip { position: absolute; left: var(--opening-tip-x); top: var(--opening-tip-y); }
+  .opening-tip .opening-spark { --opening-spark-size: var(--opening-tip-spark-size); animation: intro-flare var(--opening-tip-time) var(--opening-tip-delay) var(--opening-ease-out) both; }
+  .opening-ring { position: absolute; width: var(--opening-ripple-size); height: var(--opening-ripple-size); margin: var(--opening-ripple-margin); border-radius: 50%; box-shadow: 0 0 0 var(--opening-value-1-5px) var(--opening-ripple-edge), 0 0 var(--opening-value-14px) var(--opening-value-2px) var(--opening-ripple-glow);
+    animation: intro-ripple var(--opening-ripple-time) var(--opening-ripple-delay) var(--opening-ease-out) both; }
+  /* the golden thread: three dashes travelling together (soft glow, body, bright hair).
+     The SVG covers only the thread's own area, so the iPad redraws as little as possible. */
+  .opening-thread { position: absolute; left: var(--opening-thread-left); top: var(--opening-thread-top); width: var(--opening-thread-width); height: var(--opening-thread-height); overflow: visible; }
+  .opening-thread path { fill: none; stroke-linecap: round; }
+  .opening-thread .opening-glow-line { stroke: var(--opening-thread-glow); stroke-width: 20; opacity: 0.2; stroke-dasharray: 150 2000; animation: intro-comet-glow var(--opening-thread-time) var(--opening-thread-delay) var(--opening-ease-in-out) both; }
+  .opening-thread .opening-body { stroke: url(#opening-thread-gold); stroke-width: 4; stroke-dasharray: 230 2000; animation: intro-comet-body var(--opening-thread-time) var(--opening-thread-delay) var(--opening-ease-in-out) both; }
+  .opening-thread .opening-hair { stroke: var(--opening-thread-hair); stroke-width: 1.4; stroke-dasharray: 70 2000; animation: intro-comet-hair var(--opening-thread-time) var(--opening-thread-delay) var(--opening-ease-in-out) both; }
+  .opening-head { position: absolute; left: 0; top: 0;
+    offset-path: path("M544 598 C 640 690 790 610 768 470 S 630 236 500 258 S 288 390 400 478 S 488 506 500 500"); offset-rotate: var(--opening-value-0deg);
+    animation: intro-travel var(--opening-thread-time) var(--opening-thread-delay) var(--opening-ease-in-out) both, intro-head-fade var(--opening-head-fade-time) var(--opening-thread-delay) linear both; }
+  .opening-head .opening-spark { --opening-spark-size: var(--opening-head-spark-size); animation: intro-twinkle-on var(--opening-head-twinkle-time) var(--opening-thread-delay) ease-in-out 2; }
+  .opening-dust .opening-p { position: absolute; opacity: 0; animation: intro-dust var(--opening-dust-time) var(--opening-delay) var(--opening-ease-out) both; }
+  /* landing in the gutter, then the parchment opens out */
+  .opening-land { position: absolute; left: var(--opening-landing-point); top: var(--opening-landing-point); }
+  .opening-land .opening-spark { --opening-spark-size: var(--opening-value-76px); animation: intro-flare var(--opening-landing-time) var(--opening-landing-delay) var(--opening-ease-out) both; }
+  .opening-iris { position: absolute; left: 50%; top: 50%; width: var(--opening-iris-size); height: var(--opening-iris-size); margin: var(--opening-iris-margin); border-radius: 50%; z-index: 5;
+    background: radial-gradient(closest-side, var(--bg) 0 60%, var(--opening-parchment-clear) 100%);
+    transform: scale(0); animation: intro-iris var(--opening-iris-time) var(--opening-iris-delay) var(--opening-ease-in-out) both; will-change: transform; }
+  .opening-splash { animation: intro-splash-out var(--opening-exit-time) var(--opening-exit-delay) ease-out both; }
+  .opening-head, .opening-dust .opening-p { will-change: transform; }
+
+  .opening-lights-up { position: absolute; inset: 0; z-index: 4; background: var(--opening-shade); pointer-events: none; animation: intro-lights var(--opening-lights-time) var(--opening-value-0s) var(--opening-ease-out) both; }
+
+  @keyframes intro-flare { 0% { opacity: 0; transform: scale(0) rotate(var(--opening-value-minus-30deg)); } 35% { opacity: 1; transform: scale(1.25) rotate(var(--opening-value-10deg)); } 100% { opacity: 0; transform: scale(0.6) rotate(var(--opening-value-45deg)); } }
+  @keyframes intro-ripple { from { opacity: 1; transform: scale(0.2); } to { opacity: 0; transform: scale(2.6); } }
+  @keyframes intro-comet-glow { from { stroke-dashoffset: 150; } to { stroke-dashoffset: -850; } }
+  @keyframes intro-comet-body { from { stroke-dashoffset: 230; } to { stroke-dashoffset: -770; } }
+  @keyframes intro-comet-hair { from { stroke-dashoffset: 70; } to { stroke-dashoffset: -930; } }
+  @keyframes intro-travel { from { offset-distance: 0%; } to { offset-distance: 100%; } }
+  @keyframes intro-head-fade { 0% { opacity: 0; } 8%, 88% { opacity: 1; } 100% { opacity: 0; } }
+  @keyframes intro-twinkle-on { 0%, 100% { transform: scale(0.8) rotate(var(--opening-value-0deg)); } 50% { transform: scale(1.15) rotate(var(--opening-value-45deg)); } }
+  @keyframes intro-dust { 0% { opacity: 0; transform: translate(0, 0) scale(0.4); } 20% { opacity: var(--opening-brightness); } 100% { opacity: 0; transform: translate(var(--opening-drift-x), var(--opening-drift-y)) scale(1); } }
+  @keyframes intro-iris { to { transform: scale(var(--opening-iris-scale, 30)); } }
+  @keyframes intro-splash-out { to { opacity: 0; } }
+  @keyframes intro-grow { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+  @keyframes intro-pop { from { transform: scale(0) rotate(var(--opening-value-minus-25deg)); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes intro-med-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: none; } }
+  @keyframes intro-run { 0% { opacity: 0; transform: rotate(var(--opening-value-minus-40deg)); } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--opening-value-320deg)); } }
+  @keyframes intro-glow { 0% { opacity: 0; transform: scale(0.7); } 100% { opacity: 1; transform: none; } }
+  @keyframes intro-twinkle { 0% { opacity: 0; transform: scale(0) rotate(var(--opening-value-minus-45deg)); } 40% { opacity: 1; transform: scale(1.15) rotate(var(--opening-value-0deg)); } 100% { opacity: 0; transform: scale(0.5) rotate(var(--opening-value-30deg)); } }
+  @keyframes intro-lights { from { opacity: 0.7; } to { opacity: 0; } }
+
+
+/* The cover waits for its image before starting every piece together. */
+.opening-splash:not(.is-running), .opening-splash:not(.is-running) * { animation-play-state: paused !important; }
+.opening-splash.is-skipping { animation: intro-skip var(--opening-skip-time) ease-out both !important; }
+.opening-splash.is-skipping * { animation-play-state: paused !important; }
+.opening-splash.is-reduced { animation: intro-reduce var(--opening-reduce-time) linear both; }
+.opening-splash.is-reduced * { animation: none !important; }
+.opening-splash.is-reduced :is(.opening-lights-up,.opening-twinkles,.opening-run,.opening-magic,.opening-iris) { display: none; }
+@keyframes intro-skip { from { opacity: var(--opening-skip-opacity,1); } to { opacity: 0; } }
+@keyframes intro-reduce { 0%,65% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .opening-splash { animation: intro-reduce var(--opening-reduce-time) linear both; }
+  .opening-splash * { animation: none !important; }
+  .opening-splash :is(.opening-lights-up,.opening-twinkles,.opening-run,.opening-magic,.opening-iris) { display: none; }
 }
