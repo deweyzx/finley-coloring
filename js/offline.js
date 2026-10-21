@@ -1,9 +1,10 @@
 // offline.js - Home Screen help, offline downloads, updates and moving her saved coloring.
 // The separate service worker keeps downloaded files; IndexedDB still keeps her artwork.
-import { categories, findPage } from "./library.js?v=20261021162959";
-import { SETTINGS } from "./settings.js?v=20261021162959";
-import { makeBackup, readBackup, restoreBackup } from "./backup.js?v=20261021162959";
-import { askConfirm } from "./dialogs.js?v=20261021162959";
+import { categories, findPage } from "./library.js?v=20261021174002";
+import { SETTINGS } from "./settings.js?v=20261021174002";
+import { makeBackup, readBackup, restoreBackup } from "./backup.js?v=20261021174002";
+import { askConfirm } from "./dialogs.js?v=20261021174002";
+import { openModal, closeModal } from './modal.js?v=20261021174002';
 
 const pages = categories.flatMap(c => c.subcategories.flatMap(s => s.pages));
 let registration = null, panel = null, busy = false, installPrompt = null;
@@ -80,8 +81,7 @@ export function setupOffline({ prepareForReload, isLibrary }) {
   </section>`;
   document.body.append(panel);
   document.getElementById("app-options").addEventListener("click", async () => {
-    panel.hidden = false;
-    document.getElementById("gallery-screen").inert = true;
+    openModal(panel, {onClose:close, initialFocus:$("app-close")});
     panel.querySelector(".app-dialog").scrollTop = 0;
     $("app-close").focus({preventScroll:true});
     showInstallHelp(); showUpdate();
@@ -90,7 +90,6 @@ export function setupOffline({ prepareForReload, isLibrary }) {
   $("app-done").addEventListener("click", close);
   $("app-close").addEventListener("click", close);
   panel.addEventListener("click", e => { if (e.target === panel) close(); });
-  window.addEventListener("keydown", e => { if (e.key === "Escape" && !panel.hidden) close(); });
   $("download-pages").addEventListener("click", () => run("offline-status", downloadAll));
   $("check-update").addEventListener("click", () => run("update-status", async () => {
     if (!registration) throw new Error("Go online and reopen the app to finish offline setup.");
@@ -169,9 +168,7 @@ export function setupOffline({ prepareForReload, isLibrary }) {
 function close() {
   if (busy) return;
   if (restored) { location.reload(); return; }
-  panel.hidden = true; forgetBackup();
-  document.getElementById("gallery-screen").inert = false;
-  document.getElementById("app-options").focus();
+  closeModal(panel); forgetBackup();
 }
 function forgetBackup() {
   if (backupURL) URL.revokeObjectURL(backupURL);

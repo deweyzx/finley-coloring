@@ -1,8 +1,8 @@
 // backup.js - moves her coloring between Safari and the Home Screen app, or to another device.
 // A .finley file has a small contents list followed by the original compressed image blobs.
 // This avoids turning hundreds of pictures into a huge text string in the iPad's memory.
-import { dbEntries, dbGet, dbMergeArtwork, storedBlob } from "./storage.js?v=20261021162959";
-import { SETTINGS } from "./settings.js?v=20261021162959";
+import { dbEntries, dbGet, dbMergeArtwork, storedBlob } from "./storage.js?v=20261021174002";
+import { SETTINGS } from "./settings.js?v=20261021174002";
 
 const MAGIC = new TextEncoder().encode("FINLEY-COLORING-BACKUP-1\n");
 const KEYS = ["brush-settings", "recent-colors", "palettes", "line-lock", "build-up", "extra-brush"];

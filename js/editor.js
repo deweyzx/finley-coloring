@@ -2,23 +2,24 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=20261021162959";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=20261021162959";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=20261021162959";
-import { setupColorPicker } from "./color-picker.js?v=20261021162959";
-import { setupSavePicture } from "./save-picture.js?v=20261021162959";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=20261021162959";
-import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=20261021162959";
-import { createSlider } from "./slider.js?v=20261021162959";
-import { History } from "./history.js?v=20261021162959";
-import { Viewport } from "./viewport.js?v=20261021162959";
-import { setupInput } from "./touch-input.js?v=20261021162959";
-import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=20261021162959";
-import { runSpeedTest } from "./speed-test.js?v=20261021162959";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=20261021162959";
-import { SETTINGS } from "./settings.js?v=20261021162959";
-import { hexToHsv, hsvToHex } from "./color.js?v=20261021162959";
-import { rememberPageForOffline } from "./offline.js?v=20261021162959";
+import { loadImage, drawLineArt } from "./lineart.js?v=20261021174002";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=20261021174002";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=20261021174002";
+import { setupColorPicker } from "./color-picker.js?v=20261021174002";
+import { setupSavePicture } from "./save-picture.js?v=20261021174002";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=20261021174002";
+import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=20261021174002";
+import { createSlider } from "./slider.js?v=20261021174002";
+import { History } from "./history.js?v=20261021174002";
+import { Viewport } from "./viewport.js?v=20261021174002";
+import { setupInput } from "./touch-input.js?v=20261021174002";
+import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=20261021174002";
+import { runSpeedTest } from "./speed-test.js?v=20261021174002";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=20261021174002";
+import { SETTINGS } from "./settings.js?v=20261021174002";
+import { hexToHsv, hsvToHex } from "./color.js?v=20261021174002";
+import { rememberPageForOffline } from "./offline.js?v=20261021174002";
+import { openModal, closeModal, modalIsOpen } from './modal.js?v=20261021174002';
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -99,15 +100,13 @@ const brushesDialog = document.getElementById("brushes-dialog");
 const brushGrid = document.getElementById("brush-grid");
 brushesButton.addEventListener("click", openBrushes);
 document.getElementById("brushes-done").addEventListener("click", closeBrushes);
+document.getElementById("brushes-close").addEventListener("click", closeBrushes);
 brushesDialog.addEventListener("click", (e) => {
   if (e.target === brushesDialog) closeBrushes(); // tapped outside the window
 });
-window.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && !brushesDialog.hidden) closeBrushes();
-});
 
 function openBrushes() {
-  brushesDialog.hidden = false;
+  openModal(brushesDialog, {onClose:closeBrushes, initialFocus:document.getElementById('brushes-close')});
   brushGrid.replaceChildren();
   for (const [id, brush] of Object.entries(BRUSHES)) {
     const card = document.createElement("button");
@@ -115,6 +114,7 @@ function openBrushes() {
     card.className = "brush-card" + (id === currentTool ? " selected" : "");
     card.setAttribute("aria-pressed", String(id === currentTool));
     const sample = document.createElement("canvas");
+    sample.setAttribute('aria-hidden', 'true');
     const name = document.createElement("span");
     name.className = "brush-name";
     name.innerHTML = iconSVG(brush.icon, 22);
@@ -133,7 +133,7 @@ function openBrushes() {
 }
 
 function closeBrushes() {
-  brushesDialog.hidden = true;
+  closeModal(brushesDialog);
 }
 
 // ---------- On/off switches ----------
@@ -221,7 +221,7 @@ function showToast(text) {
 }
 // Keyboard shortcuts for testing on the PC: Ctrl+Z, and Ctrl+Y or Ctrl+Shift+Z.
 window.addEventListener("keydown", (e) => {
-  if (!(e.ctrlKey || e.metaKey) || paper.hidden) return;
+  if (!(e.ctrlKey || e.metaKey) || paper.hidden || modalIsOpen()) return;
   const key = e.key.toLowerCase();
   if (key === "z" && !e.shiftKey) undo();
   else if (key === "y" || (key === "z" && e.shiftKey)) redo();
@@ -603,17 +603,16 @@ const eraseButton = document.getElementById("start-over-confirm");
 
 startOverButton.addEventListener("click", () => {
   if (paper.hidden || stroke) return;
-  startOverDialog.hidden = false;
-  keepButton.focus(); // the safe choice is the default
+  openModal(startOverDialog, {onClose:() => closeModal(startOverDialog), initialFocus:keepButton});
 });
 keepButton.addEventListener("click", () => {
-  startOverDialog.hidden = true;
+  closeModal(startOverDialog);
 });
 startOverDialog.addEventListener("click", (e) => {
-  if (e.target === startOverDialog) startOverDialog.hidden = true; // tapped outside the box
+  if (e.target === startOverDialog) closeModal(startOverDialog); // tapped outside the box
 });
 eraseButton.addEventListener("click", () => {
-  startOverDialog.hidden = true;
+  closeModal(startOverDialog);
   startOver();
 });
 

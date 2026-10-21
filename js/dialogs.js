@@ -6,6 +6,9 @@
 //   const yes = await askConfirm({ title: "Delete it?", confirmLabel: "Delete", danger: true });
 //   // -> true or false
 
+import { openModal, closeModal } from './modal.js?v=20261021174002';
+
+let nextHeading = 0;
 function build({ title, text, body, buttons }) {
   const backdrop = document.createElement("div");
   backdrop.className = "dialog-backdrop dialog-top";
@@ -14,9 +17,13 @@ function build({ title, text, body, buttons }) {
   box.setAttribute("role", "alertdialog");
   const heading = document.createElement("h2");
   heading.textContent = title;
+  heading.id = `question-heading-${++nextHeading}`;
+  box.setAttribute('aria-labelledby', heading.id);
   box.append(heading);
   if (text) {
     const p = document.createElement("p");
+    p.id = `question-text-${nextHeading}`;
+    box.setAttribute('aria-describedby', p.id);
     p.textContent = text;
     box.append(p);
   }
@@ -40,10 +47,11 @@ function makeButton(label, className = "") {
 
 export function askConfirm({ title, text, confirmLabel = "OK", cancelLabel = "Cancel", danger = false }) {
   return new Promise((resolve) => {
-    const cancel = makeButton(cancelLabel);
+    const cancel = makeButton(cancelLabel, 'secondary');
     const ok = makeButton(confirmLabel, danger ? "danger" : "");
     const backdrop = build({ title, text, buttons: [cancel, ok] });
     const finish = (answer) => {
+      closeModal(backdrop);
       backdrop.remove();
       resolve(answer);
     };
@@ -52,7 +60,7 @@ export function askConfirm({ title, text, confirmLabel = "OK", cancelLabel = "Ca
     backdrop.addEventListener("click", (e) => {
       if (e.target === backdrop) finish(false);
     });
-    cancel.focus(); // the safe choice is the default
+    openModal(backdrop, {onClose:() => finish(false), initialFocus:cancel}); // safe choice
   });
 }
 
@@ -66,10 +74,11 @@ export function askText({ title, text, value = "", maxLength = 24, confirmLabel 
     input.setAttribute("enterkeyhint", "done");
     input.setAttribute("autocomplete", "off");
     input.setAttribute("aria-label", title);
-    const cancel = makeButton(cancelLabel);
+    const cancel = makeButton(cancelLabel, 'secondary');
     const ok = makeButton(confirmLabel);
     const backdrop = build({ title, text, body: input, buttons: [cancel, ok] });
     const finish = (answer) => {
+      closeModal(backdrop);
       backdrop.remove();
       resolve(answer);
     };
@@ -82,12 +91,11 @@ export function askText({ title, text, value = "", maxLength = 24, confirmLabel 
     ok.addEventListener("click", accept);
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") accept();
-      if (e.key === "Escape") finish(null);
     });
     backdrop.addEventListener("click", (e) => {
       if (e.target === backdrop) finish(null);
     });
-    input.focus();
+    openModal(backdrop, {onClose:() => finish(null), initialFocus:input});
     input.select();
   });
 }

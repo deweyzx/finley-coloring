@@ -1,17 +1,24 @@
 /* Storybook, part 1. The approved icon supplies the materials.
    All theme colors/fonts live here; fonts are bundled for offline use. */
-:root {
+/* :where keeps this default theme at the same priority as :root. The smaller-screen
+   sizing rules below can still adjust the layout when she rotates the iPad. */
+:root, :root:where([data-theme="storybook"]) {
   /* Parchment (the icon's pages) */
-  --bg: #f3e8d0;
+  --storybook-bg: #f3e8d0;
+  --storybook-leather: #25482e;
+  --storybook-leather-light: #365c3e;
+  --storybook-leather-deep: #183621;
+  --storybook-gold-light: #e8cb8c;
+  --bg: var(--storybook-bg);
   --bg-deep: #e7d6b2;
   --surface: #fcf6ea;
   --surface-2: #f8efdc;
   --paper: #ffffff;            /* the coloring page itself always stays white */
   --desk: #e9dcc0;
   /* Leather (the icon's background and cover) */
-  --leather: #25482e;
-  --leather-light: #365c3e;
-  --leather-deep: #183621;
+  --leather: var(--storybook-leather);
+  --leather-light: var(--storybook-leather-light);
+  --leather-deep: var(--storybook-leather-deep);
   --on-leather: #f7e9cb;
   --on-leather-soft: #e2cf9f;
   /* Ink and text */
@@ -24,7 +31,7 @@
   --accent-text: #fff6e0;
   /* Gilt (the icon's page edges) */
   --gold: #c9995b;
-  --gold-light: #e8cb8c;
+  --gold-light: var(--storybook-gold-light);
   --gold-deep: #7d5a1f;        /* dark enough to be text on parchment */
   --ivy: #5e8a5a;
   --ivy-leaf: #a9c79d;
@@ -143,6 +150,41 @@
   --recent-row-height: 58px;
   --text-debug: 13px;
   --font-debug: ui-monospace,Menlo,Consolas,monospace;
+  /* Shared Storybook windows. Alternate themes replace materials, not these layouts. */
+  --modal-width: 480px;
+  --modal-padding: 24px;
+  --modal-margin: 24px;
+  --modal-gap: 18px;
+  --modal-heading-gap: 16px;
+  --modal-footer-pad: 16px;
+  --modal-rule: 1px;
+  --modal-layer-base: 20;
+  --modal-layer-step: 2;
+  --modal-card-border: 2px;
+  --modal-card-padding: 12px;
+  --modal-small-gap: 10px;
+  --modal-choice-gap: 12px;
+  --modal-copy-line: 1.45;
+  --modal-check-size: 28px;
+  --modal-check-offset: 8px;
+  --picker-dialog-width: 720px;
+  --picker-wide-width: 1000px;
+  --picker-wheel-wide: 340px;
+  --picker-chip-padding: 18px;
+  --picker-compare-height: 72px;
+  --picker-swatch-padding: 8px;
+  --brush-dialog-width: 760px;
+  --brush-card-min: 160px;
+  --themes-dialog-width: 560px;
+  --theme-preview-height: 160px;
+  --theme-preview-inset: 12px;
+  --theme-preview-icon: 84px;
+  --theme-preview-page-width: 70px;
+  --theme-preview-page-height: 88px;
+  --theme-preview-page-gap: 10px;
+  --theme-preview-pair-width: 148px;
+  --theme-preview-layer-offset: 4px;
+  --theme-check-size: 30px;
 
   /* Opening animation D: materials, dimensions and timing for future themes. */
   --opening-shade: var(--leather-deep);
@@ -1340,32 +1382,6 @@ button.compare-swatch { cursor: pointer; }
   .recent-colors .swatch:nth-child(n + 6) { display: none; } /* one row of 5 when sideways */
 }
 
-/* The color picker when the iPad is sideways: the wheel on the left, colors and palettes on
-   the right, so everything fits without scrolling. */
-@media (orientation: landscape) and (min-width: 880px) {
-  .dialog.picker {
-    --wheel-size: 340px; /* (a percentage would be measured against a column that sizes itself) */
-    width: min(980px, 100%);
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-rows: auto 1fr auto;
-    column-gap: 32px;
-    row-gap: 16px;
-    align-content: start;
-  }
-  .picker-main {
-    grid-column: 1;
-    grid-row: 1 / span 3;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    justify-content: flex-start;
-    gap: 16px;
-  }
-  #picker-recent { grid-column: 2; grid-row: 1; }
-  .picker-section:not(#picker-recent) { grid-column: 2; grid-row: 2; }
-  .dialog.picker > .dialog-buttons { grid-column: 2; grid-row: 3; align-self: end; }
-}
-
 /* ---------- Approved Storybook screens (part 1) ---------- */
 body {
   font-weight: 500;
@@ -1640,4 +1656,170 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
   .opening-splash { animation: intro-reduce var(--opening-reduce-time) linear both; }
   .opening-splash * { animation: none !important; }
   .opening-splash :is(.opening-lights-up,.opening-twinkles,.opening-run,.opening-magic,.opening-iris) { display: none; }
+}
+
+/* ---------- Storybook windows and the first theme selector (step 12, part 3) ---------- */
+.band-actions { flex-wrap: wrap; justify-content: flex-end; }
+.dialog-backdrop {
+  padding: max(var(--modal-margin),env(safe-area-inset-top)) max(var(--modal-margin),env(safe-area-inset-right)) max(var(--modal-margin),env(safe-area-inset-bottom)) max(var(--modal-margin),env(safe-area-inset-left));
+  z-index: calc(var(--modal-layer-base) + var(--modal-depth,0) * var(--modal-layer-step));
+  touch-action: manipulation;
+}
+.dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--modal-gap);
+  width: min(var(--modal-width),100%);
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--modal-padding);
+  border: var(--modal-rule) solid var(--edge);
+  border-radius: var(--radius-panel);
+  color: var(--ink);
+  background: linear-gradient(var(--surface),var(--surface-2));
+  box-shadow: var(--shadow-paper);
+  outline: none;
+  scroll-padding-block: var(--modal-padding);
+  scroll-padding-bottom: calc(var(--modal-padding) + var(--button-size) + var(--modal-footer-pad) * 2 + var(--modal-gap));
+}
+.dialog h2 { margin: 0; font: var(--title-weight) var(--text-title)/1.2 var(--font-title); overflow-wrap: anywhere; }
+.dialog p { margin: 0; line-height: var(--modal-copy-line); }
+.dialog-heading { display: flex; align-items: center; gap: var(--modal-heading-gap); flex: none; }
+.dialog-heading h2 { flex: 1; min-width: 0; }
+.dialog-heading .icon-button { margin-left: auto; }
+.dialog :is(button,input) { scroll-margin-block: var(--modal-gap); }
+.dialog > .dialog-buttons {
+  position: sticky;
+  bottom: calc(var(--modal-padding) * -1);
+  z-index: 1;
+  flex: none;
+  gap: var(--control-gap);
+  margin: 0 calc(var(--modal-padding) * -1) calc(var(--modal-padding) * -1);
+  padding: var(--modal-footer-pad) var(--modal-padding);
+  border-top: var(--modal-rule) solid var(--hairline);
+  background: var(--surface);
+}
+.dialog-button, .dialog-button.secondary, .chip {
+  min-height: var(--button-size);
+  padding: var(--modal-small-gap) var(--picker-chip-padding);
+  border: none;
+  border-radius: var(--radius-control);
+  font: 700 var(--text-normal)/1.2 var(--font-body);
+  color: var(--ink-soft);
+  background: linear-gradient(var(--control-top),var(--control-bottom));
+  box-shadow: inset 0 0 0 var(--modal-rule) var(--edge),var(--shadow-soft);
+  overflow-wrap: anywhere;
+}
+.dialog-button:not(.secondary):not(.danger), .dialog-button.secondary.on, .chip.selected {
+  color: var(--accent-text);
+  background: linear-gradient(var(--control-green-top),var(--accent) 60%,var(--accent-deep));
+  box-shadow: inset 0 0 0 var(--modal-rule) var(--gold-rule),var(--shadow-soft);
+}
+.dialog-button.danger, .dialog-button.secondary.danger {
+  color: var(--danger);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 var(--modal-card-border) var(--danger);
+}
+.dialog-button:disabled { opacity: 1; background: var(--clear) !important; color: var(--disabled-ink) !important; box-shadow: inset 0 0 0 var(--modal-rule) var(--disabled-edge) !important; }
+.dialog-input { margin: 0; border: var(--modal-rule) solid var(--edge); border-radius: var(--radius-tile); background: var(--paper); }
+.dialog-input:focus-visible { outline: var(--focus-width) solid var(--focus); outline-offset: var(--focus-offset); }
+.dialog.export { width: min(var(--modal-width),100%); max-height: 100%; }
+.export-preview { margin: 0; padding: var(--modal-card-padding); border: var(--modal-rule) solid var(--hairline); border-radius: var(--radius-tile); background: var(--desk); }
+.export-preview img { box-shadow: var(--shadow-sheet); }
+.dialog .export-hint { margin: 0; line-height: var(--modal-copy-line); }
+.link-button { margin: 0; font-weight: 700; color: var(--accent-deep); text-underline-offset: var(--modal-rule); }
+
+/* The brush chooser keeps its accepted grid and original samples. The requested column of
+   distinct brush illustrations is a separate future change, not part of this styling. */
+.dialog.brushes { width: min(var(--brush-dialog-width),100%); max-height: 100%; }
+.brush-grid { grid-template-columns: repeat(auto-fill,minmax(var(--brush-card-min),1fr)); gap: var(--modal-choice-gap); margin: 0; }
+.brush-card {
+  position: relative;
+  padding: var(--modal-card-padding);
+  gap: var(--modal-small-gap);
+  border: var(--modal-card-border) solid var(--edge);
+  border-radius: var(--radius-tile);
+  box-shadow: var(--shadow-soft);
+}
+.brush-card canvas { border-radius: var(--radius-sheet); background: var(--paper); }
+.brush-card .brush-name { gap: var(--modal-small-gap); font-weight: 700; }
+.brush-card.selected { border-color: var(--accent-deep); box-shadow: 0 0 0 var(--modal-rule) var(--accent-deep),var(--shadow-soft); }
+.brush-card.selected::after {
+  content: "✓";
+  position: absolute;
+  top: var(--modal-check-offset);
+  right: var(--modal-check-offset);
+  width: var(--modal-check-size);
+  height: var(--modal-check-size);
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--accent-deep);
+  color: var(--accent-text);
+  font: 700 var(--text-normal)/1 var(--font-body);
+  pointer-events: none;
+}
+
+/* Exact painting colors remain untouched; the wheel, swatch contents and compare colors
+   still come from the existing picker. Only the window around them changes. */
+.dialog.picker { width: min(var(--picker-dialog-width),100%); max-height: 100%; display: flex; gap: var(--modal-gap); }
+.picker-main { gap: var(--modal-gap); }
+.picker-side { gap: var(--modal-small-gap); }
+.compare { gap: var(--modal-small-gap); }
+.compare-swatch { height: var(--picker-compare-height); box-shadow: inset 0 0 0 var(--modal-rule) var(--edge),var(--shadow-soft); }
+.hex-readout { font-family: var(--font-debug); color: var(--ink-soft); }
+.picker-section h3 { margin: 0 0 var(--modal-small-gap); font: var(--title-weight) var(--text-large)/1.2 var(--font-title); color: var(--ink-soft); }
+.picker-swatches { padding: var(--picker-swatch-padding); gap: var(--modal-choice-gap); }
+.chips { gap: var(--modal-small-gap); margin-bottom: var(--modal-small-gap); }
+.chip { max-width: 100%; }
+.chip-new { color: var(--ink-soft); background: var(--clear); }
+.dialog .picker-note { margin: 0; color: var(--accent-deep); }
+.dialog .picker-hint { margin: var(--modal-small-gap) 0 0; }
+.picker-actions { gap: var(--modal-small-gap); margin-top: var(--modal-small-gap); }
+
+.dialog.app-dialog { width: min(var(--app-dialog-width),100%); padding: var(--modal-padding); max-height: 100%; gap: 0; }
+.app-heading { gap: var(--modal-heading-gap); padding-bottom: var(--modal-small-gap); }
+.app-heading img { border-radius: var(--radius-tile); }
+.app-section { padding-block: var(--modal-gap); }
+.app-section h3 { margin: 0 0 var(--modal-small-gap); font: var(--title-weight) var(--text-large)/1.25 var(--font-title); color: var(--ink-soft); }
+.app-section p { overflow-wrap: anywhere; }
+.app-section p + button, .app-section p + .app-actions { margin-top: var(--modal-small-gap); }
+.app-actions { gap: var(--modal-choice-gap); }
+.dialog.app-dialog > .dialog-buttons { margin-top: var(--modal-gap); }
+
+.dialog.themes-dialog { width: min(var(--themes-dialog-width),100%); }
+.theme-choices { display: grid; gap: var(--modal-choice-gap); }
+.theme-card { padding: 0; width: 100%; border: var(--modal-card-border) solid var(--edge); border-radius: var(--radius-tile); background: var(--surface); color: var(--ink); text-align: left; cursor: pointer; overflow: hidden; box-shadow: var(--shadow-soft); }
+.theme-card.selected { border-color: var(--accent-deep); box-shadow: 0 0 0 var(--modal-rule) var(--accent-deep),var(--shadow-lift); }
+.theme-preview[data-theme-preview="storybook"] { --preview-leather: var(--storybook-leather); --preview-leather-light: var(--storybook-leather-light); --preview-leather-deep: var(--storybook-leather-deep); --preview-gold: var(--storybook-gold-light); --preview-paper: var(--paper); --preview-parchment: var(--storybook-bg); }
+.theme-preview { position: relative; display: flex; align-items: center; justify-content: center; gap: var(--modal-gap); height: var(--theme-preview-height); background: var(--leather-grain),radial-gradient(100% 150% at 30% 10%,var(--preview-leather-light),var(--preview-leather) 60%,var(--preview-leather-deep)); }
+.theme-preview-rule { position: absolute; inset: var(--theme-preview-inset); border: var(--modal-rule) solid var(--preview-gold); border-radius: var(--radius-tile); opacity: 0.55; pointer-events: none; }
+.theme-preview img { width: var(--theme-preview-icon); height: var(--theme-preview-icon); border-radius: 50%; box-shadow: 0 0 0 var(--modal-card-border) var(--preview-gold),var(--shadow-medallion); }
+.theme-preview-pages { position: relative; width: var(--theme-preview-pair-width); height: var(--theme-preview-page-height); }
+.theme-preview-pages::before, .theme-preview-pages::after { content: ""; position: absolute; width: var(--theme-preview-page-width); height: var(--theme-preview-page-height); border-radius: var(--radius-sheet); background: var(--paper); box-shadow: var(--shadow-sheet); }
+.theme-preview-pages::before { left: 0; transform: rotate(-5deg); background: var(--preview-paper); }
+.theme-preview-pages::after { right: 0; transform: rotate(4deg) translateY(var(--theme-preview-layer-offset)); background: var(--preview-parchment); }
+.theme-copy { display: grid; grid-template-columns: 1fr auto; gap: var(--modal-small-gap); align-items: center; padding: var(--modal-padding); }
+.theme-name { font: var(--title-weight) var(--text-large)/1.2 var(--font-title); }
+.theme-description { grid-column: 1/-1; color: var(--muted); font: 500 var(--text-normal)/var(--modal-copy-line) var(--font-body); }
+.theme-check { width: var(--theme-check-size); height: var(--theme-check-size); display: grid; place-items: center; border-radius: 50%; background: var(--accent-deep); color: var(--accent-text); font: 700 var(--text-normal)/1 var(--font-body); }
+.theme-card:not(.selected) .theme-check { visibility: hidden; }
+.dialog .theme-status { font-size: var(--text-small); color: var(--muted); }
+.dialog.export > .dialog-buttons > .link-button { flex: 1 0 100%; }
+
+@media (orientation: landscape) and (min-width: 880px) {
+  .dialog.picker { --wheel-size: var(--picker-wheel-wide); width: min(var(--picker-wide-width),100%); display: grid; grid-template-columns: var(--picker-wheel-wide) minmax(0,1fr); grid-template-rows: auto auto 1fr auto; column-gap: var(--modal-padding); row-gap: var(--modal-gap); }
+  .dialog.picker > .dialog-heading { grid-column: 1/-1; grid-row: 1; }
+  .picker-main { grid-column: 1; grid-row: 2/4; flex-direction: column; flex-wrap: nowrap; gap: var(--modal-gap); justify-content: flex-start; }
+  #picker-recent { grid-column: 2; grid-row: 2; }
+  #picker-palettes { grid-column: 2; grid-row: 3; }
+  #picker-recent[hidden] + #picker-palettes { grid-row: 2/4; }
+  .dialog.picker > .dialog-buttons { grid-column: 1/-1; grid-row: 4; }
+  .picker-side { flex: none; min-width: 0; width: 100%; }
+}
+@media (max-width: 600px) {
+  :root { --modal-padding: 18px; --modal-margin: 14px; --brush-card-min: 140px; --theme-preview-pair-width: 108px; --theme-preview-page-width: 50px; }
+  .dialog > .dialog-buttons { flex-wrap: wrap; }
+  .dialog > .dialog-buttons > .dialog-button { flex: 1 1 auto; }
 }

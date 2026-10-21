@@ -24,6 +24,8 @@ Don't open `index.html` by double-clicking. Browsers block some features for fil
 | `js/library.js` | Reads `pages/pages.js` and works out each page's path, id and title |
 | `js/gallery.js` | The library screens: categories, sub-categories, pages |
 | `js/splash.js` | The opening book animation, tap/key skip, Reduce Motion and cleanup |
+| `js/themes.js` | The Themes window and remembered appearance (Storybook first) |
+| `js/modal.js` | Shared window focus, nested questions and background input blocking |
 | `js/thumbnails.js` | Makes small preview pictures once, and saves them |
 | `js/storage.js` | IndexedDB: saved coloring, paint memory, progress and thumbnails |
 | `js/editor.js` | The coloring screen: tools, taps, fitting the page on screen |
@@ -378,14 +380,19 @@ this issue. The repair copies the backup's compressed data independently of the 
 
 ### Project checkpoint and next step
 
-Latest app checkpoint: **Step 12 part 2, version 20261021162959**, the approved opening animation.
-**Owen's PC review passed; the iPad check is pending.** Previous checkpoint **0ff818a** delivered
+Latest app checkpoint: **Step 12 part 3, version 20261021174002**, the Storybook Themes selector
+and matching windows. **PC review passed** ("everything worked"); checkpoint/upload approved,
+**iPad check pending**. The previous checkpoint **14eb58e, version 20261021162959** delivered the
+approved opening animation, accepted on PC and iPad (2026-10-21). Earlier checkpoint **0ff818a** delivered
 part 1's Storybook library/coloring design and slider repair, accepted on PC and iPad (2026-10-21).
 Home Screen installation and offline coloring were accepted on Finley's iPad in step 11,
 including restore repair 173f41d.
 CLAUDE.md and AGENTS.md contain matching implementation history, settings and next-session notes.
 This checkpoint includes the part 1 iPad acceptance, part 2 PC acceptance and future brush-column
 request. The brush chooser idea is recorded below and has not been implemented.
+This checkpoint includes part 2's subsequent iPad acceptance and part 3's implementation and
+passed PC review in all three guides. Storybook is the only theme in this first selector round;
+each alternate theme will be built and tested separately after its iPad check passes.
 
 ## Storybook design (step 12, part 1)
 
@@ -430,7 +437,7 @@ on PC and then confirmed the iPad checks worked too.
 4. Rotate upright and sideways. Text, knobs, values and buttons should stay clear and reachable.
 5. Report the results before the splash animation is built. Keep existing website data.
 
-The approved splash animation has passed the PC review in its own part. After that, the **Themes** button
+The approved splash animation has passed both PC and iPad checks. Next, the **Themes** button
 starts with **Storybook only**, so you can test the selector first. Other themes will be added
 **one at a time**, with a test between each: Midnight Forest, Ocean Dreams, Autumn Cottage,
 and a clean minimal look.
@@ -456,15 +463,66 @@ after the app update is downloaded. Your coloring, palettes and brush settings s
 6. Open a real page and refresh there: the opening should finish on that same page. Color a
    little, try undo/redo, leave and reopen; saved coloring should remain. Clicking through the
    library should not restart the animation.
-7. Owen accepted the PC result ("looks perfect"). Next is the iPad check after updating the app.
+7. Owen accepted the PC result ("looks perfect"), then the iPad result ("everything works perfect").
 
 ### Check the opening on her iPad
+
+**Passed:** Owen reported "everything works perfect" after update 14eb58e. Keep this checklist
+for reference; there is no pending repeat check.
 
 1. While online, choose **App & offline → Check for updates → Update app** when offered.
 2. Close and reopen the installed app to watch the opening. Try upright and sideways.
 3. On another fresh opening, tap with a finger or Pencil to skip. The app should be usable
    afterward, with no stray coloring. Browsing through the library should not replay the intro.
 4. Open a colored page and check that your work is still there. Report the result before the next part.
+
+## Themes and matching windows (step 12, part 3)
+
+**PC review passed:** Owen confirmed "everything worked". This checkpoint is approved for
+upload; the iPad review is the next check.
+
+The library now has a **Themes** button. It offers **Storybook** first: forest-green leather,
+warm parchment and gold, with a preview and selected checkmark. Tap its card to remember the
+choice on this device. Other themes will come one at a time, with a test between each:
+Midnight Forest, Ocean Dreams, Autumn Cottage, then the minimal look.
+
+More colors, Brushes, the name/confirmation boxes, App & offline and Save picture now match
+the Storybook design. Large windows scroll, and the Done row stays within reach. Close buttons
+and keyboard focus are consistent. Escape closes a naming box without closing the picker
+underneath. The iPad's **Download instead** link remains below the main Save to Photos button.
+The current brush grid, painting tools, coloring data and backups keep their existing behavior.
+Theme choice is a device preference and is not included in the coloring backup.
+
+### Part 3 PC checklist (passed)
+
+1. Start `start-server.bat` and open **http://localhost:8000** in Chrome. If an older local tab
+   is cached, use **App & offline → Check for updates → Update app** when offered. Keep your
+   saved data; there is no need to clear it.
+2. Open **Themes**, select **Storybook**, close it, refresh and open it again. Check that it
+   remains selected. Only Storybook is available in this first round.
+3. Open a real page. Inspect **More colors** and **Brushes** in a tall and a wide window.
+   Try naming a palette, canceling a name and choosing a brush. The existing sample strokes
+   and color controls should work as before.
+4. Draw a short stroke, Undo/Redo it, leave the page and reopen it. Check that your coloring
+   remains. Open **Start over**, then choose **Keep coloring** to cancel.
+5. Try **Save → Download picture** and inspect the matching **App & offline** window.
+6. Owen reported "everything worked", approving checkpoint/upload. No repeat PC check is needed.
+
+### Check part 3 on her iPad
+
+1. While online in the installed app, choose **App & offline → Check for updates → Update app**
+   when offered. The update should show the **Themes** button on the library.
+2. Open **Themes**, select **Storybook**, close and reopen it. Check that it stays selected.
+3. On a real page, try **More colors**, naming a palette and **Brushes** with Pencil/finger.
+   Rotate and check that everything fits or scrolls and the Done buttons remain reachable.
+4. Try **Save to Photos** and **Download instead**, then make a stroke, Undo it, and leave/reopen
+   the page to confirm the saved coloring remains. Report the result before the next theme.
+
+Local checks passed for window layouts, color/palette controls, large saved palettes, keyboard
+focus, drawing/Undo, PNG download, backup/restore, offline opening, safe updates and the existing
+intro/sliders. They used separate test storage. Chrome checks with an Apple-platform stub
+covered the share/download buttons; real Safari, Pencil and VoiceOver checks still require the
+iPad after upload. The full development notes are in CLAUDE.md and AGENTS.md.
 
 ## Saved idea for later: brush column
 

@@ -12,6 +12,8 @@
 //      share sheet is only used on an iPad or iPhone.)
 //   She can also touch and hold the preview picture and choose "Add to Photos".
 
+import { openModal, closeModal } from './modal.js?v=20261021174002';
+
 const button = document.getElementById("export-button");
 const dialog = document.getElementById("export-dialog");
 const textEl = document.getElementById("export-text");
@@ -42,9 +44,6 @@ export function setupSavePicture({ isReady }) {
   dialog.addEventListener("click", (e) => {
     if (e.target === dialog) close(); // tapped outside the window
   });
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !dialog.hidden) close();
-  });
   saveButton.addEventListener("click", saveNow);
   downloadLink.addEventListener("click", () => {
     if (picture) downloadFile();
@@ -53,12 +52,12 @@ export function setupSavePicture({ isReady }) {
 
 async function open() {
   if (busy) {
-    dialog.hidden = false; // still being made (she closed and reopened): just show the window again
+    openModal(dialog, {onClose:close, initialFocus:closeButton}); // still being made
     return;
   }
   busy = true;
   forget();
-  dialog.hidden = false;
+  openModal(dialog, {onClose:close, initialFocus:closeButton});
   previewBox.hidden = true;
   hintEl.hidden = true;
   downloadLink.hidden = true;
@@ -99,7 +98,7 @@ async function open() {
 }
 
 function close() {
-  dialog.hidden = true;
+  closeModal(dialog);
   if (!busy) forget();
 }
 

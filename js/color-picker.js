@@ -9,13 +9,14 @@
 //
 // The data (current color, recent colors, palettes) lives in palette.js.
 
-import { hsvToRgb, hsvToHex, hexToHsv } from "./color.js?v=20261021162959";
+import { hsvToRgb, hsvToHex, hexToHsv } from "./color.js?v=20261021174002";
 import {
   currentColor, selectColor, onPaletteChange, allPalettes, activePalette, setActivePalette,
   createPalette, renamePalette, deletePalette, addColorToPalette, removeColorFromPalette,
   recentColors, makeSwatch, suggestedPaletteName, LIMITS,
-} from "./palette.js?v=20261021162959";
-import { askText, askConfirm } from "./dialogs.js?v=20261021162959";
+} from "./palette.js?v=20261021174002";
+import { askText, askConfirm } from "./dialogs.js?v=20261021174002";
+import { openModal, closeModal } from './modal.js?v=20261021174002';
 
 // Sizes as fractions of the wheel's width.
 const RING_INNER = 0.36;
@@ -50,11 +51,9 @@ let squareHue = -1;       // the hue the square was drawn for
 export function setupColorPicker(openButton) {
   openButton.addEventListener("click", open);
   document.getElementById("picker-done").addEventListener("click", close);
+  document.getElementById("picker-close").addEventListener("click", close);
   dialog.addEventListener("click", (e) => {
     if (e.target === dialog) close(); // tapped outside the window
-  });
-  window.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !dialog.hidden) close();
   });
   beforeSwatch.addEventListener("click", () => pick(colorWhenOpened)); // go back to the old color
 
@@ -128,7 +127,7 @@ function open() {
   colorWhenOpened = currentColor();
   editing = false;
   noteEl.textContent = "";
-  dialog.hidden = false;
+  openModal(dialog, {onClose:close, initialFocus:document.getElementById('picker-close')});
   pick(currentColor(), true);
   drawRing();
   renderRecent();
@@ -136,7 +135,7 @@ function open() {
 }
 
 function close() {
-  dialog.hidden = true;
+  closeModal(dialog);
 }
 
 // ---------- Setting the color ----------
@@ -275,6 +274,7 @@ function renderPalettes() {
     const chip = document.createElement("button");
     chip.type = "button";
     chip.className = "chip" + (p.id === active.id ? " selected" : "");
+    chip.setAttribute('aria-pressed', String(p.id === active.id));
     chip.textContent = p.name;
     chip.addEventListener("click", () => {
       editing = false;
@@ -293,6 +293,7 @@ function renderPalettes() {
   swatchBox.classList.toggle("editing", editing);
   for (const color of active.colors) {
     const swatch = makeSwatch(color);
+    if (editing) swatch.setAttribute('aria-label', `Remove ${swatch.getAttribute('aria-label')} from this palette`);
     swatch.addEventListener("click", () => {
       if (editing) removeColorFromPalette(active.id, color);
       else pick(color);
@@ -306,6 +307,7 @@ function renderPalettes() {
   deleteButton.hidden = active.builtin;
   editButton.textContent = editing ? "Finished" : "Remove colors";
   editButton.classList.toggle("on", editing);
+  editButton.setAttribute('aria-pressed', String(editing));
   addButton.hidden = editing;
   if (active.builtin) paletteHint.textContent = "Classic is the starting set. Pick a color, then tap “Add this color” to start your own palette.";
   else if (editing) paletteHint.textContent = "Tap a color to remove it from this palette.";
@@ -317,7 +319,12 @@ function renderPalettes() {
 function markSelected() {
   const now = currentColor();
   for (const box of [recentBox, swatchBox]) {
-    for (const s of box.querySelectorAll(".swatch")) s.classList.toggle("selected", s.dataset.color === now);
+    for (const s of box.querySelectorAll(".swatch")) {
+      const selected = s.dataset.color === now;
+      s.classList.toggle("selected", selected);
+      if (editing && box === swatchBox) s.removeAttribute('aria-pressed');
+      else s.setAttribute('aria-pressed', String(selected));
+    }
   }
 }
 

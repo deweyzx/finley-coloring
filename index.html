@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="storybook">
 <head>
   <meta charset="utf-8">
   <!-- "user-scalable=no" stops Safari's own pinch-zoom; the app will do its own zooming on the picture. -->
@@ -9,16 +9,23 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Coloring Book">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <!-- Read only the appearance preference before paint. Unknown values use the default CSS;
+       themes.js validates the choice. No coloring or palette data is touched. -->
+  <script>
+    try { document.documentElement.dataset.theme = localStorage.getItem("theme") || "storybook"; }
+    catch { /* Storybook remains usable when browser storage is unavailable. */ }
+  </script>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="preload" href="icons/enchanted-book-1024.png" as="image">
   <link rel="preload" href="fonts/literata-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/figtree-normal-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="css/styles.css?v=20261021162959">
+  <link rel="stylesheet" href="css/styles.css?v=20261021174002">
   <!-- type="module" lets our JavaScript files import from each other. -->
-  <script type="module" src="js/splash.js?v=20261021162959"></script>
-  <script type="module" src="js/app.js?v=20261021162959"></script>
+  <script type="module" src="js/themes.js?v=20261021174002"></script>
+  <script type="module" src="js/splash.js?v=20261021174002"></script>
+  <script type="module" src="js/app.js?v=20261021174002"></script>
 </head>
 <body>
 
@@ -84,7 +91,10 @@
           <p class="library-tagline">Pick a page and make it bloom</p>
         </div>
         <div class="band-actions">
-          <!-- The working Themes button comes in its own later checkpoint. -->
+          <button id="themes-button" class="text-button on-leather" type="button" aria-haspopup="dialog" aria-controls="themes-dialog" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M12 3 L14.4 9.6 L21 12 L14.4 14.4 L12 21 L9.6 14.4 L3 12 L9.6 9.6 Z M20 3 V7 M18 5 H22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Themes
+          </button>
           <button id="app-options" class="text-button on-leather" type="button">
             <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M7 18 H17.5 a4 4 0 0 0 .5 -8 a6 6 0 0 0 -11.5 -1.5 A4.5 4.5 0 0 0 7 18 Z M12 10 V16 M9.5 13.5 L12 16 L14.5 13.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             App &amp; offline
@@ -251,7 +261,11 @@
 
     <!-- The full color picker (hidden until she taps the rainbow "More colors" button). -->
     <div id="picker-dialog" class="dialog-backdrop picker-backdrop" hidden>
-      <div class="dialog picker" role="dialog" aria-label="Choose a color">
+      <div class="dialog picker" role="dialog" aria-labelledby="picker-title">
+        <div class="dialog-heading">
+          <h2 id="picker-title">Choose a color</h2>
+          <button id="picker-close" class="icon-button" type="button" aria-label="Close color picker"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M6 6 L18 18 M18 6 L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        </div>
         <div class="picker-main">
           <!-- Hue ring with the shade square inside it. -->
           <div id="wheel" class="wheel" aria-label="Color wheel">
@@ -277,7 +291,7 @@
           <div class="picker-swatches"></div>
         </section>
 
-        <section class="picker-section">
+        <section id="picker-palettes" class="picker-section">
           <h3>Palettes</h3>
           <div id="palette-chips" class="chips"></div>
           <div id="palette-swatches" class="picker-swatches"></div>
@@ -300,7 +314,10 @@
          the Brushes button in the tool bar). The cards are made by editor.js. -->
     <div id="brushes-dialog" class="dialog-backdrop picker-backdrop" hidden>
       <div class="dialog brushes" role="dialog" aria-labelledby="brushes-title">
-        <h2 id="brushes-title">Brushes</h2>
+        <div class="dialog-heading">
+          <h2 id="brushes-title">Brushes</h2>
+          <button id="brushes-close" class="icon-button" type="button" aria-label="Close brushes"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M6 6 L18 18 M18 6 L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        </div>
         <div id="brush-grid" class="brush-grid"></div>
         <div class="dialog-buttons">
           <button id="brushes-done" class="dialog-button" type="button">Done</button>
@@ -320,9 +337,9 @@
         <div class="dialog-buttons">
           <button id="export-close" class="dialog-button secondary" type="button">Close</button>
           <button id="export-save" class="dialog-button" type="button" disabled>Save to Photos</button>
+          <!-- On iPad/iPhone, keep the backup directly underneath the main save button. -->
+          <button id="export-download" class="link-button" type="button" hidden>Download instead</button>
         </div>
-        <!-- A backup on iPad and iPhone, in case the share sheet ever doesn't open. -->
-        <button id="export-download" class="link-button" type="button" hidden>Download instead</button>
       </div>
     </div>
 
@@ -338,6 +355,20 @@
       </div>
     </div>
   </section>
+
+  <!-- Storybook comes first. Other themes are added one at a time after Owen tests each. -->
+  <div id="themes-dialog" class="dialog-backdrop" hidden>
+    <section class="dialog themes-dialog" role="dialog" aria-labelledby="themes-title" aria-describedby="themes-description">
+      <div class="dialog-heading">
+        <h2 id="themes-title">Themes</h2>
+        <button id="themes-close" class="icon-button" type="button" aria-label="Close themes"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M6 6 L18 18 M18 6 L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      </div>
+      <p id="themes-description">Choose the look of your coloring book.</p>
+      <div class="theme-choices" role="radiogroup" aria-label="App theme"></div>
+      <p id="theme-status" class="theme-status" role="status"></p>
+      <div class="dialog-buttons"><button id="themes-done" class="dialog-button" type="button">Done</button></div>
+    </section>
+  </div>
 
 </body>
 </html>
