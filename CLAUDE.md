@@ -9,8 +9,12 @@ table, and any decisions that changed.
 
 ## Resume here — current status (2026-10-21)
 
-- **Step 11 is complete and accepted on the iPad.** Steps 1–11 are finished. Step 12 is next
-  and has NOT started; wait for Owen to ask before building the storybook design or themes.
+- **Step 11 is complete and accepted on the iPad.** Steps 1–11 are finished.
+- **Step 12 design is APPROVED as mockups; building has NOT started.** Owen chose splash
+  **D**, font pairing **1 (Literata + Figtree)**, the new two-line header, "Where you left off",
+  and bundling the fonts offline. Everything needed to continue is in "Step 12: approved design
+  and build plan" at the end of this file. Wait for Owen to ask before building; build in the
+  order given there; no drawing behavior changes; don't commit until he has tested on his PC.
 - **Latest reports:** after repair 173f41d, Owen said "everything returned". He then explicitly
   confirmed the entire final checklist "all worked perfectly": Save all pages offline showed
   10 of 10; the installed app reopened in Airplane Mode; a colored page opened, a new stroke
@@ -29,10 +33,9 @@ table, and any decisions that changed.
   then iPad acceptance. Owen expressly approved uploading the Safari repair for its iPad retest.
   Finley draws fast (1600–2300 screen px/s), has long nails, and values smooth brushes over
   larger maximum sizes. Do not restart speed-log rounds unless a new lag problem warrants it.
-- **Documentation audit:** this session updates CLAUDE.md, AGENTS.md and README.md only. No new
-  app feature or step 12 design is part of this request. These acceptance/audit edits are saved
-  locally; latest published app code remains 173f41d. Include these guide edits in the next
-  approved checkpoint. Do not describe unsaved/uncommitted guide edits as already uploaded.
+- **Documentation:** the step 11 acceptance audit was committed as febd0c5. The step 12 design
+  record below was committed on its own (CLAUDE.md only; AGENTS.md was not updated in that
+  commit). Latest published app code is still 173f41d.
 
 ### Accepted checkpoints
 
@@ -109,7 +112,8 @@ table, and any decisions that changed.
   book icon, offline pages, safe app updates, and .finley backup/transfer. Foundation e6bc927;
   Safari restore repair 173f41d. Owen confirmed both recovered coloring and the entire final
   installed-app offline/reopen/persistence/rotation checklist on 2026-10-21.
-- **Next:** step 12, magical storybook design and remembered themes. Planned only; not started.
+- **Next:** step 12, magical storybook design and remembered themes. The design is approved as
+  mockups (see "Step 12: approved design and build plan"); building has not started.
 
 ## How to work with Owen
 
@@ -155,7 +159,7 @@ table, and any decisions that changed.
 | 9 | Export the finished picture to Photos | ✅ |
 | 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | ✅ all three batches confirmed on iPad |
 | 11 | Installable + offline (manifest, service worker, icons), coloring backup/transfer | ✅ PC and installed iPad app accepted, including offline/reopen |
-| 12 | Magical storybook look, Themes, polish | next; planned only, not started |
+| 12 | Magical storybook look, Themes, polish | next; design approved as mockups (splash D, Literata + Figtree), not built |
 
 ### Notes for future steps
 
@@ -193,7 +197,8 @@ table, and any decisions that changed.
   is one block of CSS variables, e.g. `:root[data-theme="midnight-forest"] { ... }`, plus a small
   JS settings object for non-CSS parts (sparkle style, background art). Keep ALL colors, fonts,
   backgrounds and effect settings as variables so a new theme = one new block. The coloring
-  page itself always stays white paper.
+  page itself always stays white paper. **The approved Storybook design, splash D, fonts and
+  build order are in "Step 12: approved design and build plan" at the end of this file.**
 
 ## Brushes (step 4)
 
@@ -1069,10 +1074,177 @@ Record this as actual iPad acceptance, not a local simulation. Keep .finley back
 assume Home Screen installation is cloud sync. If an unrelated future problem appears, use the
 safe update/backup workflow above rather than repeating the whole migration.
 
-**Step 12 remains planned:** default Storybook (pastels, gold, readable whimsical title font,
-calm enchanted-shelf library), plus Midnight Forest, Ocean Dreams, Autumn Cottage and minimal.
-Library Themes button; remember choice in localStorage; each theme one CSS-variable block,
-with a small settings object for non-CSS effects. Gentle tap/finish sparkles; reduced motion
-should be considered during implementation. Paper stays white, buttons stay large, both
-orientations remain usable, and all accepted drawing/storage behavior must be preserved.
-No theme implementation, theme selection UI or final storybook restyle has been built yet.
+**Step 12 is designed but not built:** see the next section.
+
+## Step 12: approved design and build plan (2026-10-21)
+
+**Status:** approved as browser mockups only. No app file has been changed for step 12. Owen
+reviewed the mockups and chose everything below. Wait for him to ask before building.
+
+### Owen's choices
+
+- **Splash: direction D**, "cover and golden thread" (details below).
+- **Fonts: pairing 1, Literata (titles) + Figtree (everything else).** Both are free (SIL
+  Open Font License). **Bundle them with the app** as woff2 files (e.g. `fonts/`), with
+  `@font-face` in styles.css, listed in the offline cache through `tools/stamp_version.py`.
+  Never load them from Google Fonts in the real app (it must work offline). Literata is a
+  variable font: weights 500-700 and italic 500-600 are used; Figtree: 500, 600, 700.
+- **Keep the new header layout** (two lines, see "Library").
+- **Keep "Where you left off"** (the continue card).
+
+### Where the mockups live
+
+`tools/design.tmp/` on Owen's PC. **That folder is git-ignored (`*.tmp`) and exists only on
+his PC; it is not in the repository or on GitHub.** View it with `start-server.bat`, then
+http://localhost:8000/tools/design.tmp/... Final versions:
+
+| File | What it is |
+|---|---|
+| `library.html` | Approved library screen. Open as `library.html?fonts=literata` for the chosen fonts (no `?fonts` shows the older Alegreya) |
+| `coloring.html` | Approved coloring screen (also takes `?fonts=literata`) |
+| `storybook.css` | The approved tokens and component styles for both screens (the source for the real styles.css) |
+| `fonts.js` | Mockup-only font switcher (loads from Google Fonts; NOT for the app) |
+| `splash-d.html` | **The approved splash** |
+| `splash-base.css`, `splash-kit.js` | Shared splash styles (sparkle sprites, leather, easing curves, Reduce Motion) and runner (tap/key skip, `?t=1.2` freeze, `?rate=0.25` slow motion, `?reduce`) |
+| `splash-lab.html`, `frames.html?d=d` | Side-by-side splash comparison; still frames |
+| `fonts-lab.html` | Font pairing comparison |
+| `splash-a/b/c.html`, `icon-light-mask.png` | Rejected splash directions, kept for reference (D reuses C's cover and B's thread) |
+| `daffodil-white.png` | Mockup picture of a colored daffodil on white paper |
+| `library-v2.png`, `coloring-v2.png`, `splash-d-frames.png`, `fonts-compare.png`, `fonts-headers.png` | Screenshots of the approved versions |
+| `splash.html`, `splash-frames.png`, `library-shot.jpg`, `coloring-shot.jpg`, `daffodil-colored.png` | The FIRST round (superseded; the daffodil there wrongly had beige paper) |
+
+If that folder is ever lost, this section is the full specification.
+
+### Design direction
+
+Everything comes from the approved icon: parchment pages, forest-green leather, the gilt page
+edges and ivy. **One bold element per screen** (the green leather band on the library); the
+rest stays quiet so her pictures are the color on screen. Calm, not cluttered, buttons large,
+coloring page always white. Rules taken from the frontend-design skill: sentence case (no
+all-caps labels), no "·" separators, no labels that don't carry information, structure only
+where it means something, one orchestrated motion moment (the splash), not effects everywhere.
+
+**Color tokens (all go in `:root` of styles.css; Storybook is the default theme):**
+
+| Token | Value | Use |
+|---|---|---|
+| `--bg` / `--bg-deep` | #f3e8d0 / #e7d6b2 | parchment page (soft radial gradient + faint paper grain) |
+| `--surface` / `--surface-2` | #fcf6ea / #f8efdc | cards, panel |
+| `--paper` | #ffffff | the coloring page (always white) |
+| `--desk` | #e9dcc0 | around the page on the coloring screen |
+| `--leather` / `-light` / `-deep` | #25482e / #365c3e / #183621 | header band, splash (the icon's exact greens) |
+| `--on-leather` / `--on-leather-soft` | #f7e9cb / #e2cf9f | text on leather |
+| `--ink` / `--ink-soft` | #1d3324 / #33493b | main / secondary text |
+| `--muted` | #5f553d | small details (6.0:1 on parchment) |
+| `--accent` / `--accent-deep` / `--accent-text` | #2f6248 / #1f4532 / #fff6e0 | selected tool, main button |
+| `--gold` / `--gold-light` / `--gold-deep` | #c9995b / #e8cb8c / #7d5a1f | gilt; gold-deep is the only gold used for text |
+| `--ivy` / `--ivy-leaf` | #5e8a5a / #a9c79d | ivy decoration |
+| `--hairline` | #dcc79c | decorative lines ONLY |
+| `--edge` | #957d48 | outline of anything you can tap (3:1 on parchment) |
+| `--ribbon` / `--ribbon-deep` | #a8473c / #7f3029 | bookmark ribbon |
+| `--focus` | #1f6fb2 | keyboard focus ring (gold-light on the leather band) |
+
+**Type (pairing 1):** titles `--font-title: "Literata"`, weight 650 (`--title-weight`),
+tagline/section headings 500 italic (`--title-weight-soft`, `--title-italic`); everything
+else `--font-body: "Figtree"` 500, bold 700. Sizes: hero 35px, title 27px, section 24px,
+large 21px, normal 17px, small 15px. Numbers (slider values) use Figtree with tabular figures.
+
+**Shape:** pills and round buttons 26px radius, tool tiles 16px, panel 28px top corners,
+paper sheets 3px (paper is paper). Warm brown shadows, never grey. Buttons 52px, swatches 44px.
+
+### Components
+
+- **Library header ("cover band"):** full-width green leather band with a fine double gold
+  rule inset 12px, a 4px gilt edge along its bottom, and two ivy vines trailing off it onto the
+  parchment. **Two-line layout:** an 84px round medallion (the app icon in a gold ring) spans
+  both lines on the left; line 1 is the title "Finley's Coloring Book" across the full width;
+  line 2 has the italic tagline "Pick a page and make it bloom" on the left and the Themes and
+  App & offline buttons (outlined in gold on the leather) on the right. (Changed because the
+  title didn't fit on one line beside the buttons in the wider fonts.)
+- **"Where you left off" card:** surface card, a white thumbnail of the last page tilted -2°,
+  the line "Where you left off" (gold-deep, bold, small), the page title, "Flowers, colored
+  today" (category + when), and a green "Keep coloring" button on the right.
+- **Ribbon = "in progress", always.** A red bookmark ribbon at the top right of a thumbnail
+  means that page or collection has coloring in progress (continue card, collection cards).
+- **Section heading:** "Collections", italic, with a gold dot and a fading gold rule.
+- **Collections:** NOT boxed cards. Each is a stack of white paper sheets on the parchment;
+  the number of sheets underneath shows whether there's one page or several (no sheets under a
+  one-page collection). Title below, then "5 pages, 1 started" / "1 page". 3 columns upright,
+  4 sideways.
+- **Coloring screen:** quiet parchment top bar (Back, title, Save = green, Start over =
+  outlined, Undo/Redo round); the page on a warm desk with one paper sheet under it; panel
+  with tool tiles (selected = green with gold edge), switch rows, preview on white, sliders
+  labelled "Size" / "Opacity" in sentence case, recent colors row, "More" button, palette.
+  Selected swatch: dark green ring + lifted (never color alone).
+- **Real app details not shown in the mockups** (picker, Brushes window, dialogs, App &
+  offline window, landscape coloring panel) must be restyled with the same tokens.
+
+### Fixes from the design critique and accessibility review (keep all of these)
+
+- Button, tile, switch-row and "More" outlines were 1.4:1: now `--edge` #957d48 (3:1+).
+- Off switch track #a89977 (2.5:1) -> #857652 (4:1).
+- Slider: track #c9b387, fill #4b7a5c -> accent (4.3:1), knob ring gold-deep (4.6:1, was 2.2).
+- Swatches: inner ring rgba(60,45,20,0.6) so the white swatch is visible on the panel.
+- Disabled Redo: transparent with a #c4ae80 outline, icon #8f8468 (3.2:1).
+- Focus ring: blue everywhere, gold-light on the leather band (blue was 1.9:1 there).
+- Recent colors 44px (were 36px). The slider's whole 50px row is the touch area and carries
+  role="slider" with its value (the 8px track alone was too small).
+- Tool tiles are buttons with aria-pressed and labels; switches are role="switch" with
+  aria-checked; swatches have color names; the page image has alt text; icons aria-hidden.
+- Paper stays white (the first mockup's daffodil had beige paper).
+- Removed all-caps labels and "·" separators; section heading 24px so it outranks card titles.
+- Library sideways: 4 columns instead of 3.
+- Splash: keys skip it too (Space, Enter, Escape), not only a tap.
+- Text contrast all passes (5:1 to 11:1). Not checked: real VoiceOver, real iPad smoothness.
+
+### Splash D (approved)
+
+No text, about 2.9 s, shown when the app opens, then removed from the page.
+
+1. 0-0.7 s: the screen is the green leather cover (the icon's greens, grain, vignette, a
+   soft key light, a spine groove down the left edge, double gold tooling inset 30px with
+   gold corner flourishes). It fades up from dark; the medallion (the icon inside a gold ring,
+   46% of the short side, max 380px) settles in from 90% size.
+2. 0.15-1.3 s: two ivy vines grow from opposite corners along the tooling (SVG stroke
+   drawing), and each leaf pops with a small overshoot as the stem reaches it. A light runs once
+   around the gold ring (0.45-1.5 s); six sparkles catch around the medallion one by one.
+3. 1.05 s: the sparkle on the pencil tip inside the medallion flares with a ripple ring.
+4. 1.2-2.1 s: a golden thread (three dashes moving together: soft glow, gold body, bright
+   hair, with a star at its head following the same path) leaves the pencil tip, loops out
+   around the gold ring and dips into the book's gutter (the medallion's center), dropping gold
+   dust exactly where the head passes.
+5. 2.0 s: the landing spot flares. 2.08-2.68 s: a soft-edged parchment circle opens from the
+   center to cover the screen; 2.62-2.87 s the splash fades, showing the library underneath.
+
+- Easing: one family (ease-out 0.22,1,0.36,1; in-out 0.65,0,0.35,1; leaf spring
+  0.34,1.45,0.64,1). Thread, head and dust share the in-out curve so they stay together.
+- **Tap anywhere, or Space/Enter/Escape: 0.3 s fade, then gone.**
+- **Reduce Motion** (`prefers-reduced-motion`): no movement; the finished cover is shown and
+  simply fades out (opaque 0-0.88 s, fade to 1.35 s).
+- **Light enough for her iPad:** only transform and opacity animate (plus SVG strokes); no
+  moving blurs or filters; glows are ready-made gradients; the thread SVG covers only its own
+  small area; the ivy finishes before the thread starts; ~40 small particles. The thread,
+  sparks and dust live in one 1000 x 1000 "magic" box scaled with the medallion (pencil tip at
+  544, 598; gutter at 500, 500), so they line up with the icon in any orientation.
+- Gotchas found while building: never put `opacity` in `will-change` on 3D parents (it
+  flattens them); a child needs its own transform for `backface-visibility` to work.
+- Not yet checked on the real iPad: smoothness and timing feel. Splash colors should come
+  from theme variables so each theme can recolor it.
+
+### Build order (when Owen asks)
+
+1. **Library and coloring screens:** new tokens and components in css/styles.css (all colors,
+   fonts, sizes as variables), bundled fonts, header/continue card/collection stacks in
+   gallery.js/index.html, the coloring screen restyle and every accessibility fix above. Both
+   orientations. Then Owen tests on PC.
+2. **Splash D** (theme-colored, Reduce Motion, skip, removed after it ends). Owen tests on PC.
+3. **Themes button** on the library and the remaining windows (picker, Brushes, dialogs, App &
+   offline, export), then the other themes (Midnight Forest, Ocean Dreams, Autumn Cottage, a
+   clean minimal one), each one block of CSS variables `:root[data-theme="..."]` plus a small
+   JS settings object for non-CSS parts, remembered in localStorage; gentle sparkles only
+   where planned, respecting Reduce Motion.
+
+**Rules:** no changes to drawing, brushes, fill, gestures, saving, backups or offline
+behavior: this step is visual only. Run `python tools/stamp_version.py` after the final edits
+of each checkpoint (new fonts must be in the offline list). **Don't commit until Owen has
+tested on his PC and said it works;** then commit + push, then he checks on the iPad.
