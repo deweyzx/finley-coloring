@@ -2,20 +2,20 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610201533";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610201533";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610201533";
-import { setupColorPicker } from "./color-picker.js?v=202610201533";
-import { setupSavePicture } from "./save-picture.js?v=202610201533";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610201533";
-import { StrokeEngine } from "./stroke-engine.js?v=202610201533";
-import { createSlider } from "./slider.js?v=202610201533";
-import { History } from "./history.js?v=202610201533";
-import { Viewport } from "./viewport.js?v=202610201533";
-import { setupInput } from "./touch-input.js?v=202610201533";
-import { toggleDebug, debugOn, debugLog } from "./touch-debug.js?v=202610201533";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610201533";
-import { SETTINGS } from "./settings.js?v=202610201533";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610202029";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610202029";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610202029";
+import { setupColorPicker } from "./color-picker.js?v=202610202029";
+import { setupSavePicture } from "./save-picture.js?v=202610202029";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610202029";
+import { StrokeEngine } from "./stroke-engine.js?v=202610202029";
+import { createSlider } from "./slider.js?v=202610202029";
+import { History } from "./history.js?v=202610202029";
+import { Viewport } from "./viewport.js?v=202610202029";
+import { setupInput } from "./touch-input.js?v=202610202029";
+import { toggleDebug, debugOn, debugLog } from "./touch-debug.js?v=202610202029";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610202029";
+import { SETTINGS } from "./settings.js?v=202610202029";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -850,7 +850,11 @@ function drawStrokeNow() {
   // relief) is redrawn at most about 60 times a second instead of up to 120: half the work, and
   // with a big brush the Pencil tip is inside the paint anyway. (The finished stroke is the same.)
   const expensive = engine.brush.wash || (engine.brush.effect && engine.brush.effect.kind !== "glitter");
-  if (big && expensive && t0 - (s.drawnAt || 0) < 14) {
+  // And if the last screen update took a long time, wait twice that long before the next one:
+  // the Pencil's movements keep being taken in meanwhile, so if the iPad is ever too busy, the
+  // drawing can't fall further and further behind (the finished stroke is the same either way).
+  const wait = Math.max(big && expensive ? 14 : 0, (s.drawCost || 0) * 2);
+  if (t0 - (s.drawnAt || 0) < wait) {
     showStroke();
     return;
   }
@@ -861,6 +865,7 @@ function drawStrokeNow() {
     engine.renderAhead(strokeCtx, s.ahead || []);
   }
   s.drawnAt = performance.now();
+  s.drawCost = s.drawnAt - t0;
   s.timing.updates++;
   noteWork(s, t0);
   clearTimeout(s.staleTimer);

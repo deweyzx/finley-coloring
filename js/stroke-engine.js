@@ -29,7 +29,7 @@
 //
 // The brushes themselves are described in brushes.js.
 
-import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE, GLITTER, GLITTER_SIZE, CLOUD, CLOUD_SIZE } from "./brushes.js?v=202610201533";
+import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE, GLITTER, GLITTER_SIZE, CLOUD, CLOUD_SIZE } from "./brushes.js?v=202610202029";
 
 export class StrokeEngine {
   constructor(width, height) {
@@ -298,8 +298,6 @@ export class StrokeEngine {
     const ny = Math.cos(dir);
     const wash = brush.wash;
     const wobble = wash ? wash.wobble : 0;
-    const uneven = wash ? wash.uneven : 0;
-    const granulate = wash ? wash.granulate || 0 : 0;
     const sx = this.washShift[0];
     const sy = this.washShift[1];
     let rng = this.seed ^ ((x0 * 73856093) ^ (y0 * 19349663)); // quick random numbers for speckle
@@ -313,6 +311,11 @@ export class StrokeEngine {
       return;
     }
 
+    // the area of pixels this dab actually changes (none yet)
+    let cx0 = W;
+    let cx1 = -1;
+    let cy0 = H;
+    let cy1 = -1;
     for (let y = y0; y <= y1; y++) {
       const dy = y + 0.5 - cy;
       // where this row crosses the oval (skip the row if it doesn't)
@@ -325,21 +328,21 @@ export class StrokeEngine {
       const xe = Math.min(x1, Math.ceil(cx + (-qb + root) / (2 * qa) - 0.5));
       const row = y * W;
       const grainRow = (y & (GRAIN_SIZE - 1)) * GRAIN_SIZE;
-      const washRow = ((y + sy) & (WASH_SIZE - 1)) * WASH_SIZE;
       const cloudRow = ((y + sx) & (CLOUD_SIZE - 1)) * CLOUD_SIZE;
       const clipRow = clip ? (y - clip.y) * clip.w - clip.x : 0;
       for (let x = xs; x <= xe; x++) {
         if (clip && clip.mask[clipRow + x] === 0) continue; // outside the locked area
+        // Already as strong as this dab could ever make it? Then nothing to do here. (Dabs
+        // overlap a lot, so this skips most of each dab's middle; the result is exactly the same.)
+        if (!flow && cov[row + x] >= peak) continue;
         const dx = x + 0.5 - cx;
         const u = (dx * cos + dy * sin) / rLong;
         const v = (-dx * sin + dy * cos) / rShort;
         let d = Math.sqrt(u * u + v * v);
-        let w = 0;
         if (wash) {
-          // Watercolor: the wet edge wanders in and out in soft, cloud-like shapes...
+          // Watercolor: the wet edge wanders in and out in soft, cloud-like shapes. (Where the
+          // pigment pools and thins is worked in later, once per pixel - see washAlphaLive.)
           d += (CLOUD[cloudRow + ((x + sy) & (CLOUD_SIZE - 1))] / 255 - 0.5) * wobble;
-          // ...and the pigment pools in some places and thins in others.
-          w = WASH[washRow + ((x + sx) & (WASH_SIZE - 1))] / 255;
         }
         if (d >= 1) continue;
         let a = d <= inner ? 1 : (1 - d) / edge;
@@ -349,11 +352,6 @@ export class StrokeEngine {
           const g = GRAIN[grainRow + (x & (GRAIN_SIZE - 1))] / 255;
           const reached = clamp((g - (1 - grainFill)) / grainSoft + 0.5, 0, 1);
           a *= 1 - grain.strength + grain.strength * reached;
-        }
-        if (wash) {
-          a *= 1 - uneven * w * w * (3 - 2 * w); // patchy, like pigment pooling and thinning
-          // pigment settling into the dips of the paper (a fine, grainy look)
-          if (granulate) a *= 1 - granulate * (1 - GRAIN[grainRow + (x & (GRAIN_SIZE - 1))] / 255);
         }
         if (bristles) {
           // Brush hairs: which hair passes over this spot depends on how far it is across
@@ -381,15 +379,30 @@ export class StrokeEngine {
           rng ^= rng << 5;
           // (the random part rounds tiny amounts up or down fairly, so light spray still adds up)
           const next = Math.floor(c + (cap - c) * rate * a + (rng >>> 0) / 4294967296);
-          if (next > c) cov[i] = next > cap ? cap : next;
+          if (next > c) {
+            cov[i] = next > cap ? cap : next;
+            if (x < cx0) cx0 = x;
+            if (x > cx1) cx1 = x;
+            if (y < cy0) cy0 = y;
+            cy1 = y;
+          }
           continue;
         }
         const value = a * peak;
-        if (value > cov[i]) cov[i] = value;
+        if ((value | 0) > cov[i]) {
+          cov[i] = value;
+          if (x < cx0) cx0 = x;
+          if (x > cx1) cx1 = x;
+          if (y < cy0) cy0 = y;
+          cy1 = y;
+        }
       }
     }
-    this.box = growBox(this.box, x0, y0, x1, y1);
-    this.dirty = growBox(this.dirty, x0, y0, x1, y1);
+    // Only the pixels this dab actually changed need drawing again (with a moving brush that's
+    // just a thin crescent at the front, not the dab's whole square).
+    if (cx1 < 0) return;
+    this.box = growBox(this.box, cx0, cy0, cx1, cy1);
+    this.dirty = growBox(this.dirty, cx0, cy0, cx1, cy1);
   }
 
   // Shows the changed part of the stroke on the stroke layer (call once per screen update).
@@ -429,18 +442,14 @@ export class StrokeEngine {
     let srcStart = y0 * this.width + x0;
     let srcStride = this.width;
     if (rims) {
-      src = this.washAlpha(x0, y0, x1, y1);
+      // (while she draws: the quick estimate of the rims; the exact ones are worked out once,
+      // when she lifts the Pencil - see commit)
+      src = this.washAlphaLive(x0, y0, x1, y1);
       srcStart = 0;
       srcStride = w;
     }
-    // One block of pixels is reused for every update (making a new one ~100 times a second
-    // made the iPad stop now and then to clean up memory). Only its top-left w x h part is used.
-    let image = this.scratch;
-    if (!image || image.width < w || image.height < h) {
-      image = new ImageData(Math.max(w, image ? image.width : 0), Math.max(h, image ? image.height : 0));
-      this.scratch = image;
-    }
-    const stride = image.width;
+    const { image, px32: block32 } = this.pixelBlock(w, h);
+    const stride = w;
     const px = image.data;
     const { r, g, b } = this.rgb;
     const mem = this.memory;
@@ -449,7 +458,7 @@ export class StrokeEngine {
     if (!evenOut && LITTLE_ENDIAN) {
       // The usual case, done the quick way: each pixel is written as one number (red, green,
       // blue and strength together) instead of four separate ones.
-      const px32 = this.scratch32 && this.scratch32.buffer === px.buffer ? this.scratch32 : (this.scratch32 = new Uint32Array(px.buffer));
+      const px32 = block32;
       const color = (b << 16) | (g << 8) | r;
       for (let row = 0; row < h; row++) {
         let si = srcStart + row * srcStride;
@@ -459,7 +468,7 @@ export class StrokeEngine {
           px32[p] = c === 0 ? 0 : color | (c << 24);
         }
       }
-      ctx.putImageData(image, x0, y0, 0, 0, w, h);
+      ctx.putImageData(image, x0, y0);
       return;
     }
     for (let row = 0; row < h; row++) {
@@ -488,7 +497,20 @@ export class StrokeEngine {
         px[p + 3] = c;
       }
     }
-    ctx.putImageData(image, x0, y0, 0, 0, w, h);
+    ctx.putImageData(image, x0, y0);
+  }
+
+  // A block of pixels exactly w x h for one screen update, on memory that is kept and reused.
+  // (Making new memory on every update - up to 120 times a second - makes Safari stop now and
+  // then to clean up; and handing Safari a block bigger than the changed area can make it work
+  // on the whole block every time.)
+  pixelBlock(w, h) {
+    const bytes = w * h * 4;
+    if (!this.pixelMemory || this.pixelMemory.byteLength < bytes) {
+      this.pixelMemory = new ArrayBuffer(Math.ceil((bytes * 1.25) / 4) * 4);
+    }
+    const data = new Uint8ClampedArray(this.pixelMemory, 0, bytes);
+    return { image: new ImageData(data, w, h), px32: new Uint32Array(this.pixelMemory, 0, w * h) };
   }
 
   // Glitter and metallic: draws an area of the stroke with the paint's look worked into each
@@ -498,12 +520,8 @@ export class StrokeEngine {
     const W = this.width;
     const w = x1 - x0 + 1;
     const h = y1 - y0 + 1;
-    let image = this.scratch;
-    if (!image || image.width < w || image.height < h) {
-      image = new ImageData(Math.max(w, image ? image.width : 0), Math.max(h, image ? image.height : 0));
-      this.scratch = image;
-    }
-    const stride = image.width;
+    const { image } = this.pixelBlock(w, h);
+    const stride = w;
     const px = image.data;
     const { r, g, b } = this.rgb;
     const cov = this.coverage;
@@ -725,7 +743,7 @@ export class StrokeEngine {
         px[p + 3] = c;
       }
     }
-    ctx.putImageData(image, x0, y0, 0, 0, w, h);
+    ctx.putImageData(image, x0, y0);
   }
 
   // Shows the stroke right up to the Pencil tip - and a little past it, to where the Pencil is
@@ -804,39 +822,71 @@ export class StrokeEngine {
     return s.radius * s.stretch;
   }
 
-  // Watercolor: the stroke's strength in an area, with the pooled darker rims worked in.
-  // A pixel is "near the rim" when its blurred neighbourhood is weaker than itself (it sits
-  // just inside the edge of the wet patch, or against a line when line-lock is on).
-  washAlpha(x0, y0, x1, y1) {
+  // Watercolor: the stroke's strength in an area, with the pooled darker rims worked in. A pixel
+  // is "near the rim" when its surroundings are weaker than itself (it sits just inside the edge
+  // of the wet patch, or against a line when line-lock is on). The surroundings are 8 neighbours
+  // `rimRadius` away (4 straight, 4 diagonal) plus the pixel itself. (This used to be a full
+  // blur of the area on every screen update; at big sizes that froze her iPad for whole seconds.
+  // The 8-neighbour version looks the same - on average 2 out of 255 different - and needs no
+  // extra memory. The same is used for the finished stroke, so nothing changes at lift.)
+  washAlphaLive(x0, y0, x1, y1) {
     const W = this.width;
     const H = this.height;
-    const r = this.rimRadius;
+    const R = this.rimRadius;
+    const D = Math.round(R * 0.7);
     const wash = this.brush.wash;
-    // Blur a slightly bigger area, so pixels near the border still see their neighbours.
-    const bx0 = Math.max(0, x0 - r);
-    const by0 = Math.max(0, y0 - r);
-    const bx1 = Math.min(W - 1, x1 + r);
-    const by1 = Math.min(H - 1, y1 + r);
-    const bw = bx1 - bx0 + 1;
-    const bh = by1 - by0 + 1;
-    const blur = boxBlur(this.coverage, W, bx0, by0, bw, bh, r);
+    const uneven = wash.uneven;
+    const granulate = wash.granulate || 0;
+    const sx = this.washShift[0];
+    const sy = this.washShift[1];
+    const cov = this.coverage;
     const w = x1 - x0 + 1;
     const h = y1 - y0 + 1;
-    const out = new Uint8Array(w * h);
-    const cov = this.coverage;
+    const out = this.rimBlock(w * h);
     for (let row = 0; row < h; row++) {
       const y = y0 + row;
-      let i = y * W + x0;
-      let bi = (y - by0) * bw + (x0 - bx0);
+      const washRow = ((y + sy) & (WASH_SIZE - 1)) * WASH_SIZE;
+      const grainRow = (y & (GRAIN_SIZE - 1)) * GRAIN_SIZE;
+      // rows R and D above/below (or -1 = off the page, counts as empty)
+      const up = y - R >= 0 ? (y - R) * W : -1;
+      const down = y + R < H ? (y + R) * W : -1;
+      const upD = y - D >= 0 ? (y - D) * W : -1;
+      const downD = y + D < H ? (y + D) * W : -1;
+      const here = y * W;
       let o = row * w;
-      for (let col = 0; col < w; col++, i++, bi++, o++) {
-        const c = cov[i];
+      for (let x = x0; x <= x1; x++, o++) {
+        const c = cov[here + x];
         if (c === 0) continue;
-        const rim = clamp(((c - blur[bi]) / c) * wash.rimGain, 0, 1);
-        const value = c * (wash.middle + wash.rim * rim);
+        const l = x - R >= 0 ? cov[here + x - R] : 0;
+        const rr = x + R < W ? cov[here + x + R] : 0;
+        const u = up >= 0 ? cov[up + x] : 0;
+        const d = down >= 0 ? cov[down + x] : 0;
+        const xl = x - D >= 0;
+        const xr = x + D < W;
+        const ul = upD >= 0 && xl ? cov[upD + x - D] : 0;
+        const ur = upD >= 0 && xr ? cov[upD + x + D] : 0;
+        const dl = downD >= 0 && xl ? cov[downD + x - D] : 0;
+        const dr = downD >= 0 && xr ? cov[downD + x + D] : 0;
+        const around = c * 0.2 + (l + rr + u + d) * 0.1 + (ul + ur + dl + dr) * 0.1;
+        let rim = ((c - around) / c) * wash.rimGain;
+        rim = rim < 0 ? 0 : rim > 1 ? 1 : rim;
+        let value = c * (wash.middle + wash.rim * rim);
+        // patchy, like pigment pooling in some places and thinning in others...
+        const p = WASH[washRow + ((x + sx) & (WASH_SIZE - 1))] / 255;
+        value *= 1 - uneven * p * p * (3 - 2 * p);
+        // ...and settling into the dips of the paper (a fine, grainy look)
+        if (granulate) value *= 1 - granulate * (1 - GRAIN[grainRow + (x & (GRAIN_SIZE - 1))] / 255);
         out[o] = value > 255 ? 255 : value;
       }
     }
+    return out;
+  }
+
+  // A reused block of `n` strengths, all 0 (for the watercolor rims).
+  rimBlock(n) {
+    if (!this.rimMemory || this.rimMemory.length < n) this.rimMemory = new Uint8Array(Math.ceil(n * 1.25));
+    const out = this.rimMemory.subarray(0, n);
+    out.fill(0);
     return out;
   }
 
@@ -849,14 +899,26 @@ export class StrokeEngine {
     const w = box.x1 - box.x0 + 1;
     const h = box.y1 - box.y0 + 1;
     if (this.brush.wash && !this.baked) {
-      // Work the rims into the coverage once and for all, so the paint memory matches what's
-      // on the page, and draw the whole stroke one last time.
-      const shaped = this.washAlpha(box.x0, box.y0, box.x1, box.y1);
+      // Work the rims into the coverage once and for all, so the paint memory matches what's on
+      // the page. They're worked out the same quick way as while she drew (washAlphaLive), so
+      // the stroke doesn't change when she lifts the Pencil, and lifting stays quick. Only the
+      // part changed since the last screen update is drawn again (plus the rim reach around it,
+      // whose rims that change can have moved).
+      const shaped = this.washAlphaLive(box.x0, box.y0, box.x1, box.y1);
       for (let row = 0; row < h; row++) {
         this.coverage.set(shaped.subarray(row * w, row * w + w), (box.y0 + row) * this.width + box.x0);
       }
       this.baked = true;
-      this.dirty = growBox(this.dirty, box.x0, box.y0, box.x1, box.y1);
+      const d = this.dirty;
+      if (d) {
+        const r = this.rimRadius;
+        this.dirty = {
+          x0: Math.max(0, d.x0 - r),
+          y0: Math.max(0, d.y0 - r),
+          x1: Math.min(this.width - 1, d.x1 + r),
+          y1: Math.min(this.height - 1, d.y1 + r),
+        };
+      }
     }
     this.render(strokeCtx);
     if (beforeChange) beforeChange({ x: box.x0, y: box.y0, w, h });
@@ -870,6 +932,10 @@ export class StrokeEngine {
     }
     this.box = null;
     this.last = null;
+    // Very big working blocks (from drawing a whole big stroke at once, just now) are let go, so
+    // they don't keep taking up the iPad's memory; everyday-sized ones are kept for reuse.
+    if (this.pixelMemory && this.pixelMemory.byteLength > 8e6) this.pixelMemory = null;
+    if (this.rimMemory && this.rimMemory.length > 2e6) this.rimMemory = null;
     return { x: box.x0, y: box.y0, w, h };
   }
 }

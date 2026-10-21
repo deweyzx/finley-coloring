@@ -35,8 +35,12 @@ table, and any decisions that changed.
   app (quality reference only, no copying), so glitter, metallic, watercolor and splatter got
   richer original textures (passed Owen's PC test). **Smooth hair was reverted to exactly its
   batch-1 version** (Finley liked it; max size 200 kept; proven pixel-identical in 80 cases).
-  Also a brush warm-up when a page opens. **Waiting:** iPad check of batch 2 and the richer
-  brushes. Batch 3 only after that.
+  Also a brush warm-up when a page opens. iPad log (2026-10-20): **watercolor 160 froze the page**
+  (100% work, single updates 0.6-1.9 s, Pencil→app 2-3.6 s, 2-3 updates per stroke). **Fixed and
+  committed** (see "Watercolor freeze"); Owen asked to commit straight away for the retest.
+  **Waiting:** iPad retest (watercolor at big sizes, and batch 2 overall). Batch 3 only after that.
+  **Known risk:** smooth hair at 200 snowballs in the 8x simulator when scribbling very fast (fine
+  at 4x); not changed because Owen wants it exactly as in batch 1 - watch the iPad log.
   Batch 3 only after Owen has tested batch 2 on her iPad.
 
 ## How to work with Owen
@@ -329,7 +333,8 @@ table, and any decisions that changed.
   - **Watercolor:** the edge wanders by a new `CLOUD` texture (256 px, layers 64-8 px; finer
     layers made the edge look like noise) with `wobble` 0.6 -> cloud-like edges; pooling
     `uneven` 0.5 (S-curved); `granulate` 0.08 (pigment in the paper's tooth, from GRAIN; 0.22
-    looked grainy); `middle` 0.85, `rim` 0.8, hardness 0.65.
+    looked grainy); `middle` 0.85, `rim` 0.8, hardness 0.65. (Later made much faster - see
+    "Watercolor freeze".)
   - **Splatter:** sizes 0.8%-20% of the brush (power 2.6: mostly tiny, a few big blobs); each drop
     a randomly squashed oval, drops over 2.5 px get 1-5 satellite drops on their edge (irregular
     splash), drops over 6 px have a 30% chance of a tail of 4 shrinking drops; hardness 0.94.
@@ -342,6 +347,35 @@ table, and any decisions that changed.
   - Tested after the pass: every brush gives the same finished picture whether the screen updates
     every point, every 9th, with drawing ahead, or only at lift; 0 px outside line-lock; pencil,
     marker and eraser identical to step 9; in the app: undo/redo exact, auto-save exact.
+- **Watercolor freeze (her iPad, size 160) and the fix:**
+  - **iPad-like simulator** (browser-pane test code, not in the app): runs a stroke with the
+    app's own rules (240 Pencil samples/s, one event per 120 Hz refresh carrying every sample
+    since the last, drawing ahead / 60 Hz rules), measures each piece of work on the PC and counts
+    it N times longer; while "busy", samples pile up into the next event (like on her iPad). The
+    old watercolor at **8x** reproduced her log (single updates up to ~1.6 s, 50-80 samples per
+    event = snowballing); at 4x it only looked mildly slow. So **design for ~8x slower than this
+    PC** for heavy brushes. Single runs vary; take the best of 3.
+  - Causes: (1) every update re-blurred the whole area around the newest dabs for the darker
+    rims, ~80% of live drawing time, with new memory each time; (2) each update redrew the whole
+    square of the newest dabs (12x more pixels than the brush actually swept); (3) many
+    overlapping dabs (spacing 0.07) each doing several texture look-ups.
+  - Fixes: rims are now `washAlphaLive()` - each pixel vs 8 neighbours `rimRadius` away plus
+    itself, no blur, no new memory - used both live and for the finished stroke (no change at
+    lift; looks the same as the blur, avg 2/255 different); pooling (`uneven`) and `granulate` are
+    applied there once per pixel instead of in every dab; dabs only report the pixels they
+    actually changed as needing a redraw (helps every brush); dabs skip pixels already as strong
+    as they could make them (exact, every brush); watercolor spacing 0.2 (looks the same, avg
+    2/255); `pixelBlock()` hands Safari exact-size pixel blocks on reused memory (all brushes; the
+    old reused block only ever grew and could be page-sized); very big working memory is let go
+    after each stroke; **adaptive pace** in drawStrokeNow: the next screen update waits at least
+    twice as long as the last one took, so input is never starved.
+  - Results (simulator, very fast 3000 page px/s scribble, slowest / typical update ms): watercolor
+    160 at 8x: before 1582 / 349 (snowball) -> after 42 / 18; at 4x: 86 / 69 -> 14 / 6; lift
+    170 ms at 8x. Other brushes at 8x: all fine except smooth hair 200 (see "Where we are").
+  - Checked: every brush gives the expected finished picture (other brushes identical to the
+    previous commit; watercolor identical however the screen updates) - 432 of 432 cases; 0 px
+    outside line-lock; pencil/marker/eraser identical to step 9; app: undo/redo, build-up on/off,
+    auto-save exact. Not verified: the real iPad (the simulator is an estimate).
 - **Brush warm-up** (`warmUpBrushes()` in editor.js): 300 ms after the first page opens, each brush
   draws two tiny practice strokes on a hidden 160 px canvas, one brush every 30 ms (each step
   1-13 ms on the PC), pausing while she draws. Why: the first airbrush stroke on her iPad showed

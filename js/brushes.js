@@ -143,7 +143,7 @@ export const BRUSHES = {
     sizeRange: [6, 160],
     defaults: { size: 50, opacity: 0.45 },
     hardness: 0.65,
-    spacing: 0.07,
+    spacing: 0.2, // (was 0.07: far fewer dabs, to keep up on her iPad; the cloud-like edge hides the difference)
     pressure: { size: [0.55, 1], opacity: [0.45, 1], curve: 0.9 },
     wash: { wobble: 0.6, uneven: 0.5, granulate: 0.08, rimWidth: 0.1, rimGain: 2.2, middle: 0.85, rim: 0.8 },
     blend: "multiply",
