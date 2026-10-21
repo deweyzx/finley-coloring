@@ -13,6 +13,8 @@
 const box = document.getElementById("touch-debug");
 const linesEl = document.getElementById("touch-debug-lines");
 const hideButton = document.getElementById("touch-debug-hide");
+const speedButton = document.getElementById("touch-debug-speed");
+let speedTest = null; // what the "Speed test" button runs (set by the coloring screen)
 const lines = [];
 let on = false;
 try {
@@ -35,6 +37,25 @@ if (params.has("debug")) {
 // tapping it can never draw, fill or count as a gesture.
 for (const type of ["pointerdown", "pointermove", "pointerup", "pointercancel"]) {
   hideButton.addEventListener(type, (e) => e.stopPropagation());
+  speedButton.addEventListener(type, (e) => e.stopPropagation());
+}
+// "Speed test": measures every brush on this device (see speed-test.js).
+speedButton.addEventListener("click", async () => {
+  if (!speedTest || speedButton.disabled) return;
+  speedButton.disabled = true;
+  speedButton.textContent = "Testing…";
+  try {
+    await speedTest();
+  } catch (err) {
+    debugLog("Speed test failed: " + err);
+  }
+  speedButton.disabled = false;
+  speedButton.textContent = "Speed test";
+});
+
+// The coloring screen hands over what the "Speed test" button should do.
+export function onSpeedTest(fn) {
+  speedTest = fn;
 }
 hideButton.addEventListener("click", () => {
   if (on) toggleDebug();
@@ -62,7 +83,7 @@ export function debugLog(text) {
   const now = new Date();
   const time = `${now.getMinutes()}:${String(now.getSeconds()).padStart(2, "0")}`;
   lines.unshift(`${time}  ${text}`);
-  lines.length = Math.min(lines.length, 10);
+  lines.length = Math.min(lines.length, 14);
   show();
 }
 

@@ -2,20 +2,21 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610202029";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610202029";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610202029";
-import { setupColorPicker } from "./color-picker.js?v=202610202029";
-import { setupSavePicture } from "./save-picture.js?v=202610202029";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610202029";
-import { StrokeEngine } from "./stroke-engine.js?v=202610202029";
-import { createSlider } from "./slider.js?v=202610202029";
-import { History } from "./history.js?v=202610202029";
-import { Viewport } from "./viewport.js?v=202610202029";
-import { setupInput } from "./touch-input.js?v=202610202029";
-import { toggleDebug, debugOn, debugLog } from "./touch-debug.js?v=202610202029";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610202029";
-import { SETTINGS } from "./settings.js?v=202610202029";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610202151";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610202151";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610202151";
+import { setupColorPicker } from "./color-picker.js?v=202610202151";
+import { setupSavePicture } from "./save-picture.js?v=202610202151";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610202151";
+import { StrokeEngine } from "./stroke-engine.js?v=202610202151";
+import { createSlider } from "./slider.js?v=202610202151";
+import { History } from "./history.js?v=202610202151";
+import { Viewport } from "./viewport.js?v=202610202151";
+import { setupInput } from "./touch-input.js?v=202610202151";
+import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=202610202151";
+import { runSpeedTest } from "./speed-test.js?v=202610202151";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610202151";
+import { SETTINGS } from "./settings.js?v=202610202151";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -620,6 +621,8 @@ function startStroke(e) {
     start: performance.now(),
     startDelay: performance.now() - e.timeStamp, // Pencil touching down -> the app hearing about it
     work: 0,
+    dabs: 0, // of the work: the brush's own work (stamping dabs)
+    draw: 0, // of the work: drawing the stroke on screen
     slowest: 0,
     lags: [], // for each Pencil event: newest position sensed -> handled (ms)
     events: 0,
@@ -692,6 +695,7 @@ function continueStroke(e) {
   s.timing.lags.push(t0 - newest);
   s.timing.events++;
   s.timing.samples += samples.length;
+  s.timing.dabs += performance.now() - t0;
   noteWork(s, t0);
   // Draw right away (the ink then shows on the very next screen refresh), unless the stroke was
   // just drawn a moment ago - then once on the next refresh is enough.
@@ -773,7 +777,8 @@ function finishStroke() {
     const at = (share) => (lags.length ? Math.round(lags[Math.min(lags.length - 1, Math.floor(share * lags.length))]) : 0);
     debugLog(
       `${t.brush} ${Math.round(t.size)}: ${(length / 1000).toFixed(1)} s, work ${Math.round(t.work)} ms ` +
-        `(${Math.round((100 * t.work) / Math.max(1, length))}%), slowest ${Math.round(t.slowest)} ms\n` +
+        `(${Math.round((100 * t.work) / Math.max(1, length))}%: dabs ${Math.round(t.dabs)}, drawing ${Math.round(t.draw)}), ` +
+        `slowest ${Math.round(t.slowest)} ms\n` +
         `   Pencil→app: touch-down ${Math.round(t.startDelay)} ms, typical ${at(0.5)} ms, 90% under ${at(0.9)} ms, ` +
         `worst ${at(1)} ms\n` +
         (t.bigBrush
@@ -838,6 +843,32 @@ function showStroke() {
   });
 }
 
+// How long to wait between screen updates of the stroke (ms):
+// - brushes that are more than small on screen (`fullRateMaxBrushPx`) are redrawn at most about
+//   60 times a second instead of up to 120: half the drawing work, at most 8 ms later. (The
+//   finished stroke is the same either way.)
+// - and if the last update took a long time, wait twice that long before the next one: the
+//   Pencil's movements keep being taken in meanwhile, so if the iPad is ever too busy, the
+//   drawing can't fall further and further behind.
+// (The speed test in the touch log uses this too.)
+function drawingWait(eng, scale, lastCost) {
+  const notSmall = eng.tipRadius() * scale > SETTINGS.fullRateMaxBrushPx;
+  return Math.max(notSmall ? 14 : 0, lastCost * 2);
+}
+
+// The touch log's "Speed test" button: measures every brush on this device (speed-test.js).
+onSpeedTest(async () => {
+  if (!engine || paper.hidden || stroke) return;
+  await runSpeedTest({
+    width: engine.width,
+    height: engine.height,
+    scale: view.scale,
+    wait: drawingWait,
+    parent: paper,
+    report: debugLog,
+  });
+});
+
 // Draws the stroke so far, right up to the Pencil tip and a little beyond (see renderAhead in
 // stroke-engine.js). If no new Pencil position arrives for a moment (she stopped moving), the
 // guess ahead is dropped so it doesn't hang in the air.
@@ -846,15 +877,7 @@ function drawStrokeNow() {
   if (!s || s.waiting) return;
   const t0 = performance.now();
   const big = engine.tipRadius() * view.scale > SETTINGS.predictMaxBrushPx;
-  // A big brush with an expensive look (watercolor's rims, metallic shine, smooth hair's paint
-  // relief) is redrawn at most about 60 times a second instead of up to 120: half the work, and
-  // with a big brush the Pencil tip is inside the paint anyway. (The finished stroke is the same.)
-  const expensive = engine.brush.wash || (engine.brush.effect && engine.brush.effect.kind !== "glitter");
-  // And if the last screen update took a long time, wait twice that long before the next one:
-  // the Pencil's movements keep being taken in meanwhile, so if the iPad is ever too busy, the
-  // drawing can't fall further and further behind (the finished stroke is the same either way).
-  const wait = Math.max(big && expensive ? 14 : 0, (s.drawCost || 0) * 2);
-  if (t0 - (s.drawnAt || 0) < wait) {
+  if (t0 - (s.drawnAt || 0) < drawingWait(engine, view.scale, s.drawCost || 0)) {
     showStroke();
     return;
   }
@@ -866,6 +889,7 @@ function drawStrokeNow() {
   }
   s.drawnAt = performance.now();
   s.drawCost = s.drawnAt - t0;
+  s.timing.draw += s.drawCost;
   s.timing.updates++;
   noteWork(s, t0);
   clearTimeout(s.staleTimer);

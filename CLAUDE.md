@@ -38,9 +38,15 @@ table, and any decisions that changed.
   Also a brush warm-up when a page opens. iPad log (2026-10-20): **watercolor 160 froze the page**
   (100% work, single updates 0.6-1.9 s, Pencil→app 2-3.6 s, 2-3 updates per stroke). **Fixed and
   committed** (see "Watercolor freeze"); Owen asked to commit straight away for the retest.
-  **Waiting:** iPad retest (watercolor at big sizes, and batch 2 overall). Batch 3 only after that.
-  **Known risk:** smooth hair at 200 snowballs in the 8x simulator when scribbling very fast (fine
-  at 4x); not changed because Owen wants it exactly as in batch 1 - watch the iPad log.
+  iPad retest (2026-10-20): watercolor 103 smooth (32-42% work, slowest 2-6 ms) but 160 still
+  lags; **Metallic 120 (97%, slowest 132 ms), Glitter 150 (92%, 64 ms), Smooth hair 200 (98%,
+  438 ms) maxed out**. Her iPad is ~8-12x slower than this PC for this work (30x for glitter vs
+  the 8x simulator), so max sizes can't be judged on the PC. Owen: **rather a smaller max size
+  than a laggy brush**, and keep looks unchanged. **Committed (for the iPad run):** a **Speed test**
+  button in the touch log (measures every brush on the device, reports the largest smooth size),
+  a 60-per-second drawing pace for brushes that aren't small on screen, a per-stroke split of the
+  work (dabs vs drawing) in the log. **Next:** Owen runs the Speed test on her iPad -> set each
+  brush's `sizeRange` max from the results. Batch 3 only after that.
   Batch 3 only after Owen has tested batch 2 on her iPad.
 
 ## How to work with Owen
@@ -376,6 +382,22 @@ table, and any decisions that changed.
     previous commit; watercolor identical however the screen updates) - 432 of 432 cases; 0 px
     outside line-lock; pencil/marker/eraser identical to step 9; app: undo/redo, build-up on/off,
     auto-save exact. Not verified: the real iPad (the simulator is an estimate).
+- **Speed test** (`js/speed-test.js`, "Speed test" button in the touch log, `onSpeedTest()` in
+  touch-debug.js, wired in editor.js): for every brush, draws one second of a fast stroke (600
+  screen px/s at the current zoom, 240 samples/s, the app's own update rules via
+  `drawingWait()`) on a hidden full-size layer inside `#paper` (opacity 0) and a separate
+  StrokeEngine, starting at the biggest size and trying 85/70/55/40/25% until smooth (work <= 50%
+  of the second and no single update > 33 ms). Reports e.g. "Glitter (biggest 150): 150: 92% /
+  64 ms ✗ · 128: 61% ✗ · 105: 44% / 20 ms ✓ -> largest smooth size: about 105". Hidden layers
+  are removed afterwards. On the PC all brushes pass at their biggest size (1.7 s).
+- **Drawing pace** (`drawingWait()` in editor.js): brushes reaching more than
+  `fullRateMaxBrushPx` (12) screen px are redrawn at most ~60 times a second; plus the adaptive
+  rule (wait twice the last update's time). Finished pictures don't depend on this.
+- PC breakdown at her Mandala zoom (0.23), ms per second of fast drawing (dabs + drawing; handing
+  pixels to Safari is ~0-2 ms): smooth hair 200: 110 + 42; glitter 150: 28 + 49; metallic 120:
+  27 + 56; watercolor 160: 37 + 41; watercolor 100: 23 + 25 (smooth on her iPad); marker 120:
+  27 + 23. Smooth hair: an exact skip (using the hair passing over a pixel) didn't help - its
+  soft edges and streaks rarely make a pixel "full".
 - **Brush warm-up** (`warmUpBrushes()` in editor.js): 300 ms after the first page opens, each brush
   draws two tiny practice strokes on a hidden 160 px canvas, one brush every 30 ms (each step
   1-13 ms on the PC), pausing while she draws. Why: the first airbrush stroke on her iPad showed
@@ -680,7 +702,8 @@ table, and any decisions that changed.
 | `js/autosave.js` | Saves/loads/forgets her coloring per page; colored previews for the library |
 | `js/viewport.js` | Zoom and pan (where the page sits on screen) |
 | `js/touch-input.js` | What each Pencil / finger / mouse action means; palm rejection; gestures |
-| `js/touch-debug.js` | Temporary on-screen touch log (`?debug` link or 5 title taps; "Hide log") |
+| `js/touch-debug.js` | Temporary on-screen touch log (`?debug` link or 5 title taps; "Hide log"; "Speed test") |
+| `js/speed-test.js` | Measures every brush on the device; largest smooth size per brush |
 | `tools/stamp_version.py` | Stamps a version on every file reference (run before each upload) |
 | `js/settings.js` | Tweakable numbers |
 | `pages/pages.js` | The library list |

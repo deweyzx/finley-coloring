@@ -29,7 +29,7 @@
 //
 // The brushes themselves are described in brushes.js.
 
-import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE, GLITTER, GLITTER_SIZE, CLOUD, CLOUD_SIZE } from "./brushes.js?v=202610202029";
+import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE, GLITTER, GLITTER_SIZE, CLOUD, CLOUD_SIZE } from "./brushes.js?v=202610202151";
 
 export class StrokeEngine {
   constructor(width, height) {
@@ -336,6 +336,20 @@ export class StrokeEngine {
         // overlap a lot, so this skips most of each dab's middle; the result is exactly the same.)
         if (!flow && cov[row + x] >= peak) continue;
         const dx = x + 0.5 - cx;
+        let hairK = 1;
+        if (bristles) {
+          // Brush hairs: which hair passes over this spot depends on how far it is across
+          // the stroke, so each hair leaves its own faint streak along the stroke.
+          const pos = (dx * nx + dy * ny) / bristleWidth + 32;
+          const i0 = Math.floor(pos);
+          const f = pos - i0;
+          const b0 = bristles[i0 & 63];
+          const hair = b0 + (bristles[(i0 + 1) & 63] - b0) * f * f * (3 - 2 * f);
+          hairK = 1 - bristleStrength * (1 - hair);
+          // the strongest this dab could make this spot is limited by the hair passing over it;
+          // already that strong (the dabs before it got there)? then skip (exactly the same result)
+          if (cov[row + x] >= peak * hairK) continue;
+        }
         const u = (dx * cos + dy * sin) / rLong;
         const v = (-dx * sin + dy * cos) / rShort;
         let d = Math.sqrt(u * u + v * v);
@@ -354,14 +368,7 @@ export class StrokeEngine {
           a *= 1 - grain.strength + grain.strength * reached;
         }
         if (bristles) {
-          // Brush hairs: which hair passes over this spot depends on how far it is across
-          // the stroke, so each hair leaves its own faint streak along the stroke.
-          const pos = (dx * nx + dy * ny) / bristleWidth + 32;
-          const i0 = Math.floor(pos);
-          const f = pos - i0;
-          const b0 = bristles[i0 & 63];
-          const hair = b0 + (bristles[(i0 + 1) & 63] - b0) * f * f * (3 - 2 * f);
-          a *= 1 - bristleStrength * (1 - hair);
+          a *= hairK; // (the brush hairs, worked out above)
         }
         if (noise) {
           rng ^= rng << 13;

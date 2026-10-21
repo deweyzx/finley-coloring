@@ -37,6 +37,10 @@ export const SETTINGS = {
   predictAheadMs: 20,
   // ...but never more than this many SCREEN pixels ahead of the tip.
   predictMaxPx: 24,
+  // Brushes reaching more than this many SCREEN pixels from their middle are redrawn at most
+  // about 60 times a second instead of up to 120: half the drawing work, at most 8 ms later.
+  fullRateMaxBrushPx: 12,
+
   // Big brushes skip this: when the brush reaches more than this many SCREEN pixels from its
   // middle, the Pencil tip is well inside the paint anyway (no gap to see), and drawing the
   // guess for a big brush would cost a lot of work on every screen update.
