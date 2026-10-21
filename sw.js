@@ -1,7 +1,7 @@
 // sw.js - keeps the app and downloaded outlines available without Wi-Fi.
 // This helper runs separately from drawing. It never opens or deletes her artwork database.
-const VERSION = "20261021020853";
-importScripts("./offline-assets.js?v=20261021020853");
+const VERSION = "20261021022059";
+importScripts("./offline-assets.js?v=20261021022059");
 const ASSETS = self.FINLEY_OFFLINE;
 if (ASSETS.version !== VERSION) throw new Error("The offline files belong to different updates.");
 const ROOT = self.registration.scope;

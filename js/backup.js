@@ -1,8 +1,8 @@
 // backup.js - moves her coloring between Safari and the Home Screen app, or to another device.
 // A .finley file has a small contents list followed by the original compressed image blobs.
 // This avoids turning hundreds of pictures into a huge text string in the iPad's memory.
-import { dbEntries, dbGet, dbMergeArtwork } from "./storage.js?v=20261021020853";
-import { SETTINGS } from "./settings.js?v=20261021020853";
+import { dbEntries, dbGet, dbMergeArtwork, storedBlob } from "./storage.js?v=20261021022059";
+import { SETTINGS } from "./settings.js?v=20261021022059";
 
 const MAGIC = new TextEncoder().encode("FINLEY-COLORING-BACKUP-1\n");
 const KEYS = ["brush-settings", "recent-colors", "palettes", "line-lock", "build-up", "extra-brush"];
@@ -14,10 +14,13 @@ export async function makeBackup(onProgress = () => {}) {
   for (const [id] of entries) {
     const artwork = await dbGet("artwork", id);
     if (!artwork?.color) throw new Error(`The saved picture for ${id} couldn't be read. Please reopen it before backing up.`);
-    const thumb = await dbGet("progressThumbs", id);
-    pages.push({ id, updated: artwork.updated, color: describe(artwork.color), memory: describe(artwork.memory), thumb: describe(thumb) });
-    chunks.push(artwork.color);
-    if (artwork.memory) chunks.push(artwork.memory);
+    const color = storedBlob(artwork.color, "image/png");
+    const memory = artwork.memory ? storedBlob(artwork.memory, "application/gzip") : null;
+    const savedThumb = await dbGet("progressThumbs", id);
+    const thumb = savedThumb ? storedBlob(savedThumb, "image/jpeg") : null;
+    pages.push({ id, updated: artwork.updated, color: describe(color), memory: describe(memory), thumb: describe(thumb) });
+    chunks.push(color);
+    if (memory) chunks.push(memory);
     if (thumb) chunks.push(thumb);
     onProgress(pages.length, entries.size);
   }
@@ -37,7 +40,8 @@ export async function makeBackup(onProgress = () => {}) {
 function invalid() { throw new Error("This file isn't a complete coloring-book backup. Please choose the original .finley file."); }
 
 // Validate the entire file BEFORE writing anything. File.slice() keeps pictures on disk until
-// needed. Decoding one picture at a time keeps a large collection from filling memory.
+// needed. Each compressed payload is copied to bytes before saving: keeping File slices
+// in IndexedDB can leave Safari dependent on temporary Files-picker access after reload.
 export async function readBackup(file, onProgress = () => {}) {
   if (file.size > SETTINGS.backupMaxFileBytes || file.size < MAGIC.length + 4) invalid();
   const prefix = new Uint8Array(await file.slice(0, MAGIC.length + 4).arrayBuffer());
@@ -50,22 +54,23 @@ export async function readBackup(file, onProgress = () => {}) {
   if (!data || data.format !== 1 || !Array.isArray(data.pages) || data.pages.length > SETTINGS.backupMaxPages) invalid();
   const records = [], ids = new Set();
   let offset = MAGIC.length + 4 + length;
-  const take = (part, types, required = false) => {
+  const take = async (part, types, required = false) => {
     if (!part) { if (required) invalid(); return null; }
     if (!Number.isSafeInteger(part.size) || part.size <= 0 || part.size > SETTINGS.backupMaxImageBytes || !types.includes(part.type) || offset + part.size > file.size) invalid();
-    const blob = file.slice(offset, offset + part.size, part.type);
+    const bytes = new Uint8Array(await file.slice(offset, offset + part.size).arrayBuffer());
+    if (bytes.byteLength !== part.size) invalid();
     offset += part.size;
-    return blob;
+    return bytes;
   };
   for (const page of data.pages) {
     if (typeof page.id !== "string" || !page.id.length || page.id.length > 200 || /[\x00-\x1f/\\]/.test(page.id) || ids.has(page.id) || !Number.isFinite(page.updated) || page.updated <= 0) invalid();
     ids.add(page.id);
-    const color = take(page.color, ["image/png"], true);
-    const memory = take(page.memory, ["application/gzip", "" ]);
-    const thumb = take(page.thumb, ["image/jpeg", "image/png"]);
-    const pixels = await checkPNG(color);
+    const color = await take(page.color, ["image/png"], true);
+    const memory = await take(page.memory, ["application/gzip", "" ]);
+    const thumb = await take(page.thumb, ["image/jpeg", "image/png"]);
+    const pixels = await checkPNG(storedBlob(color, "image/png"));
     if (memory && typeof DecompressionStream !== "undefined") {
-      const reader = memory.stream().pipeThrough(new DecompressionStream("gzip")).getReader();
+      const reader = storedBlob(memory, "application/gzip").stream().pipeThrough(new DecompressionStream("gzip")).getReader();
       let count = 0;
       try {
         while (true) {
@@ -77,7 +82,7 @@ export async function readBackup(file, onProgress = () => {}) {
       } catch { invalid(); }
       if (count !== pixels * 4) invalid();
     }
-    if (thumb) await checkImage(thumb, 1024 * 1024);
+    if (thumb) await checkImage(storedBlob(thumb, page.thumb.type), 1024 * 1024);
     records.push({ id: page.id, updated: page.updated, color, memory, thumb });
     onProgress(records.length, data.pages.length);
   }
@@ -112,6 +117,20 @@ async function checkImage(blob, limit) {
 
 export async function restoreBackup(backup) {
   const result = await dbMergeArtwork(backup.records);
+  // Read the bytes back before saying "restored". This catches a storage failure while
+  // the backup is still selected, and never mistakes an unreadable picture for success.
+  for (const record of backup.records) {
+    const saved = await dbGet("artwork", record.id);
+    if (saved?.updated > record.updated) continue; // a newer save was deliberately kept
+    const thumb = await dbGet("progressThumbs", record.id);
+    for (const [actual, expected, type] of [[saved?.color, record.color, "image/png"], [saved?.memory, record.memory, "application/gzip"], [thumb, record.thumb, "image/jpeg"]]) {
+      if (!expected) continue;
+      const bytes = new Uint8Array(await storedBlob(actual, type).arrayBuffer());
+      if (bytes.length !== expected.length || !bytes.every((b, i) => b === expected[i])) {
+        throw new Error("The restored copy couldn't be verified. Keep your backup file and try Restore backup again. The original backup file is unchanged.");
+      }
+    }
+  }
   // Restoring settings is optional; a storage restriction mustn't undo restored pictures.
   let settingsSaved = true;
   try { for (const [key, value] of Object.entries(backup.settings)) localStorage.setItem(key, value); }

@@ -69,7 +69,9 @@ table, and any decisions that changed.
   tool icons and curved previews. Owen approved the color-carrying result on 2026-10-21
   ("perfect! thank you!"). The subsequent iPad retest passed: "everything works perfectly! thank you!"
   (2026-10-21). Step 10 is complete. **Step 11 checkpoint: PC check passed** (Home Screen/offline + backups);
-  committing and uploading for the iPad installation/offline check. The icon is approved.
+  committed/uploaded as e6bc927 for the iPad check. Restore failed in the installed app;
+  Safari originals remain readable. A restore repair is approved for upload and awaiting iPad
+  retest (see the repair notes below). The icon is approved.
   Owen confirmed on 2026-10-21: "it worked now what". Step 12 has not started.
 
 ## How to work with Owen
@@ -115,7 +117,7 @@ table, and any decisions that changed.
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | ✅ |
 | 9 | Export the finished picture to Photos | ✅ |
 | 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | ✅ all three batches confirmed on iPad |
-| 11 | Installable + offline (manifest, service worker, icons), coloring backup/transfer | PC passed; checkpoint for iPad installation/offline check |
+| 11 | Installable + offline (manifest, service worker, icons), coloring backup/transfer | PC passed; iPad restore repair awaiting retest |
 | 12 | Magical storybook look, Themes, polish | |
 
 ### Notes for future steps
@@ -905,8 +907,8 @@ table, and any decisions that changed.
   IDs even if not currently listed. File limits live in SETTINGS.
 - **Restore:** reads/validates the complete file (bounds, unique IDs, decoded images, decompressed
   memory size where supported) before a confirmation and writes. `dbMergeArtwork` merges all
-  artwork/progress/previews in ONE transaction, reading saved dates inside it to keep newer
-  local work, including concurrent saves. Restores allowlisted preferences, reports failures;
+  artwork/progress/previews in ONE transaction, reading saved dates inside it to keep strictly newer
+  local work, including concurrent saves; equal dates are refreshed to repair old imports. Restores allowlisted preferences, reports failures;
   finishing with Open library reloads UI caches. Online restores also try downloading current
   outlines for listed restored pages. Missing/removed outlines require restoring their IDs.
   No cloud sync, accounts, or uploads of artwork. No deletion of Safari data is required.
@@ -921,3 +923,36 @@ table, and any decisions that changed.
 - **References:** https://webkit.org/tracking-prevention/ (Home Screen isolation),
   https://webkit.org/blog/14403/updates-to-storage-policy/ (storage),
   https://web.dev/articles/service-worker-lifecycle (update lifecycle).
+
+### iPad restore repair (2026-10-21)
+
+- First installed-app check failed: colored library cards were blank and opening a restored
+  page showed the generic saved-coloring error. Owen confirmed her original coloring still
+  opens in Safari. Do not clear Safari data, remove the app or discard the original backup.
+- **Likely cause, not reproduced on a real iPad here:** restore stored File.slice() Blobs from
+  the file picker. A Safari file/Blob access problem can leave those unreadable after reload.
+  Browser-only checks on Chrome did not reveal the hardware-specific failure. Related WebKit
+  reports document disk-backed File/Blob access failures, but do not prove this exact cause:
+  https://bugs.webkit.org/show_bug.cgi?id=319985 and https://bugs.webkit.org/show_bug.cgi?id=240216 .
+- **Repair:** each compressed payload is read into an independent Uint8Array before validating
+  and storing it. Restored artwork/memory/previews use byte arrays in IndexedDB. `storedBlob()`
+  converts arrays for image decoding, previews and later backups while preserving support for
+  all existing auto-save Blobs. No database version change. Memory remains compressed; no base64.
+- `dbMergeArtwork` now preserves strictly NEWER local saves; matching timestamps are refreshed
+  from the backup, repairing the earlier damaged copy. Counts distinguish restored/refreshed/
+  kept-newer pages. Restore reads back and compares all imported payload bytes before reporting
+  success. The backup format itself has not changed; reuse the original .finley file.
+- Image decoding falls back from createImageBitmap to the normal image decoder. Unreadable
+  saved images now point to Restore backup; database-access failures keep the other-tabs
+  message. A failed colored preview falls back to the blank outline rather than an empty card.
+- **Checks passed locally:** actual backup download/file selection, independent byte-array
+  storage, clearing selected file + reload, exact colors/gzip memory; simulate damaged matching-
+  timestamp image and thumbnail then re-restore and open; preserve newer coloring; reject a
+  truncated backup; offline real pages/export; safe update and artwork persistence. These are
+  Chrome checks, not confirmation of the iPad repair.
+- **Authorization:** Owen explicitly chose "Commit and upload the repair" (2026-10-21).
+  This repair checkpoint is for an iPad retest. Step 11 is still incomplete until that passes.
+- **Retest:** Home Screen app online → library → App & offline → Check for updates → Update app
+  when offered. Close other coloring-book windows if requested; keep all website data. Restore
+  the SAME backup, confirm, Open library, open colored pages; fully close/reopen installed app
+  to confirm progress remains. Keep the Safari original and backup until this succeeds.

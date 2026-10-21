@@ -17,6 +17,14 @@ const STORES = ["thumbnails", "artwork", "progress", "progressThumbs"];
 
 let dbPromise = null;
 
+// Restored files are kept as real bytes, independent of the Files picker's permission.
+// Older auto-saves are Blobs; both formats remain readable without a database upgrade.
+export function storedBlob(value, type) {
+  if (value instanceof Blob) return value;
+  if (value instanceof ArrayBuffer || ArrayBuffer.isView(value)) return new Blob([value], { type });
+  throw new Error("The saved picture's file data couldn't be read.");
+}
+
 // If the database can't be opened within this time, give up (instead of waiting forever).
 // That happens when another tab still has an older version of the app open: the browser won't
 // update the database until that tab lets go of it.
@@ -126,23 +134,26 @@ export async function dbEntries(store) {
 // Restore a backup as one transaction. Reading the current dates inside this transaction
 // keeps a newer save in another window from being replaced by an older backup.
 export async function dbMergeArtwork(records) {
-  if (!records.length) return { added: 0, kept: 0 };
+  if (!records.length) return { added: 0, kept: 0, refreshed: 0 };
   const db = await openDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(["artwork", "progress", "progressThumbs"], "readwrite");
-    let added = 0, kept = 0;
+    let added = 0, kept = 0, refreshed = 0;
     for (const record of records) {
       const request = tx.objectStore("artwork").get(record.id);
       request.onsuccess = () => {
-        if (request.result?.updated >= record.updated) { kept++; return; }
+        if (request.result?.updated > record.updated) { kept++; return; }
+        // The same backup must repair an earlier failed import with the SAME date.
+        // Only a genuinely newer save takes priority over it.
+        const matching = request.result?.updated === record.updated;
         tx.objectStore("artwork").put({ color: record.color, memory: record.memory, updated: record.updated }, record.id);
         tx.objectStore("progress").put({ updated: record.updated }, record.id);
         if (record.thumb) tx.objectStore("progressThumbs").put(record.thumb, record.id);
         else tx.objectStore("progressThumbs").delete(record.id);
-        added++;
+        if (matching) refreshed++; else added++;
       };
     }
-    tx.oncomplete = () => resolve({ added, kept });
+    tx.oncomplete = () => resolve({ added, kept, refreshed });
     tx.onerror = () => reject(tx.error);
     tx.onabort = () => reject(tx.error);
   });

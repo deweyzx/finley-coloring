@@ -5,10 +5,10 @@
 //   #/flowers/tulips    -> the pages in Tulips
 //   #/page/tulips       -> coloring the page "tulips"
 
-import { findCategory, findSubcategory, findPage } from "./library.js?v=20261021020853";
-import { showLibrary, showCategory, showSubcategory } from "./gallery.js?v=20261021020853";
-import { openEditor, closeEditor, prepareAppReload } from "./editor.js?v=20261021020853";
-import { setupOffline, offlineBusy } from "./offline.js?v=20261021020853";
+import { findCategory, findSubcategory, findPage } from "./library.js?v=20261021022059";
+import { showLibrary, showCategory, showSubcategory } from "./gallery.js?v=20261021022059";
+import { openEditor, closeEditor, prepareAppReload } from "./editor.js?v=20261021022059";
+import { setupOffline, offlineBusy } from "./offline.js?v=20261021022059";
 
 const galleryScreen = document.getElementById("gallery-screen");
 const coloringScreen = document.getElementById("coloring-screen");

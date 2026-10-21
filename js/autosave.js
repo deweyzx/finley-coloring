@@ -8,7 +8,7 @@
 //   updated - when it was saved
 // Plus a small colored preview (store "progressThumbs") and the save time (store "progress").
 
-import { dbGet, dbPutMany, dbDeleteMany, dbEntries } from "./storage.js?v=20261021020853";
+import { dbGet, dbPutMany, dbDeleteMany, dbEntries, storedBlob } from "./storage.js?v=20261021022059";
 
 const THUMB_W = 420; // same size as the ready-made library thumbnails
 const THUMB_H = 560;
@@ -64,11 +64,19 @@ export async function forgetArtwork(id) {
 export async function loadArtwork(id, colorCtx, memory) {
   const saved = await dbGet("artwork", id);
   if (!saved || !saved.color) return false;
-  const image = await blobToImage(saved.color);
+  let image;
+  try { image = await blobToImage(storedBlob(saved.color, "image/png")); }
+  catch (cause) {
+    const error = new Error("The saved coloring image couldn't be read.");
+    error.code = "saved-image";
+    error.cause = cause;
+    throw error;
+  }
   colorCtx.drawImage(image, 0, 0);
+  image.close?.();
   if (saved.memory) {
     try {
-      const bytes = await unsqueeze(saved.memory);
+      const bytes = await unsqueeze(storedBlob(saved.memory, "application/gzip"));
       if (bytes.length === memory.length) memory.set(bytes);
     } catch {
       // can't read it back: build-up just starts fresh for this page
@@ -92,7 +100,7 @@ export async function getPreviewURL(id) {
   if (!times.has(id)) return null;
   const blob = await dbGet("progressThumbs", id).catch(() => undefined);
   if (!blob) return null;
-  const url = URL.createObjectURL(blob);
+  const url = URL.createObjectURL(storedBlob(blob, "image/jpeg"));
   previewURLs.set(id, url);
   return url;
 }
@@ -139,7 +147,10 @@ function toBlob(canvas, type, quality) {
 }
 
 async function blobToImage(blob) {
-  if (window.createImageBitmap) return createImageBitmap(blob);
+  if (window.createImageBitmap) {
+    try { return await createImageBitmap(blob); }
+    catch { /* Safari can fail here even when the ordinary image decoder works. */ }
+  }
   const url = URL.createObjectURL(blob);
   try {
     const img = new Image();

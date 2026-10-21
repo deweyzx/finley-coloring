@@ -1,9 +1,9 @@
 // gallery.js - the library screens: all categories -> one category -> one sub-category.
 // They all use the same grid of cards; only the cards and the header change.
 
-import { categories, coverPage, problems } from "./library.js?v=20261021020853";
-import { getThumbnailURL } from "./thumbnails.js?v=20261021020853";
-import { getPreviewURL, getProgressTimes, previewsReady } from "./autosave.js?v=20261021020853";
+import { categories, coverPage, problems } from "./library.js?v=20261021022059";
+import { getThumbnailURL } from "./thumbnails.js?v=20261021022059";
+import { getPreviewURL, getProgressTimes, previewsReady } from "./autosave.js?v=20261021022059";
 
 const grid = document.getElementById("gallery-grid");
 const titleEl = document.getElementById("library-title");
@@ -125,6 +125,12 @@ async function renderCards(cards) {
 function showColoredPreview(el, card) {
   const img = el.querySelector("img");
   img.onload = () => img.classList.add("loaded");
+  const fallback = () => {
+    img.onerror = null;
+    if (card.cover?.thumb) img.src = card.cover.thumb;
+    else observer?.observe(el);
+  };
+  img.onerror = fallback; // an unreadable restored preview mustn't leave an empty card
   getPreviewURL(card.colored.id).then((url) => {
     if (url) {
       img.src = url;
@@ -133,7 +139,7 @@ function showColoredPreview(el, card) {
     } else {
       observer.observe(el);
     }
-  });
+  }).catch(fallback);
 }
 
 function makeCard({ title, detail, cover, href, stacked }) {

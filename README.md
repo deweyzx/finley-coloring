@@ -278,8 +278,9 @@ The settings for each brush are in `js/brushes.js`, with comments explaining eac
 
 ## Home Screen installation and offline coloring (step 11)
 
-**Status:** Owen's PC check passed (2026-10-21). This checkpoint is for the hosted iPad
-installation/offline check. Home Screen installation and offline Safari use still need that check.
+**Status:** PC check passed (2026-10-21). The first iPad restore showed unreadable copies in
+the installed app; the Safari originals remain readable. A repair is uploaded for an iPad retest.
+Step 11 is not complete until installation, restore and offline checks pass on the iPad.
 
 The library's **App & offline** button has the controls below.
 
@@ -323,7 +324,8 @@ file to Downloads/Files. It is an editable-coloring backup, unlike the flattened
 Preparing alone does not save a file: tap Save backup file too.
 
 **Restore backup** checks the complete file before writing, asks for confirmation, merges its
-pages and keeps newer coloring already on this device. It replaces palettes/brush settings
+pages and keeps newer coloring already on this device. Matching save dates are refreshed from
+the backup so re-restoring can repair a failed import. It replaces palettes/brush settings
 with the backup's settings. The original backup is never changed. It does not include outline
 images, undo history or a live blending pass. If offline, download the outlines later. Pages
 whose original IDs no longer exist remain stored, but need those library IDs restored to open.
@@ -360,3 +362,12 @@ and [WebKit storage policy](https://webkit.org/blog/14403/updates-to-storage-pol
    Open library; coloring/palettes should still be there. Newer work should be kept.
 7. Report back before committing/uploading. Real iPad installation and Files selection still
    need the hosted iPad check.
+
+### If an earlier iPad restore left blank previews or unreadable pages
+
+Keep the original Safari coloring and .finley backup. In the installed app, go online and open
+**App & offline → Check for updates → Update app** when offered. Close other coloring-book
+windows if asked. Then **Restore backup** using the same file, confirm, and choose **Open
+library**. Matching pages should be refreshed; newer coloring is kept. Close and reopen the
+installed app and check those pages again. Do not clear website data or delete the app to repair
+this issue. The repair copies the backup's compressed data independently of the Files picker.

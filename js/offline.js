@@ -1,9 +1,9 @@
 // offline.js - Home Screen help, offline downloads, updates and moving her saved coloring.
 // The separate service worker keeps downloaded files; IndexedDB still keeps her artwork.
-import { categories, findPage } from "./library.js?v=20261021020853";
-import { SETTINGS } from "./settings.js?v=20261021020853";
-import { makeBackup, readBackup, restoreBackup } from "./backup.js?v=20261021020853";
-import { askConfirm } from "./dialogs.js?v=20261021020853";
+import { categories, findPage } from "./library.js?v=20261021022059";
+import { SETTINGS } from "./settings.js?v=20261021022059";
+import { makeBackup, readBackup, restoreBackup } from "./backup.js?v=20261021022059";
+import { askConfirm } from "./dialogs.js?v=20261021022059";
 
 const pages = categories.flatMap(c => c.subcategories.flatMap(s => s.pages));
 let registration = null, panel = null, busy = false, installPrompt = null;
@@ -257,7 +257,7 @@ async function importFile(file) {
       if (!saved.failed) outlineNote = "Their current outlines are ready offline too.";
     } catch { /* The coloring is already safe even if outlines couldn't download. */ }
   }
-  $("backup-status").textContent = `Restored ${result.added} pages; kept ${result.kept} newer or matching pages. ${outlineNote}${result.settingsSaved ? "" : " This browser couldn't remember the restored settings."}`;
+  $("backup-status").textContent = `Restored ${result.added} pages; refreshed ${result.refreshed} matching pages; kept ${result.kept} newer pages. ${outlineNote}${result.settingsSaved ? "" : " This browser couldn't remember the restored settings."}`;
   restored = true;
   $("app-done").textContent = "Open library";
   // Wait for a fresh tap before reloading palettes and library previews from the database.

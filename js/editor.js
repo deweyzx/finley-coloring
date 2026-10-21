@@ -2,23 +2,23 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=20261021020853";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=20261021020853";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=20261021020853";
-import { setupColorPicker } from "./color-picker.js?v=20261021020853";
-import { setupSavePicture } from "./save-picture.js?v=20261021020853";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=20261021020853";
-import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=20261021020853";
-import { createSlider } from "./slider.js?v=20261021020853";
-import { History } from "./history.js?v=20261021020853";
-import { Viewport } from "./viewport.js?v=20261021020853";
-import { setupInput } from "./touch-input.js?v=20261021020853";
-import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=20261021020853";
-import { runSpeedTest } from "./speed-test.js?v=20261021020853";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=20261021020853";
-import { SETTINGS } from "./settings.js?v=20261021020853";
-import { hexToHsv, hsvToHex } from "./color.js?v=20261021020853";
-import { rememberPageForOffline } from "./offline.js?v=20261021020853";
+import { loadImage, drawLineArt } from "./lineart.js?v=20261021022059";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=20261021022059";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=20261021022059";
+import { setupColorPicker } from "./color-picker.js?v=20261021022059";
+import { setupSavePicture } from "./save-picture.js?v=20261021022059";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=20261021022059";
+import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=20261021022059";
+import { createSlider } from "./slider.js?v=20261021022059";
+import { History } from "./history.js?v=20261021022059";
+import { Viewport } from "./viewport.js?v=20261021022059";
+import { setupInput } from "./touch-input.js?v=20261021022059";
+import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=20261021022059";
+import { runSpeedTest } from "./speed-test.js?v=20261021022059";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=20261021022059";
+import { SETTINGS } from "./settings.js?v=20261021022059";
+import { hexToHsv, hsvToHex } from "./color.js?v=20261021022059";
+import { rememberPageForOffline } from "./offline.js?v=20261021022059";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -461,7 +461,9 @@ export async function openEditor(page) {
     // might color on - its auto-save would then replace her real work.
     console.error("Couldn't load the saved coloring", err);
     if (currentPage === page) {
-      messageEl.textContent = "Your saved coloring for this page couldn't be opened. Close any other tabs with the coloring book, then open this page again.";
+      messageEl.textContent = err.code === "saved-image"
+        ? "This saved picture couldn't be read. Go back to the library and use App & offline → Restore backup to repair it from your .finley file. This unreadable copy won't be saved over."
+        : "Your saved coloring for this page couldn't be opened. Close any other tabs with the coloring book, then open this page again.";
     }
     return;
   }
