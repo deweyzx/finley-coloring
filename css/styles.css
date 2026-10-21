@@ -41,7 +41,37 @@
   --toggle-height: 40px;    /* the on/off switches */
   --brush-sample-height: 64px; /* sample strokes in the Brushes window */
   --wheel-size: min(340px, 100%); /* the color picker's hue ring */
+  --app-dialog-width: 620px;
+  --app-icon-size: 64px;
+  --app-section-gap: 20px;
+  --app-dialog-padding: 24px;
 }
+
+/* Library settings stay outside the coloring screen, so backups/updates never cover drawing. */
+#gallery-screen .titles { flex: 1; min-width: 0; }
+#app-options { flex: none; font-size: var(--text-small); }
+.app-backdrop {
+  touch-action: manipulation;
+  padding: max(var(--app-section-gap), env(safe-area-inset-top)) max(var(--app-section-gap), env(safe-area-inset-right)) max(var(--app-section-gap), env(safe-area-inset-bottom)) max(var(--app-section-gap), env(safe-area-inset-left));
+}
+.dialog.app-dialog {
+  width: min(var(--app-dialog-width), 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--app-dialog-padding);
+}
+.app-heading { display: flex; align-items: center; gap: var(--app-section-gap); position: sticky; top: 0; background: var(--surface); z-index: 1; }
+.app-heading img { width: var(--app-icon-size); height: var(--app-icon-size); border-radius: var(--radius); }
+.app-heading h2 { margin: 0; flex: 1; }
+.app-section { padding-block: var(--app-section-gap); border-bottom: 1px solid var(--hairline); }
+.app-section h3 { margin: 0 0 var(--app-section-gap); font-size: var(--text-normal); }
+.app-section p { font-size: var(--text-small); }
+.app-actions { display: flex; flex-wrap: wrap; gap: var(--app-section-gap); }
+.app-section [role="status"] { color: var(--ink); }
+.app-section [role="status"]:empty { display: none; }
+.app-section .app-actions + p { margin-block: var(--app-section-gap) 0; }
+.app-dialog > .dialog-buttons { margin-top: var(--app-section-gap); }
 
 * {
   box-sizing: border-box;

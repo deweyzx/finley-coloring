@@ -5,15 +5,21 @@
 //   #/flowers/tulips    -> the pages in Tulips
 //   #/page/tulips       -> coloring the page "tulips"
 
-import { findCategory, findSubcategory, findPage } from "./library.js?v=202610210127";
-import { showLibrary, showCategory, showSubcategory } from "./gallery.js?v=202610210127";
-import { openEditor, closeEditor } from "./editor.js?v=202610210127";
+import { findCategory, findSubcategory, findPage } from "./library.js?v=20261021020853";
+import { showLibrary, showCategory, showSubcategory } from "./gallery.js?v=20261021020853";
+import { openEditor, closeEditor, prepareAppReload } from "./editor.js?v=20261021020853";
+import { setupOffline, offlineBusy } from "./offline.js?v=20261021020853";
 
 const galleryScreen = document.getElementById("gallery-screen");
 const coloringScreen = document.getElementById("coloring-screen");
 const coloringBack = document.getElementById("back-button");
+let previousHash = location.hash || "#/";
+setupOffline({prepareForReload:prepareAppReload, isLibrary:() => coloringScreen.hidden});
 
 function route() {
+  // A browser Back gesture during a restore/update must not open a page being replaced.
+  if (offlineBusy()) { location.replace(previousHash); return; }
+  previousHash = location.hash || "#/";
   const parts = location.hash
     .replace(/^#\/?/, "")
     .split("/")

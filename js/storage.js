@@ -122,3 +122,28 @@ export async function dbEntries(store) {
     request.onerror = () => reject(request.error);
   });
 }
+
+// Restore a backup as one transaction. Reading the current dates inside this transaction
+// keeps a newer save in another window from being replaced by an older backup.
+export async function dbMergeArtwork(records) {
+  if (!records.length) return { added: 0, kept: 0 };
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(["artwork", "progress", "progressThumbs"], "readwrite");
+    let added = 0, kept = 0;
+    for (const record of records) {
+      const request = tx.objectStore("artwork").get(record.id);
+      request.onsuccess = () => {
+        if (request.result?.updated >= record.updated) { kept++; return; }
+        tx.objectStore("artwork").put({ color: record.color, memory: record.memory, updated: record.updated }, record.id);
+        tx.objectStore("progress").put({ updated: record.updated }, record.id);
+        if (record.thumb) tx.objectStore("progressThumbs").put(record.thumb, record.id);
+        else tx.objectStore("progressThumbs").delete(record.id);
+        added++;
+      };
+    }
+    tx.oncomplete = () => resolve({ added, kept });
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error);
+  });
+}

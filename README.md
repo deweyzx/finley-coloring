@@ -15,12 +15,15 @@ Don't open `index.html` by double-clicking. Browsers block some features for fil
 | File | What it does |
 |---|---|
 | `index.html` | The page skeleton: both screens (gallery and coloring) |
+| `manifest.webmanifest`, `icons/` | Home Screen app name, display mode and approved book icon |
+| `sw.js`, `offline-assets.js` | Offline files and verified updates; generated file list |
+| `js/offline.js`, `js/backup.js` | App/offline window, downloads, updates and editable-coloring backups |
 | `css/styles.css` | All the looks: colors, sizes, layout |
 | `js/app.js` | Starts the app and picks the screen from the address (`#/flowers/tulips`) |
 | `js/library.js` | Reads `pages/pages.js` and works out each page's path, id and title |
 | `js/gallery.js` | The library screens: categories, sub-categories, pages |
 | `js/thumbnails.js` | Makes small preview pictures once, and saves them |
-| `js/storage.js` | The IndexedDB database (thumbnails now, her coloring later) |
+| `js/storage.js` | IndexedDB: saved coloring, paint memory, progress and thumbnails |
 | `js/editor.js` | The coloring screen: tools, taps, fitting the page on screen |
 | `js/lineart.js` | Loads a page and turns its white areas see-through |
 | `js/settings.js` | **Numbers you can tweak**, like gap closing for tap-to-fill |
@@ -114,7 +117,7 @@ Good to know:
 New categories and sub-categories: create the folder, then copy an existing block in `pages/pages.js`.
 
 **Best format:** PNG, black lines on a white (or transparent) background.
-- **Size:** about 1500–2500 pixels on the long side. 1536 × 2048 (the iPad's shape) is ideal. Bigger pages use a lot of iPad memory and make fills slower.
+- **Size:** 2048 × 2732 (or 2732 × 2048 sideways), the size the importer produces. The older placeholder pages are smaller. Larger files increase memory use and slow coloring.
 - **Lines:** dark and solid, at least ~6 px thick at that size, and shapes fully closed. A gap in a line lets tap-to-fill leak into the next area.
 - **Avoid:** JPG (blurry grey speckles around lines), grey shading, or textured backgrounds.
 
@@ -189,9 +192,10 @@ Her coloring saves automatically: a moment after each change, when she leaves a 
 she switches away from or closes Safari. Opening a page brings her coloring back, and the library
 shows her colored version of each page (a category shows the page she colored most recently).
 
-**Important:** Safari may delete a website's saved data if it isn't opened for 7 days. Apps added
-to the Home Screen are safe from this (step 11), and finished pictures can be exported (step 9).
-Until then, opening the app at least once a week keeps her work.
+Coloring is stored on this device, not in a GitHub account or an online cloud. Browsers can
+remove website data, and clearing Safari data removes saved coloring. Home Screen installation
+can help storage persistence, but it is not a backup. Keep a **.finley backup** and export finished
+pictures to Photos. See the installation and backup instructions below.
 
 **Start over** (top of the coloring screen) erases all the coloring on a page, after asking
 "Start this page over?". If she changes her mind right away, Undo brings it all back, as long as
@@ -212,8 +216,7 @@ coloring book and open the page again. Nothing is lost.
   palette (it asks for a name), **+ New palette** to make another, and tap a palette's name to
   switch to it. **Remove colors** lets you tap colors to delete them from a palette, and Rename
   and Delete palette do what they say. The Classic palette can't be changed.
-- Palettes and recent colors are saved on this device (they follow the same Safari rule as
-  her coloring: open the app at least once a week until it's on the Home Screen).
+- Palettes and recent colors are saved on this device and included in .finley backups.
 
 ## Saving a finished picture to Photos
 
@@ -272,3 +275,88 @@ a fresh blending pass. The finished result always auto-saves, appears in the lib
 included in exported pictures; the temporary blending pass itself is not saved.
 
 The settings for each brush are in `js/brushes.js`, with comments explaining each number.
+
+## Home Screen installation and offline coloring (step 11)
+
+**Status:** Owen's PC check passed (2026-10-21). This checkpoint is for the hosted iPad
+installation/offline check. Home Screen installation and offline Safari use still need that check.
+
+The library's **App & offline** button has the controls below.
+
+### Install on her iPad (after this step is uploaded)
+
+1. In Safari, open https://deweyzx.github.io/finley-coloring/ while online.
+2. Before moving, open **App & offline → Prepare backup → Save backup file**. Save the
+   `.finley` file somewhere you can find in Files (Downloads or iCloud Drive).
+3. Use Safari's **Share → Add to Home Screen → Add**. If shown, leave **Open as Web App** on.
+4. Open the new green book-and-pencil icon. It opens without Safari's address bar.
+5. If her coloring is missing there, choose **App & offline → Restore backup**, pick the file,
+   confirm Restore, then Open library. Safari and the installed app can have separate storage;
+   a blank installed library does not mean her Safari coloring was erased.
+6. Choose **Save all pages offline** in the installed app and wait for all pages to be ready.
+   Downloads are separate for each browser/device. Restoring while online also downloads the
+   current outlines for the restored pages when possible.
+7. Turn on Airplane Mode, reopen the icon, and try the real Daffodil and Tiger Lily pages.
+   Color, leave, reopen, undo/redo and save a finished picture. Rotate the iPad too.
+8. Turn the connection back on when finished. Keep the backup file until all checks pass.
+
+On a PC, Chrome may offer an install icon in the address bar, or **Install app** in the app's
+window. Installation is optional for testing offline access at http://localhost:8000.
+
+### What works offline
+
+The app, library list, small thumbnails and SVG example pages download during setup. Opening
+any real page online saves its outline. **Save all pages offline** downloads the remaining
+outlines, two at a time; it resumes without re-downloading successful pages. It doesn't silently
+fetch full-sized images for hundreds of unopened pages. The window reports how many pages are
+ready on this device. Keep the app open during a bulk download.
+
+Coloring, brushes, palettes, undo/redo, auto-save and PNG export work offline on downloaded
+pages. A page not yet downloaded gives instructions and does not overwrite her saved coloring.
+New pages and updates require a connection. Browser storage can still run out or be cleared.
+
+### Back up or move coloring
+
+**Prepare backup** gathers all saved coloring, its build-up memory, colored library previews,
+brush sizes/opacity, switch settings and palettes. **Save backup file** downloads a `.finley`
+file to Downloads/Files. It is an editable-coloring backup, unlike the flattened PNG in Photos.
+Preparing alone does not save a file: tap Save backup file too.
+
+**Restore backup** checks the complete file before writing, asks for confirmation, merges its
+pages and keeps newer coloring already on this device. It replaces palettes/brush settings
+with the backup's settings. The original backup is never changed. It does not include outline
+images, undo history or a live blending pass. If offline, download the outlines later. Pages
+whose original IDs no longer exist remain stored, but need those library IDs restored to open.
+No account, automatic sync or upload of her pictures is involved.
+
+### Updates and adding pages
+
+New app files download in the background. A new version waits while the old app is open.
+Finish coloring and close other coloring-book tabs/windows, then in the library use **App &
+offline → Check for updates → Update app** when offered. The app waits for the last save;
+no automatic reload interrupts a stroke. Closing all app windows and reopening also allows
+an already-downloaded update to take over. GitHub deployment can take a few minutes; retry if
+an update cannot finish yet. Existing coloring is not deleted by an app update.
+
+When changing code or adding pages, run **`python tools/stamp_version.py` before the upload**.
+It gives file references a fresh version and writes `offline-assets.js`, the list used to
+verify and download the matching app. This is a small Python publishing helper, not a build
+system or something the iPad runs. Do not edit that generated list by hand.
+
+Storage details: [WebKit's Home Screen storage explanation](https://webkit.org/tracking-prevention/)
+and [WebKit storage policy](https://webkit.org/blog/14403/updates-to-storage-policy/).
+
+### PC check for this step
+
+1. Start the local server and open http://localhost:8000 in Chrome.
+2. Open **App & offline**, wait for setup, then **Save all pages offline**. Expect 10 of 10 with
+   the current library. Check the icon and scroll through the window in both window shapes.
+3. Color a page and return to the library. Prepare and save a backup to Downloads.
+4. In Chrome press F12 → Network, change **No throttling** to **Offline**. Reload the page,
+   browse the library, open Daffodils and both Tiger Lilies, color, leave and reopen. Try saving
+   a PNG. Keep the local server running; this tests browser offline access.
+5. Change the Network setting back to **No throttling**, then close Developer Tools.
+6. Restore the saved .finley file without deleting any existing data. Confirm the message and
+   Open library; coloring/palettes should still be there. Newer work should be kept.
+7. Report back before committing/uploading. Real iPad installation and Files selection still
+   need the hosted iPad check.

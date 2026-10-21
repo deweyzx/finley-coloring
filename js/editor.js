@@ -2,22 +2,23 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610210127";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610210127";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610210127";
-import { setupColorPicker } from "./color-picker.js?v=202610210127";
-import { setupSavePicture } from "./save-picture.js?v=202610210127";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610210127";
-import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=202610210127";
-import { createSlider } from "./slider.js?v=202610210127";
-import { History } from "./history.js?v=202610210127";
-import { Viewport } from "./viewport.js?v=202610210127";
-import { setupInput } from "./touch-input.js?v=202610210127";
-import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=202610210127";
-import { runSpeedTest } from "./speed-test.js?v=202610210127";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610210127";
-import { SETTINGS } from "./settings.js?v=202610210127";
-import { hexToHsv, hsvToHex } from "./color.js?v=202610210127";
+import { loadImage, drawLineArt } from "./lineart.js?v=20261021020853";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=20261021020853";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=20261021020853";
+import { setupColorPicker } from "./color-picker.js?v=20261021020853";
+import { setupSavePicture } from "./save-picture.js?v=20261021020853";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=20261021020853";
+import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=20261021020853";
+import { createSlider } from "./slider.js?v=20261021020853";
+import { History } from "./history.js?v=20261021020853";
+import { Viewport } from "./viewport.js?v=20261021020853";
+import { setupInput } from "./touch-input.js?v=20261021020853";
+import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=20261021020853";
+import { runSpeedTest } from "./speed-test.js?v=20261021020853";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=20261021020853";
+import { SETTINGS } from "./settings.js?v=20261021020853";
+import { hexToHsv, hsvToHex } from "./color.js?v=20261021020853";
+import { rememberPageForOffline } from "./offline.js?v=20261021020853";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -424,12 +425,15 @@ export async function openEditor(page) {
   try {
     img = await loadImage(page.file);
   } catch (err) {
-    messageEl.textContent = "Sorry, this page couldn't be opened.";
+    if (currentPage === page) messageEl.textContent = navigator.onLine
+      ? "This page couldn't be opened. Please check your connection and try again."
+      : "This outline hasn't been saved offline on this device yet. Go online and open it once, or use App & offline → Save all pages offline in the library. Your saved coloring is kept.";
     console.error(err);
     return;
   }
   // If she tapped "back" while the image was loading, stop here.
   if (currentPage !== page) return;
+  rememberPageForOffline(page.file);
 
   // The canvases get the image's real pixel size, so nothing is blurry.
   const w = img.naturalWidth;
@@ -537,6 +541,15 @@ export function closeEditor() {
 let unsaved = false;
 let saveTimer = null;
 let lastSave = Promise.resolve();
+let lastSaveFailed = false;
+
+// Updates and backups are offered in the library, after any last stroke has been saved.
+// A failed save blocks the reload rather than throwing that last picture away.
+export async function prepareAppReload() {
+  if (currentPage || stroke) return false;
+  await lastSave;
+  return !lastSaveFailed && !unsaved;
+}
 
 function markChanged(keepBlendPass = false) {
   if (!keepBlendPass) engine?.invalidateBlend();
@@ -555,9 +568,11 @@ function saveNow() {
   unsaved = false;
   const id = currentPage.id;
   const started = performance.now();
+  lastSaveFailed = false;
   lastSave = saveArtwork(id, colorCanvas, lineCanvas, engine.memory)
     .then((info) => console.log(`Saved "${id}" in ${Math.round(performance.now() - started)} ms (colors ${Math.round(info.colorBytes / 1024)} KB, build-up memory ${Math.round(info.memoryBytes / 1024)} KB, preview ${Math.round(info.previewBytes / 1024)} KB)`))
     .catch((err) => {
+      lastSaveFailed = true;
       if (currentPage && currentPage.id === id) unsaved = true; // try again with the next change
       console.error("Auto-save failed", err);
     });
@@ -607,7 +622,8 @@ function startOver() {
   lastSave = lastSave
     .catch(() => {})
     .then(() => forgetArtwork(id))
-    .catch((err) => console.error("Couldn't clear the saved coloring", err));
+    .then(() => { lastSaveFailed = false; })
+    .catch((err) => { lastSaveFailed = true; console.error("Couldn't clear the saved coloring", err); });
 }
 
 // Switching to another app, locking the iPad or closing Safari: save right away.

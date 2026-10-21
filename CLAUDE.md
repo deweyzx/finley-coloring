@@ -68,8 +68,9 @@ table, and any decisions that changed.
   paint-pickup/carrying Blender (yellow trails into green), wider Blur, matching outlined
   tool icons and curved previews. Owen approved the color-carrying result on 2026-10-21
   ("perfect! thank you!"). The subsequent iPad retest passed: "everything works perfectly! thank you!"
-  (2026-10-21). Step 10 is complete. Step 11 is next, awaiting Owen's request to start.
-  Steps 11 and 12 have not started.
+  (2026-10-21). Step 10 is complete. **Step 11 checkpoint: PC check passed** (Home Screen/offline + backups);
+  committing and uploading for the iPad installation/offline check. The icon is approved.
+  Owen confirmed on 2026-10-21: "it worked now what". Step 12 has not started.
 
 ## How to work with Owen
 
@@ -114,7 +115,7 @@ table, and any decisions that changed.
 | 8 | Full color picker: hue ring + saturation/brightness square, recent colors, named saved palettes | ✅ |
 | 9 | Export the finished picture to Photos | ✅ |
 | 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | ✅ all three batches confirmed on iPad |
-| 11 | Installable + offline (manifest, service worker, icons) | |
+| 11 | Installable + offline (manifest, service worker, icons), coloring backup/transfer | PC passed; checkpoint for iPad installation/offline check |
 | 12 | Magical storybook look, Themes, polish | |
 
 ### Notes for future steps
@@ -463,7 +464,7 @@ table, and any decisions that changed.
   smooth, but pressure too weak until pressing hard, Blender's color result unlike Pigment, and
   icons disliked. Owen approved the revisions below on PC (2026-10-21: "perfect! thank you!");
   committed as 4341706. Owen then confirmed the iPad retest: "everything works perfectly!
-  thank you!" (2026-10-21). Batch 3 and step 10 are complete; step 11 awaits his request.
+  thank you!" (2026-10-21). Batch 3 and step 10 are complete; step 11 passed the PC check; iPad installation/offline check pending.
   Batches 1/2, including watercolor 130 / glitter 120 / metallic 60, are confirmed smooth.
 - **Implementation:** `js/blend-engine.js` exports `PaintEngine`, extending the original
   `StrokeEngine`. Ordinary brushes delegate unchanged to that engine. `modify: "blender"` /
@@ -657,9 +658,10 @@ table, and any decisions that changed.
 - Tested: save + library previews at all three levels, exact pixel restore after a full reload,
   build-up memory restored (build-up off over a restored stroke stays even), stroke kept when
   leaving immediately and reopening, old-version-tab blocking shows the message.
-- **Safari storage rule:** Safari may delete a website's stored data after 7 days without a visit,
-  but not for Home Screen web apps. `navigator.storage.persist()` is requested on first save.
-  Real protection: step 11 (install to Home Screen) and step 9 (export). Until then: open weekly.
+- **Storage persistence:** `navigator.storage.persist()` is requested on first save; WebKit
+  uses storage policies/heuristics and Home Screen installation can help. It is not a guarantee
+  against removal or clearing data. The old blanket seven-day/weekly-visit advice was too broad.
+  Keep .finley backups and exported pictures; see step 11 for separate Home Screen storage.
 - **Start over** (button in the coloring screen's top bar, left of undo/redo): asks first in a
   dialog ("Keep coloring" = highlighted default, "Erase my coloring" = red outline; tapping outside
   cancels). Erasing saves a full-page undo step (so Undo brings it back until she leaves the page),
@@ -696,7 +698,7 @@ table, and any decisions that changed.
   (confirmation, "Keep it" is the default). Switching palettes changes the toolbar swatches.
 - **Storage: localStorage**, keys `recent-colors` and `palettes` ({active, list}), not IndexedDB as
   first planned: it's a few hundred bytes, and avoiding another database version bump avoids the
-  upgrade-blocking problem seen in step 7. (Same Safari 7-day rule applies as for IndexedDB.)
+  upgrade-blocking problem seen in step 7. (Browser storage policies apply; see step 11 backups.)
 - The editor listens with `onPaletteChange(source)`: sources "palette" and "recent" only mean the
   swatches changed; anything else is a color change (switches the eraser back to the last brush,
   refreshes the brush preview).
@@ -802,7 +804,7 @@ table, and any decisions that changed.
   nothing). Fixed with version stamps (below). After any upload, tell Owen to **wait ~10 minutes
   and reopen the tab** before testing.
 - **Before every commit that will be pushed, run `python tools/stamp_version.py`.** It stamps
-  `?v=<yyyymmddHHMM>` onto every reference (index.html's CSS/JS, every `import ... from "./x.js"`,
+  `?v=<yyyymmddHHMMSS>` onto every reference (index.html's CSS/JS, every `import ... from "./x.js"`,
   the fill worker URL). GitHub Pages lets browsers cache files ~10 min, and without stamps Safari
   ran new HTML with old cached JS (the "Draw with finger" switch appeared but did nothing). With
   stamps a page always gets matching code; only the HTML itself can be up to ~10 min stale, so
@@ -820,12 +822,16 @@ table, and any decisions that changed.
 | File | Purpose |
 |---|---|
 | `index.html` | Both screens (library, coloring) |
+| `manifest.webmanifest`, `icons/` | Home Screen identity and approved book icon |
+| `sw.js`, `offline-assets.js` | Offline files and verified app updates; generated contents list |
+| `js/offline.js` | App/offline window, downloads, install help, update and backup controls |
+| `js/backup.js` | Download/restore editable coloring backups |
 | `css/styles.css` | All styling; design tokens in `:root` |
 | `js/app.js` | Router: address → screen |
 | `js/library.js` | Reads `pages/pages.js`, builds page objects |
 | `js/gallery.js` | Library screens and cards |
 | `js/thumbnails.js` | Browser-made thumbnails (fallback) |
-| `js/storage.js` | IndexedDB (`thumbnails`, `artwork` stores) |
+| `js/storage.js` | IndexedDB (thumbnails, artwork, progress, progressThumbs); atomic backup merge |
 | `js/editor.js` | Coloring screen: layers, tools, taps, strokes, sliders, preview, fitting the page |
 | `js/lineart.js` | Loads a page, makes white see-through, returns the darkness map |
 | `js/fill.js`, `js/fill-worker.js` | Tap-to-fill |
@@ -844,9 +850,74 @@ table, and any decisions that changed.
 | `js/touch-input.js` | What each Pencil / finger / mouse action means; palm rejection; gestures |
 | `js/touch-debug.js` | Temporary on-screen touch log (`?debug` link or 5 title taps; "Hide log"; "Speed test") |
 | `js/speed-test.js` | Measures every brush on the device; largest smooth size per brush |
-| `tools/stamp_version.py` | Stamps a version on every file reference (run before each upload) |
+| `tools/stamp_version.py` | Stamps references and generates offline contents/hashes (before uploads) |
 | `js/settings.js` | Tweakable numbers |
 | `pages/pages.js` | The library list |
 | `tools/import_pages.py`, `import-pages.bat` | Import tool |
 | `serve.py`, `start-server.bat` | Local test server |
 | `README.md` | Owen's beginner guide (running, importing, settings) |
+
+## Home Screen, offline files and backups (step 11)
+
+- **Status:** Owen approved the PC check on 2026-10-21 ("it worked now what").
+  This checkpoint is for the hosted iPad installation/offline check. Wait for that report
+  before calling step 11 complete or starting step 12.
+- **Manifest and icons:** `manifest.webmanifest`, relative id/start_url/scope `./`, standalone,
+  no orientation lock. `index.html` links the manifest, 180px Apple icon and Apple standalone
+  metadata. User-approved original enchanted book/vines/slim pencil icon: `icons/enchanted-book-1024.png`;
+  derivatives 192/512 and Apple 180, all opaque square PNG. `icons/README.md` records built-in
+  generation and the final prompt. Earlier design options are retained but not cached offline.
+- **Library button:** App & offline opens a scrollable window with installation help, page
+  download status, Save all pages offline, backup/restore, update controls. Large controls,
+  existing CSS variables, sticky close button, portrait/landscape. It is outside the editor.
+- **Worker:** `sw.js` + generated `offline-assets.js`. The app shell cache is scoped to this
+  deployment path and versioned. It includes HTML/CSS/JS, pages.js, manifest, small icons,
+  prepared thumbnails and tiny SVG examples. Full raster outlines are NOT fetched for unopened
+  pages unless she chooses Save all pages offline. Opening one online caches it; first-install
+  opens are queued until the worker is ready. Bulk download uses two requests at a time and
+  resumes after interruption. Status counts the actual library, currently 10 pages (7 SVGs).
+- **Integrity:** `tools/stamp_version.py` now uses a seconds stamp, updates SW VERSION and its
+  importScripts query, and generates SHA-256 contents lists. Hash checks stop a mixed GitHub
+  deployment from replacing the working app. Text hashes normalize CRLF/LF for Windows/Git;
+  binaries are exact. Run this tool after ANY source/page changes before publishing. It has
+  only standard Python dependencies; the runtime app remains plain files with no build tools.
+- **Outlines:** separate persistent cache keys include content hashes. Existing downloads
+  survive app updates; changed art must be downloaded for that new revision. Keep page IDs
+  stable and avoid changing art beneath existing coloring. Master icon files are not cached.
+- **Updates:** installing workers wait normally. No automatic skipWaiting or reload. Update app
+  is offered only in the library, waits for the latest save (failed save blocks reload), and
+  refuses activation with other scoped windows open. A modal prevents navigation while busy.
+  An explicit successful handover reloads the app. Closing all windows also allows normal
+  activation. One previous shell bundle is kept for exact old module references. The worker
+  never opens or deletes the artwork database. Database stays version 2.
+- **Offline restart lesson:** serviceWorker.register can fail when reopening offline even with
+  a working installed worker. Read getRegistration first, keep the current controller as a
+  fallback, and keep offline controls working if checking for a new version fails.
+- **Storage isolation/backup:** WebKit Home Screen storage can be separate from Safari. Do not
+  tell Owen installation automatically moves her coloring. Before installing, Safari → Prepare
+  backup → Save backup file; after installing, Restore backup in the new app if needed, then
+  save all outlines offline there. The backup file remains in Files and is never modified.
+- **Backup implementation:** `js/backup.js`, custom `.finley` file, magic header + little-endian
+  JSON length + JSON index + original compressed Blob payloads. No enormous base64 string or
+  external libraries. Includes artwork PNG, gzip paint memory, progress previews/timestamps,
+  palettes/recents, brush settings, line-lock/build-up and extra brush. Excludes outlines,
+  undo history, touch-debug setting and temporary blending state. Backups include stored page
+  IDs even if not currently listed. File limits live in SETTINGS.
+- **Restore:** reads/validates the complete file (bounds, unique IDs, decoded images, decompressed
+  memory size where supported) before a confirmation and writes. `dbMergeArtwork` merges all
+  artwork/progress/previews in ONE transaction, reading saved dates inside it to keep newer
+  local work, including concurrent saves. Restores allowlisted preferences, reports failures;
+  finishing with Open library reloads UI caches. Online restores also try downloading current
+  outlines for listed restored pages. Missing/removed outlines require restoring their IDs.
+  No cloud sync, accounts, or uploads of artwork. No deletion of Safari data is required.
+- **Checks:** isolated Chrome profile under `/finley-coloring/`: installation and icon/layout,
+  offline library and uncached-page explanation; real UI stroke + immediate leave; backup
+  download/restoration into separate storage (color and gzip bytes exact), newer work kept,
+  settings transferred, truncated file rejected; all 10 outlines downloaded and real Daffodil /
+  both Tiger Lilies reopened offline; PNG download offline; deliberately incomplete update
+  rejected with old app retained; extra-window activation refused; successful update retains
+  downloaded outlines and artwork. No unexpected JavaScript errors. Real iPad Home Screen,
+  Files picker/download, Pencil feel and Safari offline restart still need Owen's hosted check.
+- **References:** https://webkit.org/tracking-prevention/ (Home Screen isolation),
+  https://webkit.org/blog/14403/updates-to-storage-policy/ (storage),
+  https://web.dev/articles/service-worker-lifecycle (update lifecycle).

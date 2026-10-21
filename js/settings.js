@@ -2,6 +2,16 @@
 // Sizes are in page pixels (a page is about 2048 x 2732 pixels).
 
 export const SETTINGS = {
+  // ---------- Offline access and backups (step 11) ----------
+  // If the offline helper stops replying, let her try again instead of waiting forever.
+  offlineReplyMs: 30000,
+  offlineDownloadReplyMs: 120000,
+  // Backups keep compressed pictures, not giant uncompressed copies of every canvas.
+  backupMaxPages: 2000,
+  backupMaxHeaderBytes: 2 * 1024 * 1024,
+  backupMaxFileBytes: 2 * 1024 * 1024 * 1024,
+  backupMaxImageBytes: 64 * 1024 * 1024,
+  backupMaxPixels: 16 * 1024 * 1024,
   // ---------- Blender and Blur (step 10, batch 3) ----------
   // Wider color sampling gives a gradual transition instead of a narrow smeared seam.
   // Each averaged tile is still calculated only once, never once per overlapping dab.
