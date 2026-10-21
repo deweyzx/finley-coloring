@@ -140,10 +140,10 @@ export const BRUSHES = {
   watercolor: {
     name: "Watercolor",
     icon: `<path d="M12 3.2 C9 7.8 6.3 11 6.3 14.6 a5.7 5.7 0 0 0 11.4 0 C17.7 11 15 7.8 12 3.2 Z" fill="currentColor" fill-opacity="0.25" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.2 14.8 a2.9 2.9 0 0 0 2.6 2.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`,
-    sizeRange: [6, 160],
+    sizeRange: [6, 130], // (was 160: too heavy at her drawing speed on her iPad)
     defaults: { size: 50, opacity: 0.45 },
     hardness: 0.65,
-    spacing: 0.2, // (was 0.07: far fewer dabs, to keep up on her iPad; the cloud-like edge hides the difference)
+    spacing: 0.3, // (was 0.07, then 0.2: far fewer dabs, to keep up on her iPad; the cloud-like edge hides the difference)
     pressure: { size: [0.55, 1], opacity: [0.45, 1], curve: 0.9 },
     wash: { wobble: 0.6, uneven: 0.5, granulate: 0.08, rimWidth: 0.1, rimGain: 2.2, middle: 0.85, rim: 0.8 },
     blend: "multiply",
@@ -176,10 +176,10 @@ export const BRUSHES = {
   glitter: {
     name: "Glitter",
     icon: `<path d="M12 3 L13.6 9.4 L20 11 L13.6 12.6 L12 19 L10.4 12.6 L4 11 L10.4 9.4 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M18.5 15.5 L19.2 17.8 L21.5 18.5 L19.2 19.2 L18.5 21.5 L17.8 19.2 L15.5 18.5 L17.8 17.8 Z" fill="currentColor"/><circle cx="5.5" cy="18.5" r="1.2" fill="currentColor"/><circle cx="19" cy="5" r="1" fill="currentColor"/>`,
-    sizeRange: [4, 150],
+    sizeRange: [4, 120], // (was 150: too heavy at her drawing speed on her iPad)
     defaults: { size: 30, opacity: 0.9 },
     hardness: 0.95,
-    spacing: 0.1,
+    spacing: 0.16, // (was 0.1: fewer dabs, looks the same)
     pressure: { size: [0.6, 1], opacity: [0.55, 1], curve: 0.8 },
     tilt: { widen: 1, opacity: 0.85, grainFill: 1 },
     grain: null,
@@ -193,10 +193,10 @@ export const BRUSHES = {
   metallic: {
     name: "Metallic",
     icon: `<path d="M5 19 C8 12 11 16 14 9 C15.5 5.5 18 4.5 20 5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><path d="M6.4 16.3 C8.6 12.6 10.6 14.6 12.8 9.6" fill="none" style="stroke: var(--surface)" stroke-width="1" stroke-linecap="round" opacity="0.9"/><path d="M19 13 L19.6 14.9 L21.5 15.5 L19.6 16.1 L19 18 L18.4 16.1 L16.5 15.5 L18.4 14.9 Z" fill="currentColor"/>`,
-    sizeRange: [3, 120],
+    sizeRange: [3, 60], // (was 120: too heavy at her drawing speed on her iPad)
     defaults: { size: 20, opacity: 1 },
     hardness: 0.8,
-    spacing: 0.08,
+    spacing: 0.16, // (was 0.08: half the dabs, looks the same)
     pressure: { size: [0.45, 1], opacity: [0.8, 1], curve: 0.8 },
     tilt: { widen: 0.8, opacity: 0.95, grainFill: 1 },
     grain: null,

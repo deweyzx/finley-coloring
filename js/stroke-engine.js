@@ -29,7 +29,7 @@
 //
 // The brushes themselves are described in brushes.js.
 
-import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE, GLITTER, GLITTER_SIZE, CLOUD, CLOUD_SIZE } from "./brushes.js?v=202610202202";
+import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE, GLITTER, GLITTER_SIZE, CLOUD, CLOUD_SIZE } from "./brushes.js?v=202610202217";
 
 export class StrokeEngine {
   constructor(width, height) {
@@ -68,6 +68,12 @@ export class StrokeEngine {
     // Smooth hair (hair streaks and nothing else special) uses its own quick loop, with the hair
     // pattern worked out once here into a fine table (16 steps across each hair).
     this.fastHair = !!(brush.bristles && !brush.wash && !brush.grain && !brush.noise && !brush.flow && !brush.soft && !brush.scatter && !brush.effect);
+    // Plain round dabs (marker, eraser, glitter, metallic, splatter drops) and watercolor get
+    // their own lean loops too: on her iPad the all-purpose loop below, with a branch for every
+    // brush feature, ran about 10x slower than this PC, the lean ones about 3x. Same results.
+    const plain = !brush.grain && !brush.bristles && !brush.noise && !brush.flow && !brush.soft;
+    this.fastPlain = plain && !brush.wash;
+    this.fastWash = plain && !!brush.wash;
     this.hairFine = this.fastHair ? makeHairTable(this.bristleTable, brush.bristles.strength) : null;
     this.washShift = [Math.floor(this.rand() * WASH_SIZE), Math.floor(this.rand() * WASH_SIZE)];
     // Watercolor rims: how far in from the edge the darker pooling reaches.
@@ -306,6 +312,17 @@ export class StrokeEngine {
     const sy = this.washShift[1];
     let rng = this.seed ^ ((x0 * 73856093) ^ (y0 * 19349663)); // quick random numbers for speckle
     if (rng === 0) rng = 1;
+
+    if (this.fastPlain || this.fastWash) {
+      const changed = this.fastPlain
+        ? plainRows(this, cx, cy, x0, y0, x1, y1, cos, sin, rLong, rShort, qa, qbRow, qcRow, peak, inner, edge)
+        : washRows(this, cx, cy, x0, y0, x1, y1, cos, sin, rLong, rShort, qa, qbRow, qcRow, peak, inner, edge, wobble, sx, sy);
+      if (changed) {
+        this.box = growBox(this.box, changed[0], changed[1], changed[2], changed[3]);
+        this.dirty = growBox(this.dirty, changed[0], changed[1], changed[2], changed[3]);
+      }
+      return;
+    }
 
     if (this.fastHair) {
       // Smooth hair: the same strokes and hair streaks, worked out the quick way (see hairRows).
@@ -1100,6 +1117,104 @@ function sprayRows(engine, cx, cy, x0, y0, x1, y1, cos, sin, rLong, rShort, qa, 
       if (next > c) cov[i] = next > cap ? cap : next;
     }
   }
+}
+
+// ---------- The lean loops for plain dabs and watercolor ----------
+// These do exactly the same sums as the all-purpose loop in stamp(), in the same order (so the
+// results are identical to the pixel), but with nothing else in the way: no checks for features
+// the brush doesn't have. Safari on her iPad runs loops like these several times faster.
+// Each returns the area of pixels it changed ([x0, y0, x1, y1]), or null if none.
+
+function plainRows(engine, cx, cy, x0, y0, x1, y1, cos, sin, rLong, rShort, qa, qbRow, qcRow, peak, inner, edge) {
+  const W = engine.width;
+  const cov = engine.coverage;
+  const clip = engine.clip;
+  let cx0 = W;
+  let cx1 = -1;
+  let cy0 = engine.height;
+  let cy1 = -1;
+  for (let y = y0; y <= y1; y++) {
+    const dy = y + 0.5 - cy;
+    const qb = qbRow * dy;
+    const qc = qcRow * dy * dy - 1;
+    const disc = qb * qb - 4 * qa * qc;
+    if (disc < 0) continue;
+    const root = Math.sqrt(disc);
+    const xs = Math.max(x0, Math.floor(cx + (-qb - root) / (2 * qa) - 0.5));
+    const xe = Math.min(x1, Math.ceil(cx + (-qb + root) / (2 * qa) - 0.5));
+    const row = y * W;
+    const clipRow = clip ? (y - clip.y) * clip.w - clip.x : 0;
+    const dys = dy * sin;
+    const dyc = dy * cos;
+    for (let x = xs; x <= xe; x++) {
+      if (clip && clip.mask[clipRow + x] === 0) continue; // outside the locked area
+      const i = row + x;
+      const c = cov[i];
+      if (c >= peak) continue; // already as strong as this dab could make it
+      const dx = x + 0.5 - cx;
+      const u = (dx * cos + dys) / rLong;
+      const v = (-dx * sin + dyc) / rShort;
+      const d2 = u * u + v * v;
+      if (d2 >= 1) continue;
+      const d = Math.sqrt(d2);
+      const value = (d <= inner ? 1 : (1 - d) / edge) * peak;
+      if ((value | 0) > c) {
+        cov[i] = value;
+        if (x < cx0) cx0 = x;
+        if (x > cx1) cx1 = x;
+        if (y < cy0) cy0 = y;
+        cy1 = y;
+      }
+    }
+  }
+  return cx1 < 0 ? null : [cx0, cy0, cx1, cy1];
+}
+
+function washRows(engine, cx, cy, x0, y0, x1, y1, cos, sin, rLong, rShort, qa, qbRow, qcRow, peak, inner, edge, wobble, sx, sy) {
+  const W = engine.width;
+  const cov = engine.coverage;
+  const clip = engine.clip;
+  const cm = CLOUD_SIZE - 1;
+  let cx0 = W;
+  let cx1 = -1;
+  let cy0 = engine.height;
+  let cy1 = -1;
+  for (let y = y0; y <= y1; y++) {
+    const dy = y + 0.5 - cy;
+    const qb = qbRow * dy;
+    const qc = qcRow * dy * dy - 1;
+    const disc = qb * qb - 4 * qa * qc;
+    if (disc < 0) continue;
+    const root = Math.sqrt(disc);
+    const xs = Math.max(x0, Math.floor(cx + (-qb - root) / (2 * qa) - 0.5));
+    const xe = Math.min(x1, Math.ceil(cx + (-qb + root) / (2 * qa) - 0.5));
+    const row = y * W;
+    const cloudRow = ((y + sx) & cm) * CLOUD_SIZE;
+    const clipRow = clip ? (y - clip.y) * clip.w - clip.x : 0;
+    const dys = dy * sin;
+    const dyc = dy * cos;
+    for (let x = xs; x <= xe; x++) {
+      if (clip && clip.mask[clipRow + x] === 0) continue; // outside the locked area
+      const i = row + x;
+      const c = cov[i];
+      if (c >= peak) continue; // already as strong as this dab could make it
+      const dx = x + 0.5 - cx;
+      const u = (dx * cos + dys) / rLong;
+      const v = (-dx * sin + dyc) / rShort;
+      // the wet edge wanders in and out in soft, cloud-like shapes
+      const d = Math.sqrt(u * u + v * v) + (CLOUD[cloudRow + ((x + sy) & cm)] / 255 - 0.5) * wobble;
+      if (d >= 1) continue;
+      const value = (d <= inner ? 1 : (1 - d) / edge) * peak;
+      if ((value | 0) > c) {
+        cov[i] = value;
+        if (x < cx0) cx0 = x;
+        if (x > cx1) cx1 = x;
+        if (y < cy0) cy0 = y;
+        cy1 = y;
+      }
+    }
+  }
+  return cx1 < 0 ? null : [cx0, cy0, cx1, cy1];
 }
 
 // ---------- The quick smooth hair ----------

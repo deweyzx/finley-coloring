@@ -52,9 +52,13 @@ table, and any decisions that changed.
   in white and uses the app's real guess-ahead distance, because the first version said glitter /
   metallic / watercolor were smooth while real strokes had shown 92-100% (those real strokes were
   also before the 60-per-second pace); each stroke's log line now shows its speed (screen px/s).
-  All max sizes kept. **Waiting:** Speed test again on a real PNG page (Daffodils) at her usual
-  zoom + real strokes with watercolor 160 / glitter 150 / metallic 120 / smooth hair 200 to
-  compare. Batch 3 only after that.
+  Then real strokes on Daffodils: **Finley draws at 1600-2300 screen px/s** (the test assumed 600);
+  smooth hair 200 felt fine (38% at 2301 px/s); watercolor 160 laggy, glitter 150 slightly laggy,
+  metallic 120 laggy (97-98%). Owen: no more speed tests - make them cheaper, pick conservative max
+  sizes, Finley just says smooth or laggy. **Committed:** lean loops for plain dabs and watercolor
+  (identical results), wider spacing for watercolor (0.3) / glitter (0.16) / metallic (0.16),
+  **new max sizes: watercolor 130 (was 160), glitter 120 (was 150), metallic 60 (was 120)**; all
+  others unchanged. **Waiting:** Finley tries them (smooth or laggy). Batch 3 only after that.
   Batch 3 only after Owen has tested batch 2 on her iPad.
 
 ## How to work with Owen
@@ -415,6 +419,21 @@ table, and any decisions that changed.
   0.27% of pixels differ by > 10, at the thin tips; indistinguishable in a 2x before/after).
   PC ms per second of fast drawing at zoom 0.23: size 50: 65 -> ~25, 110: 103 -> 24, 200: 153
   -> 41 (her iPad ran ~10x the PC number as a %: 149% at 200 before).
+- **Calibration from her real strokes (Daffodil, zoom 0.231):** her iPad vs this PC, same work:
+  smooth hair 200 (lean `hairRows` loop) ~3x for dabs, ~1.9x for drawing; metallic 120 (then the
+  all-purpose stamp loop) ~10x for dabs, ~2.4x for drawing. So Safari runs the all-purpose loop
+  in `stamp()` (a branch per brush feature) far worse than lean loops. Added `plainRows()` (plain
+  round dabs: marker, eraser, glitter, metallic, splatter drops) and `washRows()` (watercolor):
+  the same sums in the same order - identical pictures (216 of 216 cases). Pencil (grain) and the
+  airbrush (own loop) are unchanged.
+- **Choosing max sizes** (simulator `measureLike`: her zoom 0.231, 240 samples/s, the app's pace
+  and guess-ahead; iPad % estimate = (PC dab ms x 3.2 + PC drawing ms x 2.5) / 10, target <= 45%
+  at 2300 px/s): watercolor 130 (~43%), glitter 120 (~38%), metallic 60 (~43%; metallic's cost is
+  mostly the shine drawn on each update, so spacing alone didn't help much). Check: smooth hair
+  200 estimates 40% (real 38%), marker 120 42%. Spacing changes vs before (sample sheets): glitter
+  0.16 avg 1.2/255, metallic 0.16 avg ~1/255, watercolor 0.3 avg ~2/255 - all at the edges.
+  Saved sizes above the new maximums are clamped (brushSettings). If Finley finds one still
+  laggy: lower that max further, or (metallic) make its shine cheaper.
 - **Speed test vs real strokes:** the first version drew on a hidden layer with a tiny guess
   ahead; it said glitter 150 / metallic 120 / watercolor 160 were smooth (16-22%) while real
   strokes had shown 92-100% (taken before the 60-per-second pace, which halves drawing at those

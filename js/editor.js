@@ -2,21 +2,21 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=202610202202";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610202202";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610202202";
-import { setupColorPicker } from "./color-picker.js?v=202610202202";
-import { setupSavePicture } from "./save-picture.js?v=202610202202";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610202202";
-import { StrokeEngine } from "./stroke-engine.js?v=202610202202";
-import { createSlider } from "./slider.js?v=202610202202";
-import { History } from "./history.js?v=202610202202";
-import { Viewport } from "./viewport.js?v=202610202202";
-import { setupInput } from "./touch-input.js?v=202610202202";
-import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=202610202202";
-import { runSpeedTest } from "./speed-test.js?v=202610202202";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610202202";
-import { SETTINGS } from "./settings.js?v=202610202202";
+import { loadImage, drawLineArt } from "./lineart.js?v=202610202217";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=202610202217";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=202610202217";
+import { setupColorPicker } from "./color-picker.js?v=202610202217";
+import { setupSavePicture } from "./save-picture.js?v=202610202217";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=202610202217";
+import { StrokeEngine } from "./stroke-engine.js?v=202610202217";
+import { createSlider } from "./slider.js?v=202610202217";
+import { History } from "./history.js?v=202610202217";
+import { Viewport } from "./viewport.js?v=202610202217";
+import { setupInput } from "./touch-input.js?v=202610202217";
+import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=202610202217";
+import { runSpeedTest } from "./speed-test.js?v=202610202217";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=202610202217";
+import { SETTINGS } from "./settings.js?v=202610202217";
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
