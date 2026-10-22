@@ -1,14 +1,16 @@
 // backup.js - moves her coloring between Safari and the Home Screen app, or to another device.
 // A .finley file has a small contents list followed by the original compressed image blobs.
 // This avoids turning hundreds of pictures into a huge text string in the iPad's memory.
-import { dbEntries, dbGet, dbMergeArtwork, storedBlob } from "./storage.js?v=20261022003833";
-import { SETTINGS } from "./settings.js?v=20261022003833";
+import { dbEntries, dbGet, dbMergeArtwork, storedBlob } from "./storage.js?v=20261022011129";
+import { readSketches, validSketch } from './sketchbook.js?v=20261022011129';
+import { SETTINGS } from "./settings.js?v=20261022011129";
 
 const MAGIC = new TextEncoder().encode("FINLEY-COLORING-BACKUP-1\n");
 const KEYS = ["brush-settings", "recent-colors", "palettes", "line-lock", "build-up", "extra-brush"];
 const describe = blob => blob ? { size: blob.size, type: blob.type } : null;
 
 export async function makeBackup(onProgress = () => {}) {
+  const sketchbook = await readSketches();
   const entries = await dbEntries("progress");
   const pages = [], chunks = [];
   for (const [id] of entries) {
@@ -29,12 +31,13 @@ export async function makeBackup(onProgress = () => {}) {
     const value = localStorage.getItem(key);
     if (value !== null) settings[key] = value;
   }
-  const json = new TextEncoder().encode(JSON.stringify({ format: 1, created: Date.now(), settings, pages }));
+  const json = new TextEncoder().encode(JSON.stringify({ format: 1, created: Date.now(), settings, pages, sketchbook }));
+  if (json.length > SETTINGS.backupMaxHeaderBytes || sketchbook.length > SETTINGS.backupMaxPages) throw new Error("This sketchbook is too large for a single backup.");
   const size = new Uint8Array(4);
   new DataView(size.buffer).setUint32(0, json.length, true);
   const blob = new Blob([MAGIC, size, json, ...chunks], { type: "application/octet-stream" });
   if (blob.size > SETTINGS.backupMaxFileBytes || pages.length > SETTINGS.backupMaxPages) throw new Error("This coloring collection is too large for a single backup.");
-  return { blob, count: pages.length, filename: `finleys-coloring-${new Date().toISOString().slice(0, 10)}.finley` };
+  return { blob, count: pages.length + sketchbook.filter(sheet => !entries.has(sheet.id)).length, filename: `finleys-coloring-${new Date().toISOString().slice(0, 10)}.finley` };
 }
 
 function invalid() { throw new Error("This file isn't a complete coloring-book backup. Please choose the original .finley file."); }
@@ -52,6 +55,15 @@ export async function readBackup(file, onProgress = () => {}) {
   try { data = JSON.parse(await file.slice(MAGIC.length + 4, MAGIC.length + 4 + length).text()); }
   catch { invalid(); }
   if (!data || data.format !== 1 || !Array.isArray(data.pages) || data.pages.length > SETTINGS.backupMaxPages) invalid();
+  // This optional field extends format 1: all older coloring backups still open.
+  // Blank sheets need contents entries too, even if they have no saved paint yet.
+  const sketchbook = data.sketchbook ?? [];
+  if (!Array.isArray(sketchbook) || sketchbook.length > SETTINGS.backupMaxPages) invalid();
+  const sketchIds = new Set();
+  for (const sheet of sketchbook) {
+    if (!validSketch(sheet) || sketchIds.has(sheet.id)) invalid();
+    sketchIds.add(sheet.id);
+  }
   const records = [], ids = new Set();
   let offset = MAGIC.length + 4 + length;
   const take = async (part, types, required = false) => {
@@ -64,6 +76,7 @@ export async function readBackup(file, onProgress = () => {}) {
   };
   for (const page of data.pages) {
     if (typeof page.id !== "string" || !page.id.length || page.id.length > 200 || /[\x00-\x1f/\\]/.test(page.id) || ids.has(page.id) || !Number.isFinite(page.updated) || page.updated <= 0) invalid();
+    if (/^sketch-[a-f0-9]{32}$/.test(page.id) && !sketchIds.has(page.id)) invalid();
     ids.add(page.id);
     const color = await take(page.color, ["image/png"], true);
     const memory = await take(page.memory, ["application/gzip", "" ]);
@@ -92,7 +105,7 @@ export async function readBackup(file, onProgress = () => {}) {
     const value = data.settings?.[key];
     if (typeof value === "string" && value.length <= SETTINGS.backupMaxHeaderBytes) settings[key] = value;
   }
-  return { records, settings };
+  return { records, settings, sketchbook };
 }
 
 async function checkPNG(blob) {
@@ -116,7 +129,11 @@ async function checkImage(blob, limit) {
 }
 
 export async function restoreBackup(backup) {
-  const result = await dbMergeArtwork(backup.records);
+  const result = await dbMergeArtwork(backup.records, backup.sketchbook || []);
+  for (const sheet of backup.sketchbook || []) {
+    const saved = await dbGet('sketchbook', sheet.id);
+    if (!validSketch(saved)) throw new Error("The restored sketchbook couldn't be verified. Keep your backup file and try again.");
+  }
   // Read the bytes back before saying "restored". This catches a storage failure while
   // the backup is still selected, and never mistakes an unreadable picture for success.
   for (const record of backup.records) {

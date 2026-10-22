@@ -1,9 +1,9 @@
 // gallery.js - the library screens: all categories -> one category -> one sub-category.
 // They all use the same grid of cards; only the cards and the header change.
 
-import { categories, coverPage, problems, findPage } from "./library.js?v=20261022003833";
-import { getThumbnailURL } from "./thumbnails.js?v=20261022003833";
-import { getPreviewURL, getProgressTimes, previewsReady } from "./autosave.js?v=20261022003833";
+import { categories, coverPage, problems, findPage, allLibraryPages, createSketch } from "./library.js?v=20261022011129";
+import { getThumbnailURL } from "./thumbnails.js?v=20261022011129";
+import { getPreviewURL, getProgressTimes, previewsReady } from "./autosave.js?v=20261022011129";
 
 const grid = document.getElementById("gallery-grid");
 const titleEl = document.getElementById("library-title");
@@ -14,7 +14,22 @@ const sectionTitle = document.getElementById("library-section-title");
 const scroll = document.getElementById("library-scroll");
 const continueCard = document.getElementById("continue-card");
 const search = document.getElementById('library-search');
-const allPages = categories.flatMap(cat=>cat.subcategories.flatMap(sub=>sub.pages));
+const newSketchButton = document.getElementById('new-sketch');
+let creatingSketch = false;
+newSketchButton.addEventListener('click', async () => {
+  if (creatingSketch) return;
+  creatingSketch = true; newSketchButton.disabled = true;
+  const address = location.hash;
+  try {
+    const page = await createSketch();
+    // If she went Back during storage work, keep the new sheet without pulling her back.
+    if (location.hash === address) location.hash = `#/page/${page.id}`;
+  } catch (error) {
+    noticeEl.textContent = "The new sheet couldn't be saved. Close other coloring-book tabs and try again. Your drawings are kept.";
+    noticeEl.hidden = false;
+    console.error(error);
+  } finally { creatingSketch = false; newSketchButton.disabled = false; }
+});
 let browsing = null;
 function showView(title,crumb,back,cards,home=false){
   browsing={title,crumb,back,cards,home};search.value='';refreshView();
@@ -22,7 +37,7 @@ function showView(title,crumb,back,cards,home=false){
 function refreshView(){
   if(!browsing)return;
   const query=search.value.trim().toLocaleLowerCase();
-  const cards=query?allPages.filter(page=>`${page.title} ${page.subcategory.name} ${page.subcategory.category.name}`.toLocaleLowerCase().includes(query)).map(page=>({title:page.title,detail:`${page.subcategory.category.name} / ${page.subcategory.name}`,cover:page,pages:[page],href:`#/page/${encodeURIComponent(page.id)}`})):browsing.cards;
+  const cards=query?allLibraryPages().filter(page=>`${page.title} ${page.subcategory.name} ${page.subcategory.category.name}`.toLocaleLowerCase().includes(query)).map(page=>({title:page.title,detail:`${page.subcategory.category.name} / ${page.subcategory.name}`,cover:page,pages:[page],href:`#/page/${encodeURIComponent(page.id)}`})):browsing.cards;
   setHeader(query?'Search results':browsing.title,query?'':browsing.crumb,query?'#/':browsing.back);
   const total=countText(cards.reduce((sum,card)=>sum+card.pages.length,0));
   document.getElementById('library-count').textContent=query?countText(cards.length):`${cards.some(card=>card.stacked)?`${cards.length} collections · `:''}${total}`;
@@ -41,6 +56,7 @@ if (problems.length) {
 }
 
 export function showLibrary() {
+  newSketchButton.hidden = true;
   showView(APP_NAME, "", null, categories.map((cat) => ({
     title: cat.name,
     detail: countText(cat.pageCount),
@@ -52,6 +68,7 @@ export function showLibrary() {
 }
 
 export function showCategory(cat) {
+  newSketchButton.hidden = true;
   showView(cat.name, "", "#/", cat.subcategories.map((sub) => ({
     title: sub.name,
     detail: countText(sub.pages.length),
@@ -63,7 +80,9 @@ export function showCategory(cat) {
 }
 
 export function showSubcategory(sub) {
-  showView(sub.name, sub.category.name, `#/${sub.category.folder}`, sub.pages.map((page) => ({
+  const sketchbook = !!sub.category.sketchbook;
+  newSketchButton.hidden = !sketchbook;
+  showView(sketchbook ? 'Sketchbook' : sub.name, sketchbook ? 'Your own drawings, saved one sheet at a time' : sub.category.name, sketchbook ? '#/' : `#/${sub.category.folder}`, sub.pages.map((page) => ({
     title: page.title,
     cover: page,
     pages: [page],
@@ -105,7 +124,7 @@ async function renderCards(cards, home = false) {
     colored.sort((a, b) => times.get(b.id) - times.get(a.id));
     card.colored = colored[0] || null;
     card.started = colored.length;
-    card.pageCount = card.pages?.length || 1;
+    card.pageCount = card.pages?.length ?? 1;
     if (card.stacked) card.detail = countText(card.pageCount) + (card.started ? `, ${card.started} started` : "");
   }
 
@@ -119,7 +138,7 @@ async function renderCards(cards, home = false) {
   if (cards.length === 0) {
     const empty = document.createElement("p");
     empty.className = "empty-message";
-    empty.textContent = search.value.trim() ? 'No pages match this search.' : 'No pages here yet.';
+    empty.textContent = search.value.trim() ? 'No pages match this search.' : !newSketchButton.hidden ? 'Your sketchbook is ready. Tap New blank page to start drawing.' : 'No pages here yet.';
     grid.append(empty);
     return;
   }

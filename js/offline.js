@@ -1,12 +1,12 @@
 // offline.js - Home Screen help, offline downloads, updates and moving her saved coloring.
 // The separate service worker keeps downloaded files; IndexedDB still keeps her artwork.
-import { categories, findPage } from "./library.js?v=20261022003833";
-import { SETTINGS } from "./settings.js?v=20261022003833";
-import { makeBackup, readBackup, restoreBackup } from "./backup.js?v=20261022003833";
-import { askConfirm } from "./dialogs.js?v=20261022003833";
-import { openModal, closeModal } from './modal.js?v=20261022003833';
+import { categories, findPage } from "./library.js?v=20261022011129";
+import { SETTINGS } from "./settings.js?v=20261022011129";
+import { makeBackup, readBackup, restoreBackup } from "./backup.js?v=20261022011129";
+import { askConfirm } from "./dialogs.js?v=20261022011129";
+import { openModal, closeModal } from './modal.js?v=20261022011129';
 
-const pages = categories.flatMap(c => c.subcategories.flatMap(s => s.pages));
+const pages = categories.flatMap(c => c.subcategories.flatMap(s => s.pages)).filter(p => p.kind !== 'sketch');
 let registration = null, panel = null, busy = false, installPrompt = null;
 let backupURL = null, prepare, libraryVisible;
 let restored = false;
@@ -62,7 +62,7 @@ export function setupOffline({ prepareForReload, isLibrary }) {
     </section>
     <section class="app-section"><h3>Color without Wi-Fi</h3>
       <p id="offline-status" role="status">Getting offline access ready…</p>
-      <p>Pages you open online are saved on this device. Save the whole library here before going offline.</p>
+      <p>Pages you open online are saved on this device. Save the whole library here before going offline. Blank sketchbook sheets work offline automatically.</p>
       <button id="download-pages" class="dialog-button secondary">Save all pages offline</button>
     </section>
     <section class="app-section"><h3>Move or back up your coloring</h3>
@@ -241,20 +241,20 @@ async function importFile(file) {
   await readyToChange();
   $("backup-status").textContent = "Checking your backup…";
   const backup = await readBackup(file, (n,total) => { $("backup-status").textContent = `Checking picture ${n} of ${total}…`; });
-  const yes = await askConfirm({title:"Restore your coloring?", text:`This backup has ${backup.records.length} colored pages. Newer coloring already on this device is kept. Your palettes and brush settings will switch to the backup's settings.`, confirmLabel:"Restore", cancelLabel:"Keep it as it is"});
+  const yes = await askConfirm({title:"Restore your coloring?", text:`This backup has ${backup.records.length} colored pages and ${backup.sketchbook.length} sketchbook sheets (including empty sheets). Newer coloring already on this device is kept. Your palettes and brush settings will switch to the backup's settings.`, confirmLabel:"Restore", cancelLabel:"Keep it as it is"});
   if (!yes) { $("backup-status").textContent = "Nothing changed."; return; }
   const result = await restoreBackup(backup);
   // The backup holds her paint, not the original outlines. Save those separately when online.
   let outlineNote = "Go online and use Save all pages offline to save the outlines too.";
   if (currentWorker() && navigator.onLine) {
-    const files = backup.records.map(r => findPage(r.id)?.file).filter(Boolean);
+    const files = backup.records.map(r => findPage(r.id)).filter(p => p && p.kind !== 'sketch').map(p => p.file);
     $("backup-status").textContent = "Coloring restored. Saving its outlines for offline use…";
     try {
       const saved = await request(currentWorker(), {type:"DOWNLOAD", files});
       if (!saved.failed) outlineNote = "Their current outlines are ready offline too.";
     } catch { /* The coloring is already safe even if outlines couldn't download. */ }
   }
-  $("backup-status").textContent = `Restored ${result.added} pages; refreshed ${result.refreshed} matching pages; kept ${result.kept} newer pages. ${outlineNote}${result.settingsSaved ? "" : " This browser couldn't remember the restored settings."}`;
+  $("backup-status").textContent = `Restored ${result.added} colored pages and merged ${backup.sketchbook.length} sketchbook sheets; refreshed ${result.refreshed} matching pages; kept ${result.kept} newer pages. ${outlineNote}${result.settingsSaved ? "" : " This browser couldn't remember the restored settings."}`;
   restored = true;
   $("app-done").textContent = "Open library";
   // Wait for a fresh tap before reloading palettes and library previews from the database.

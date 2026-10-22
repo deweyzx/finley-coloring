@@ -1,11 +1,11 @@
 // The editor's Pages drawer. Browse with small thumbnails; only opening a page loads its art.
-import { categories } from './library.js?v=20261022003833';
-import { getProgressTimes, getPreviewURL, previewsReady } from './autosave.js?v=20261022003833';
-import { getThumbnailURL } from './thumbnails.js?v=20261022003833';
+import { categories, allLibraryPages, createSketch } from './library.js?v=20261022011129';
+import { getProgressTimes, getPreviewURL, previewsReady } from './autosave.js?v=20261022011129';
+import { getThumbnailURL } from './thumbnails.js?v=20261022011129';
 
 export function setupPageBrowser({currentPage, prepareChange, close}) {
   const get=id=>document.getElementById(id), content=get('pages-content'), search=get('pages-search');
-  const all=categories.flatMap(cat=>cat.subcategories.flatMap(sub=>sub.pages));
+  let all=[];
   let category=null, subcategory=null, times=new Map(), generation=0, observer=null, changing=false;
   const status=get('pages-status');
   const up=get('pages-up');
@@ -29,6 +29,7 @@ export function setupPageBrowser({currentPage, prepareChange, close}) {
     button.append(copy,arrow);button.addEventListener('click',choose);return button;
   }
   function render(){
+    all=allLibraryPages();
     const round=++generation;observer?.disconnect();content.replaceChildren();content.scrollTop=0;
     const query=search.value.trim().toLocaleLowerCase();
     get('pages-count').textContent=`${all.length} pages`;
@@ -37,7 +38,7 @@ export function setupPageBrowser({currentPage, prepareChange, close}) {
     if(!query&&!subcategory){
       content.classList.remove('pages-grid');
       for(const item of category?category.subcategories:categories)content.append(group(item.name,item.pages?.length??item.pageCount,()=>{
-        if(category)subcategory=item;else category=item;render();
+        if(category)subcategory=item;else { category=item; if(item.sketchbook)subcategory=item.subcategories[0]; }render();
       }));return;
     }
     content.classList.add('pages-grid');
@@ -46,6 +47,24 @@ export function setupPageBrowser({currentPage, prepareChange, close}) {
     observer=new IntersectionObserver(entries=>{
       for(const entry of entries){if(!entry.isIntersecting||round!==generation)continue;observer.unobserve(entry.target);loadThumb(entry.target,round);}
     },{root:content,rootMargin:'200px 0px'});
+    if (subcategory?.category.sketchbook && !query) {
+      const add = document.createElement('button'); add.type = 'button'; add.className = 'text-button primary';
+      add.textContent = '+ New blank page';
+      add.addEventListener('click', async () => {
+        if (changing) return;
+        changing = true; add.disabled = true; status.textContent = 'Saving your coloring…';
+        try {
+          if (!await prepareChange()) throw new Error('Your coloring is not saved yet. Please try again.');
+          if (round !== generation) return;
+          const page = await createSketch();
+          if (round !== generation) return;
+          close(); location.hash = `#/page/${page.id}`;
+        } catch (error) { if (round === generation) status.textContent = error.message; }
+        finally { changing = false; add.disabled = false; }
+      });
+      content.append(add);
+      if (!list.length) status.textContent = 'Create your first sheet to start drawing.';
+    }
     for(const page of list){
       const card=document.createElement('button');card.type='button';card.className='drawer-page';card.dataset.page=page.id;
       if(currentPage()?.id===page.id)card.setAttribute('aria-current','page');

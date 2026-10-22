@@ -5,10 +5,10 @@
 //   #/flowers/tulips    -> the pages in Tulips
 //   #/page/tulips       -> coloring the page "tulips"
 
-import { findCategory, findSubcategory, findPage } from "./library.js?v=20261022003833";
-import { showLibrary, showCategory, showSubcategory } from "./gallery.js?v=20261022003833";
-import { openEditor, closeEditor, prepareAppReload, preparePageChange, showToast } from "./editor.js?v=20261022003833";
-import { setupOffline, offlineBusy } from "./offline.js?v=20261022003833";
+import { findCategory, findSubcategory, findPage, loadSketchbook } from "./library.js?v=20261022011129";
+import { showLibrary, showCategory, showSubcategory } from "./gallery.js?v=20261022011129";
+import { openEditor, closeEditor, prepareAppReload, preparePageChange, showToast } from "./editor.js?v=20261022011129";
+import { setupOffline, offlineBusy } from "./offline.js?v=20261022011129";
 
 const galleryScreen = document.getElementById("gallery-screen");
 const coloringScreen = document.getElementById("coloring-screen");
@@ -32,6 +32,10 @@ async function showRoute(target) {
   if (target !== (location.hash || '#/')) return;
   // A browser Back gesture during a restore/update must not open a page being replaced.
   if (offlineBusy()) { location.replace(previousHash); return; }
+  // Load only the small sheet list, never full drawings, before resolving saved links.
+  try { await loadSketchbook(); }
+  catch { showToast("The sketchbook couldn't open. Close other coloring-book tabs and try again. Your saved pictures are kept."); }
+  if (target !== (location.hash || '#/')) return;
   const parts = target
     .replace(/^#\/?/, "")
     .split("/")
@@ -68,6 +72,7 @@ async function showRoute(target) {
 
   const cat = findCategory(parts[0]);
   if (!cat) return redirect("#/");
+  if (cat.sketchbook) return showSubcategory(cat.subcategories[0]);
   if (parts.length === 1) return showCategory(cat);
 
   const sub = findSubcategory(cat, parts[1]);

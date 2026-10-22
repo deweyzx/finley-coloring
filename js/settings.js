@@ -2,6 +2,9 @@
 // Sizes are in page pixels (a page is about 2048 x 2732 pixels).
 
 export const SETTINGS = {
+  // Blank sketchbook sheets use the same detailed portrait size as imported pages.
+  sketchWidth: 2048,
+  sketchHeight: 2732,
   // ---------- Opening animation (step 12, part 2) ----------
   // The approved sequence lasts about 2.9 seconds; its individual cues live in the
   // --opening-* CSS variables. These limits keep skipping and failed image loads gentle.

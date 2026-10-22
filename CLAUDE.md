@@ -9,6 +9,13 @@ table, and any decisions that changed.
 
 ## Resume here — current status (2026-10-22)
 
+- **Current addition:** Sketchbook, version `20261022011129`, implemented for Owen's request
+  for reusable blank white sheets, each saved as its own drawing. This interrupts the final
+  minimal-theme round. New sheets have permanent ids, numbered names and previews; the library
+  and Pages drawer both offer New blank page. The detailed handoff is at the end of this guide.
+  iPad acceptance is pending. Continue the recent direct-iPad upload workflow; no separate
+  Owen PC acceptance is claimed. All larger brushes/rotation and Autumn Cottage are accepted.
+
 - **Step 11 is complete and accepted on the iPad.** Steps 1–11 are finished.
 - **Step 12 part 1 is complete and accepted on PC and her iPad.** Owen chose splash
   **D**, font pairing **1 (Literata + Figtree)**, the new two-line header, "Where you left off",
@@ -47,20 +54,22 @@ table, and any decisions that changed.
   was uploaded as f70d0ae. Owen then reported "everything worked great", accepting Ocean
   Dreams on her iPad. Owen then said "okay keep working", authorizing Autumn Cottage next
   under the requested local-checks -> direct-iPad workflow. Autumn Cottage `20261021235410`
-  passed local checks and is ready for checkpoint/upload; iPad acceptance is pending. The
+  passed local checks, was uploaded as 400a25a and verified live. Owen confirmed its iPad
+  test with "it worked good" on 2026-10-22. The
   minimal theme remains unbuilt.
   A future brush-column request is recorded below; it is not part of this implementation.
 - **Earlier step 11 acceptance:** after repair 173f41d, Owen said "everything returned". He then explicitly
   confirmed the entire final checklist "all worked perfectly": Save all pages offline showed
   10 of 10; the installed app reopened in Airplane Mode; a colored page opened, a new stroke
   survived leaving/reopening, and rotation worked. This supersedes older pending-retest notes.
-- **Current repair:** faster Watercolor at the retained maximum200, version `20261022003833`.
-  Local checks passed; direct iPad retest is next. After b14c638 / `20261022001928`, Owen
-  reported "watercolor slightly laggy everything else perfect". Rotation and the other ten
-  expanded brush sizes are accepted; watercolor is the only reported issue in that update.
-- **Previous app checkpoint:** 400a25a, Autumn Cottage, version `20261021235410`, committed/
-  pushed and live files verified. Its iPad report has not yet been supplied; do not mark
-  Autumn Cottage accepted based on this new feature request. Minimal remains unbuilt.
+- **Latest accepted app checkpoint:** d1c2df1, faster Watercolor at the retained maximum200,
+  version `20261022003833`, committed/pushed to main and verified live. Owen confirmed on
+  2026-10-22: "no lag ojn the watercolour". All eleven expanded brush sizes and two-finger
+  canvas rotation are now accepted on her iPad. This supersedes the earlier watercolor lag
+  report after b14c638 / `20261022001928`.
+- **Previous accepted app checkpoint:** 400a25a, Autumn Cottage, version `20261021235410`,
+  committed/pushed and live files verified. Owen explicitly confirmed its iPad test with
+  "it worked good" on 2026-10-22. Minimal remains unbuilt; final polish follows it.
 - **Previous accepted app checkpoint:** f70d0ae, Ocean Dreams, version `20261021233948`; committed
   and pushed to main, with live files verified. Local checks passed; Owen accepted her iPad
   checklist ("everything worked great"). Separate Owen PC approval was explicitly skipped.
@@ -106,8 +115,10 @@ table, and any decisions that changed.
   checkpoint in all three guides. The subsequent Ocean Dreams iPad acceptance and Autumn
   Cottage implementation/direct-iPad handoff were included in 400a25a. This checkpoint adds
   the requested expanded brush ranges and rotation as b14c638. This repair checkpoint records
-  their iPad acceptance except watercolor, plus its optimization and measurements in all
-  three guides.
+  their initial iPad acceptance except watercolor, plus its optimization and measurements in all
+  three guides. The subsequent no-lag watercolor and Autumn Cottage iPad acceptances are recorded in all three guides;
+  these documentation-only acceptance edits are saved locally for the next approved checkpoint,
+  included with the Sketchbook checkpoint. Previous published app code was d1c2df1.
   Themes remain separate test rounds.
 
 ### Accepted checkpoints
@@ -123,9 +134,9 @@ table, and any decisions that changed.
 | a944bea, version 20261021201511 | Compact library, coloring controls, Pages drawer and preview-server repair | Uploaded; PC and iPad accepted |
 | 153d049, version 20261021211413 | Midnight Forest appearance, remembered selection and keyboard theme radios | Uploaded; PC and iPad accepted |
 | f70d0ae, version 20261021233948 | Ocean Dreams appearance and fixed wave preview | Uploaded; local checks and her iPad accepted; separate PC approval skipped by request |
-| 400a25a, version 20261021235410 | Autumn Cottage appearance and fixed leaf preview | Uploaded; local checks passed; iPad report pending |
+| 400a25a, version 20261021235410 | Autumn Cottage appearance and fixed leaf preview | Uploaded; local checks passed; iPad accepted ("it worked good") |
 | b14c638, version 20261022001928 | Larger brush ceilings, canvas rotation, upright Fit/export | iPad accepted except slightly laggy watercolor |
-| This checkpoint, version 20261022003833 | Faster watercolor, retained max200 and texture | Local checks passed; iPad retest pending |
+| d1c2df1, version 20261022003833 | Faster watercolor, retained max200 and texture | Uploaded; local checks passed; iPad accepted, no lag |
 
 ## Where we are
 
@@ -207,13 +218,15 @@ table, and any decisions that changed.
   uploaded as 153d049, and passed her iPad test ("everything worked"). Ocean Dreams is now
   built as `20261021233948`, uploaded as f70d0ae under Owen's direct-iPad authorization, and
   accepted on her iPad ("everything worked great"). Autumn Cottage is now built as
-  `20261021235410`, local checks passed; direct upload for iPad testing is authorized. Wait
-  for its iPad acceptance before the separate minimal theme round. The illustrated brush
-  column remains deferred.
+  `20261021235410`, uploaded as 400a25a and verified live after local checks. Owen accepted
+  Autumn Cottage on her iPad ("it worked good", 2026-10-22). The separate minimal theme round
+  and final polish remain; the illustrated brush column stays deferred.
 - **New request, 2026-10-22:** Owen requested a bigger watercolor maximum, then clarified
   bigger maxima for all brushes, plus finger rotation while zoomed. These updates interrupt
-  the remaining theme work. Her iPad accepted rotation and the other brushes; watercolor was slightly laggy.
-  Its focused speed repair is ready for the iPad retest. They do not imply an Autumn Cottage acceptance report. See the final section.
+  the remaining theme work. Her iPad accepted rotation and the other brushes, then accepted
+  watercolor200 after repair d1c2df1 ("no lag ojn the watercolour", 2026-10-22). All eleven
+  expanded limits and rotation are accepted. Owen separately accepted Autumn Cottage on her
+  iPad ("it worked good"). See the final sections.
 
 ## How to work with Owen
 
@@ -264,7 +277,8 @@ table, and any decisions that changed.
 | 9 | Export the finished picture to Photos | ✅ |
 | 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | ✅ all three batches confirmed on iPad |
 | 11 | Installable + offline (manifest, service worker, icons), coloring backup/transfer | ✅ PC and installed iPad app accepted, including offline/reopen |
-| 12 | Magical storybook look, Themes, polish | parts 1–3 PC/iPad accepted; both compact mockups approved; real compact interface PC/iPad accepted; Midnight Forest PC/iPad accepted; Ocean Dreams iPad accepted; Autumn Cottage direct iPad test pending; minimal later |
+| Sketchbook | Personal blank sheets, separate auto-saves, previews and backup contents | implemented; iPad test pending |
+| 12 | Magical storybook look, Themes, polish | parts 1–3 PC/iPad accepted; both compact mockups approved; real compact interface PC/iPad accepted; Midnight Forest PC/iPad accepted; Ocean Dreams iPad accepted; Autumn Cottage iPad accepted; minimal and final polish remain |
 
 ### Notes for future steps
 
@@ -367,13 +381,13 @@ window restyle; it is a separate deferred follow-up, not yet scheduled or implem
   page opens, `warmUp()` works out the areas at 8 points along the page edges (usually the
   background). So starting a stroke or fill in the background takes ~2 ms instead of ~190 ms.
 
-## Current brush settings (watercolor speed retest pending)
+## Current accepted brush settings
 
 This table is the current implementation in js/brushes.js. Historical development notes below
 retain earlier sizes, textures and measurements to explain decisions; they are not instructions
-to restore the old limits. Brush behavior was accepted in step 10; the larger ceilings requested
-on 2026-10-22 passed her iPad check except slightly laggy watercolor. The speed repair
-retains its max200 and awaits an iPad retest.
+to restore the old limits. Brush behavior was accepted in step 10; all larger ceilings requested
+on 2026-10-22 are now accepted on her iPad. Watercolor retains max200 after speed repair
+d1c2df1; Owen confirmed no lag on 2026-10-22.
 
 | Tool | Size range (page pixels) | Default size / opacity | Current spacing |
 |---|---|---|---|
@@ -1919,12 +1933,13 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   asks to proceed.
 
 
-### Autumn Cottage implementation and iPad handoff (2026-10-21; iPad pending)
+### Autumn Cottage implementation and iPad handoff (built 2026-10-21; iPad accepted 2026-10-22)
 
 - **Authorization:** after accepting Ocean Dreams on her iPad and reviewing the remaining
   steps, Owen said "okay keep working". Continue the requested local checks -> commit/upload
   -> iPad test flow for the next visual theme; separate Owen PC approval is skipped. Version
-  `20261021235410` passed local checks. Wait for Autumn Cottage's iPad report before minimal.
+  `20261021235410` passed local checks and was uploaded as 400a25a. Owen subsequently
+  confirmed its iPad test with "it worked good" on 2026-10-22.
 - **Look:** warm cream/linen surfaces, terracotta covers and controls, olive ivy and copper-gold
   details. Library, Pages, settings, Brushes, full picker, palette names, confirmations,
   App & offline and export share the materials. Splash D keeps its accepted timing/geometry
@@ -1943,36 +1958,40 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   all four themes and leaving/reopening; eleven brushes, full picker and naming; actual
   2048x2732 PNG download, 10/10 offline outlines, offline reload/Continue, remembered selection
   and Reduce Motion passed. Inspected library/editor/theme-list/opening screenshots; no
-  browser JS errors or external requests. Her real iPad test is pending, not simulated here.
+  browser JS errors or external requests. These are local checks; the separate real iPad
+  acceptance was subsequently supplied by Owen ("it worked good").
 - **Files/version:** functional edits only css/styles.css and js/themes.js; other modified JS,
   index.html, sw.js and offline-assets.js contain generated version updates. Version
   `20261021235410`; 59 app/thumbnail assets and the same 10 outlines. No painting, fill,
   gesture, undo, storage, backup or export algorithm changes. Ignored tools/*.tmp holds
   development checks and screenshots. This checkpoint includes Ocean Dreams's iPad acceptance.
-- **iPad handoff:** while online, App & offline -> Check for updates -> Update app. Choose
+- **iPad acceptance:** Owen reported "it worked good" on 2026-10-22 after being asked to check
+  Themes -> Autumn Cottage. The checklist is retained for reference, not a pending repeat test.
+  While online, App & offline -> Check for updates -> Update app. Choose
   Themes -> Autumn Cottage -> Done. Check library, Pages, brush settings, Brushes and full
   picker in both orientations. Draw/Undo/Redo, leave/reopen and Save to Photos; close/reopen
   to verify remembered look/opening. Switch to another theme and back. Keep website data
   and backups; no speed-log round is needed for this appearance-only update.
-- **Next:** wait for her Autumn Cottage acceptance. Then the clean minimal theme is the last
-  theme, followed by final polish/review. The illustrated brush column is still deferred.
+- **Next:** Autumn Cottage is accepted. The clean minimal theme is the last theme, followed
+  by final polish/review. Wait for Owen to proceed. The illustrated brush column is still deferred.
 
 
-### Larger brushes and canvas rotation (2026-10-22; accepted except watercolor)
+### Larger brushes and canvas rotation (2026-10-22; iPad accepted)
 
 - **Request/status:** Owen asked for a larger watercolor maximum, then "actually make the
   max size for all brushes bigger in general", plus rotation with fingers while zoomed.
   Version `20261022001928` implements both and passed local checks. Continue his recent
   direct-iPad testing preference; no separate Owen PC acceptance is claimed. Autumn Cottage
-  remains pending on her iPad, and the minimal theme has not started.
+  was subsequently accepted on her iPad ("it worked good"); the minimal theme has not started.
 - **Expanded ceilings, page pixels:** Pencil 40 -> 60; Marker 120 -> 180; Eraser 200 -> 300;
   Airbrush 300 -> 450; Smooth hair 200 -> 300; Watercolor 130 -> 200; Splatter 240 -> 360;
   Glitter 120 -> 180; Metallic 60 -> 90; Blender and Blur 48 -> 72 each. About 50% larger.
   Minimums/default sizes/opacity, pressure, textures, spacing and saved settings are unchanged.
   These are optional higher limits; this is not a rendering-speed optimization. Previous
   iPad-safe ceilings remain in the history above; watercolor/glitter/metallic were capped
-  for actual lag. Do not claim the expanded ceilings are smooth on her iPad until she tests.
-  Keep feedback simple (brush, size, smooth/laggy), not another mandatory speed-log round.
+  for actual lag. All expanded ceilings are now accepted on her iPad following the watercolor
+  repair below. Keep future feedback simple (brush, size, smooth/laggy), not another mandatory
+  speed-log round.
 - **Viewport:** viewport.js adds radians `rotation` and the same CSS transform for all three
   stacked canvases: translate -> rotate -> scale, from the top-left origin. Inverse rotation
   in toPage keeps strokes, fills and line-lock aligned. Rotated extents determine fit/minimum
@@ -2017,20 +2036,22 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   Try the new top sizes, especially Watercolor200, Glitter180, Metallic90, then export and
   reopen the page. Report any lag with brush/size; no log screenshot is required. Keep data.
 - **iPad report:** after b14c638, Owen said "watercolor slightly laggy everything else
-  perfect". Rotation and the other ten expanded brushes are accepted. The focused watercolor
-  repair below retains200 and needs its own iPad retest.
-- **Next:** retest the watercolor repair before more theme work. Autumn
-  Cottage still needs its iPad report; minimal and final polish remain. Illustrated brush
-  columns remain a separate deferred follow-up.
+  perfect". Rotation and the other ten expanded brushes were accepted then. The focused
+  watercolor repair below retains200; Owen subsequently confirmed "no lag ojn the watercolour".
+  All eleven larger brush limits and rotation are now accepted.
+- **Next:** no brush/rotation retest is pending. Autumn Cottage is also accepted on her iPad;
+  minimal and final polish remain. Wait for Owen to proceed with more theme work.
+  Illustrated brush columns remain a separate deferred follow-up.
 
 
-### Watercolor200 speed repair (2026-10-22; iPad retest pending)
+### Watercolor200 speed repair (2026-10-22; iPad accepted)
 
 - **Report/scope:** Owen reported "watercolor slightly laggy everything else perfect" after
   b14c638. Rotation and the other ten expanded brushes are accepted. Keep watercolor max200
-  and its accepted appearance; version `20261022003833` is ready for direct iPad upload/retest.
-  No separate Owen PC acceptance is claimed. Autumn Cottage's explicit report remains pending;
-  minimal/final polish remain later work.
+  and its accepted appearance. Version `20261022003833` was committed/pushed as d1c2df1 and
+  verified live. Owen confirmed the iPad retest on 2026-10-22: "no lag ojn the watercolour".
+  No separate Owen PC acceptance is claimed. Autumn Cottage was separately accepted on her
+  iPad ("it worked good"); minimal/final polish remain later work.
 - **Avoidable work:** coverage is stored as integer bytes. Old watercolor skipped a pixel
   only if it reached the fractional peak (e.g.114.75). Stored114 is already the strongest
   possible byte, but overlapping dabs recalculated it. Comparing with floor(peak) skips that
@@ -2051,12 +2072,70 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   second. Size200: live work978 -> 692ms (~29% less); dabs597 -> 311ms (~48% less); slowest
   update35 -> 24ms. Rendering~377ms and final lift~200ms were largely unchanged at this
   slowdown. Size130: live work572 -> 381ms (~33% less), slowest18 -> 11ms. Local simulator
-  evidence only; do not claim measured iPad latency or guaranteed smoothness at200.
+  timing evidence only; these numbers are not measured iPad latency. Owen's subsequent real
+  iPad report confirms no lag at200; no device timing numbers were supplied.
 - **Files:** functional edits only stroke-engine.js; generated index/import/sw/offline stamps
   updated to `20261022003833`, 59 app/thumbnail assets and same10 outlines. No new dependencies.
   Development baseline/checks in tools/*.tmp are ignored. Other brush sizes/rotation remain
   accepted and must not be lowered or changed as part of this repair.
-- **iPad handoff:** App & offline -> Check for updates -> Update app. Try Watercolor200 with
+- **iPad acceptance:** Owen reported "no lag ojn the watercolour" after the repair upload.
+  The following handoff is retained for reference, not a pending repeat test.
+  App & offline -> Check for updates -> Update app. Try Watercolor200 with
   a few long fast strokes, usual pressure/tilt, line-lock/build-up and a rotated view. Check
   Undo/Redo and leave/reopen. A simple smooth/still-laggy report is enough; no mandatory logs.
-- **Next:** wait for the watercolor retest before more theme work.
+- **Next:** watercolor repair and all larger brushes/rotation are accepted. Wait for Owen
+  before more theme work; Autumn Cottage is accepted, while minimal and final polish remain.
+
+
+### Sketchbook addition (2026-10-22; iPad test pending)
+
+- **Request:** Owen wants a blank-white-paper category for freestyle drawing, with every new
+  sheet kept as a separate sketchbook page. This is an extra feature before the minimal theme.
+- **Library:** Sketchbook opens directly to its sheets. New blank page saves the entry first,
+  then opens it. Names are Sketch 1, Sketch 2, etc.; a cryptographically random permanent id
+  separates drawings even across devices. Newest sheets appear first. Untouched sheets persist
+  too. Entries participate in search, Continue and small colored progress previews. Search and
+  the Pages drawer read the current page list rather than a startup snapshot.
+- **Drawing:** blank 2048x2732 white paper generated locally as a small SVG data URL; no remote
+  outline or thumbnail dependency. Size settings are sketchWidth/sketchHeight in settings.js.
+  Fill switches to Pencil on opening a sheet; an already-selected brush stays selected.
+  Existing pressure/tilt, all eleven brushes, size/opacity, build-up, eraser, gestures, rotation,
+  undo/redo, auto-save, PNG/Photos export and Start over are reused. With no outlines, line-lock
+  allows the full sheet immediately without a region lookup and keeps her global switch choice.
+  Fill still fills the paper; painted brush lines are not converted into outline barriers.
+  Start over clears that sheet's drawing, retaining its entry; this is not a delete-sheet UI.
+- **Storage:** IndexedDB version3 adds only a small sketchbook store {id,title,number,created};
+  all existing artwork/progress/thumbnail stores are retained. Color and build-up bytes continue
+  using the existing artwork id and auto-save pipeline. Sheet entry creation must finish before
+  navigation; a storage failure shows a message instead of opening an unregistered drawing.
+  Repeated clicks are guarded. Closing a drawer during saving cancels its navigation choice.
+  Other old app tabs may block the schema upgrade: close them and reopen; never clear data.
+- **Backup:** format1 gains an optional sketchbook list, so older .finley backups still open.
+  Current backups include all entries, including empty sheets, plus usual drawing/memory/preview
+  payloads. Validate names, permanent ids, numbers, dates, duplicates and limits before writing;
+  a sketch artwork id needs its matching entry. Metadata and paint merge in one transaction.
+  Restore keeps unrelated sheets and newer artwork, verifies entry presence and saved payload
+  bytes, then reloads the library. Use the updated app on the receiving device to see sketches.
+- **Offline:** all blank paper is generated locally, and sketchbook.js joins the installed app
+  bundle. Sketches never enter the outline downloader/count: it remains 10 downloadable outlines.
+  The generated shell is now 60 app/thumbnail files. New and existing sheets work without Wi-Fi
+  once this app version is installed; auto-save continues in device storage.
+- **Files:** new js/sketchbook.js; library/app/gallery/page-browser/editor/storage/backup/offline,
+  settings.js, the library action in index.html and two small themed compact.css rules. Import
+  page list and painting algorithms are unchanged. Version `20261022011129`; generated import,
+  HTML, worker and offline-content stamps included. This checkpoint also includes the latest
+  watercolor no-lag and Autumn Cottage iPad acceptance notes in all three guides.
+- **Local evidence:** reviewed storage/backup/navigation changes. In a separate localhost:8022
+  browser origin, the library showed five collections, Sketchbook opened its empty state, and
+  New blank page created Sketch 1 with a unique route and opened white paper with Pencil selected.
+  The in-app browser did not finish the existing PNG auto-save callback after a drawn stroke;
+  drawing persistence/restore is not claimed as verified here. Real iPad acceptance is pending.
+- **iPad handoff:** while online, App & offline -> Check for updates -> Update app; close other
+  coloring-book windows if needed for the new storage store. Open Sketchbook -> New blank page,
+  draw, then use Pages -> New blank page to make a second, different drawing. Reopen each and
+  check separate previews and colors. Fully close/reopen and check both; create an untouched
+  third sheet and confirm it stays too. Try Undo/Redo, rotate and Save to Photos. In Airplane Mode
+  create/reopen a sheet. Keep a new backup that includes her sketches; restore on the updated
+  destination app when moving devices. Never clear data or reinstall for this update.
+- **Next:** wait for Owen's sketchbook report. The minimal theme and final polish remain;
+  the illustrated brush column remains deferred.

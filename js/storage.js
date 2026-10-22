@@ -7,13 +7,14 @@
 //   artwork        - her coloring for each page: { color (image), memory (build-up), updated }
 //   progress       - which pages she has colored and when: { updated }  (small, quick to read)
 //   progressThumbs - a small colored preview of each page she has colored (for the library)
+//   sketchbook     - permanent ids, names and creation dates for personal blank sheets
 //
 // Adding a store means raising DB_VERSION; onupgradeneeded then creates the missing ones
 // (existing data is kept).
 
 const DB_NAME = "finleys-coloring-book";
-const DB_VERSION = 2;
-const STORES = ["thumbnails", "artwork", "progress", "progressThumbs"];
+const DB_VERSION = 3;
+const STORES = ["thumbnails", "artwork", "progress", "progressThumbs", "sketchbook"];
 
 let dbPromise = null;
 
@@ -133,11 +134,19 @@ export async function dbEntries(store) {
 
 // Restore a backup as one transaction. Reading the current dates inside this transaction
 // keeps a newer save in another window from being replaced by an older backup.
-export async function dbMergeArtwork(records) {
-  if (!records.length) return { added: 0, kept: 0, refreshed: 0 };
+export async function dbMergeArtwork(records, sketches = []) {
+  if (!records.length && !sketches.length) return { added: 0, kept: 0, refreshed: 0 };
   const db = await openDB();
   return new Promise((resolve, reject) => {
-    const tx = db.transaction(["artwork", "progress", "progressThumbs"], "readwrite");
+    const tx = db.transaction(["artwork", "progress", "progressThumbs", "sketchbook"], "readwrite");
+    // Restore the contents list in the SAME transaction as its pictures. Existing sheets
+    // are never removed, and their permanent ids keep different drawings separate.
+    for (const sheet of sketches) {
+      const request = tx.objectStore("sketchbook").get(sheet.id);
+      request.onsuccess = () => {
+        if (!request.result) tx.objectStore("sketchbook").put(sheet, sheet.id);
+      };
+    }
     let added = 0, kept = 0, refreshed = 0;
     for (const record of records) {
       const request = tx.objectStore("artwork").get(record.id);

@@ -1,7 +1,8 @@
 // library.js - reads the list in pages/pages.js and fills in the details the app needs
 // (full file path, id, title), so the list itself can stay short and easy to edit.
 
-import { LIBRARY } from "../pages/pages.js?v=20261022003833";
+import { BLANK_PAPER, readSketches, saveNewSketch } from './sketchbook.js?v=20261022011129';
+import { LIBRARY } from "../pages/pages.js?v=20261022011129";
 
 export const categories = [];
 const pagesById = new Map();
@@ -41,6 +42,35 @@ for (const cat of LIBRARY) {
   categories.push(category);
 }
 
+// A personal collection, separate from the imported outline list.
+export const sketchCategory = { name: 'Sketchbook', folder: 'sketchbook', subcategories: [], pageCount: 0, sketchbook: true };
+const sketchPages = { name: 'Free drawing', folder: 'sheets', category: sketchCategory, pages: [] };
+sketchCategory.subcategories.push(sketchPages);
+categories.push(sketchCategory);
+let sketchesReady = null;
+function addSketch(sheet) {
+  if (pagesById.has(sheet.id)) return;
+  const page = { ...sheet, kind: 'sketch', file: BLANK_PAPER, thumb: BLANK_PAPER, subcategory: sketchPages };
+  pagesById.set(page.id, page);
+  sketchPages.pages.push(page);
+  sketchPages.pages.sort((a, b) => b.created - a.created || b.id.localeCompare(a.id));
+  sketchCategory.pageCount = sketchPages.pages.length;
+}
+export function loadSketchbook() {
+  if (!sketchesReady) {
+    sketchesReady = readSketches().then(sheets => { for (const sheet of sheets) addSketch(sheet); });
+    sketchesReady.catch(() => { sketchesReady = null; });
+  }
+  return sketchesReady;
+}
+export async function createSketch() {
+  await loadSketchbook();
+  const sheet = await saveNewSketch();
+  addSketch(sheet);
+  return findPage(sheet.id);
+}
+export const allLibraryPages = () => categories.flatMap(cat => cat.subcategories.flatMap(sub => sub.pages));
+
 export function findCategory(folder) {
   return categories.find((c) => c.folder === folder);
 }
@@ -55,6 +85,7 @@ export function findPage(id) {
 
 // The first page of a category or sub-category is used as its cover picture.
 export function coverPage(group) {
+  if (group.sketchbook && !group.pageCount) return { file: BLANK_PAPER, thumb: BLANK_PAPER };
   if (group.pages) return group.pages[0];
   for (const sub of group.subcategories) {
     if (sub.pages.length) return sub.pages[0];

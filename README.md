@@ -384,12 +384,19 @@ this issue. The repair copies the backup's compressed data independently of the 
 
 ### Project checkpoint and next step
 
-Current update: **faster Watercolor200, version 20261022003833**; local checks passed and
-her iPad retest is next. After b14c638, Owen reported "watercolor slightly laggy everything
-else perfect": rotation and all other expanded brush sizes are accepted.
+New addition: **Sketchbook**, version **20261022011129**, ready for its iPad test. Every new
+blank sheet gets its own permanent entry and auto-save. The minimal theme waits for this check.
+See the Sketchbook instructions at the end of this file.
 
-Previous app checkpoint: **400a25a, Autumn Cottage, version 20261021235410**, uploaded and
-verified live. Its iPad report has not yet been supplied. The minimal theme is still unbuilt.
+Current accepted app checkpoint: **d1c2df1, faster Watercolor200, version 20261022003833**,
+uploaded and verified live. Owen confirmed "no lag ojn the watercolour" on her iPad
+(2026-10-22). All eleven larger brush limits and two-finger canvas rotation are now accepted.
+The latest watercolor and Autumn Cottage acceptance notes are included with the Sketchbook
+checkpoint.
+
+Previous accepted app checkpoint: **400a25a, Autumn Cottage, version 20261021235410**, uploaded
+and verified live. Owen confirmed its iPad test with **"it worked good"** on 2026-10-22.
+The minimal theme is still unbuilt; final polish follows it.
 
 Previous accepted app checkpoint: **f70d0ae, Ocean Dreams, version 20261021233948**, uploaded and
 verified live. Local checks passed and Owen confirmed her iPad test "everything worked great".
@@ -720,14 +727,14 @@ after upload f70d0ae; no repeat is pending.
 
 ### What is left
 
-The core coloring app (steps 1-11) is complete. **Autumn Cottage** is now ready for its iPad
-test. The **clean minimal theme** comes afterward in its own round. Then comes a final polish
+The core coloring app (steps 1-11) is complete. **Autumn Cottage is accepted on her iPad**.
+The **clean minimal theme** comes next in its own round. Then comes a final polish
 and review of the completed theme set and any reported small UI issues. Storybook, the compact
 interface, Midnight Forest and Ocean Dreams are already accepted on her iPad. The illustrated
 brush-column idea is saved as a separate deferred follow-up.
 
 
-## Autumn Cottage (iPad test next)
+## Autumn Cottage (iPad accepted)
 
 Autumn Cottage uses warm linen, terracotta, olive leaves and copper-gold details throughout
 its library, controls and opening. Its preview has a small outline leaf. Coloring paper stays
@@ -743,11 +750,12 @@ requested direct iPad workflow, without a separate PC approval round.
 4. Draw, Undo/Redo, leave/reopen and Save to Photos. Close/reopen to check the remembered look
    and its opening; switch to another theme and back.
 
-Keep website data and backups. Report the iPad result before the clean minimal theme, which
-will be the last theme. The illustrated brush-column idea remains a separate future project.
+Owen confirmed the iPad test with **"it worked good"** on 2026-10-22. This checklist is kept
+for reference; no repeat test is pending. Keep website data and backups. The clean minimal
+theme will be the last theme. The illustrated brush-column idea remains a separate future project.
 
 
-## Bigger brushes and finger rotation (accepted except watercolor)
+## Bigger brushes and finger rotation (iPad accepted)
 
 All brush ceilings are roughly 50% bigger. Her existing sizes and opacity settings stay as
 she left them; the sliders simply have more room at the top.
@@ -778,24 +786,58 @@ Two-finger tap Undo and three-finger tap Redo still work. On a PC, Alt + mouse w
 4. Tap **Fit**, try the larger sizes, then Save to Photos and leave/reopen the page.
 
 Local checks passed for rotation, drawing/fill alignment, undo, all larger limits, line-lock,
-full-resolution upright export, both layouts and offline use. Her iPad
-accepted rotation and all other larger brushes; **watercolor was slightly laggy**. The
-speed repair below keeps watercolor at200.
-If one feels laggy, report the brush and size—no speed-log screenshot needed. Keep website data
-and backups. These changes are the current test round; remaining theme work waits for feedback.
+full-resolution upright export, both layouts and offline use. Her iPad accepted rotation and
+all other larger brushes first; the repair below then made **Watercolor200 smooth too**.
+All larger brush limits and rotation are accepted; no repeat test is pending.
+If a new lag issue appears, report the brush and size—no speed-log screenshot needed.
+Keep website data and backups. Remaining theme work waits for Owen to proceed.
 
 
-## Watercolor speed repair (iPad retest)
+## Watercolor speed repair (iPad accepted)
 
 Watercolor keeps **maximum size200** and its current texture. Overlapping dabs now skip
 pixels they cannot strengthen, and reuse small texture tables instead of repeating the same
 calculations. A slowed-down browser check used about **30% less drawing work** at200.
 Comparison strokes and saved paint memory matched the previous version pixel-for-pixel.
-Actual smoothness still needs her iPad retest; other brushes and rotation stay as accepted.
+Owen confirmed her iPad retest after upload d1c2df1: **"no lag ojn the watercolour"**.
+Watercolor keeps its maximum200; all other larger brushes and rotation remain accepted.
+The checklist below is kept for reference, not a pending repeat test.
 
 1. **App & offline -> Check for updates -> Update app** while online.
 2. Try **Watercolor at200** with a few long fast strokes and her usual pressure/tilt.
    Try line-lock/build-up and a rotated view as she normally uses them.
 3. Try Undo/Redo, then leave and reopen the page to check the coloring is kept.
 
-Just report **smooth** or **still laggy**. No speed-log screenshot is needed.
+The no-lag iPad report is recorded. No repeat test or speed-log screenshot is needed.
+
+
+## Sketchbook: draw on your own blank pages
+
+1. Open **Sketchbook** in the library, then tap **New blank page**.
+2. Draw freely on the white paper. It opens with Pencil if Fill was selected.
+3. Open **Pages** to return to a drawing or tap **New blank page** for a fresh sheet.
+4. Each sheet is separate: **Sketch 1**, **Sketch 2**, and so on. The library shows your drawing
+   on its thumbnail. Even an untouched sheet is kept after closing the app.
+
+All brushes, undo/redo, zoom/rotation and Save to Photos work as usual. Stay inside lines allows
+the entire sheet because it has no printed outlines. Fill colors the paper; lines drawn with a
+brush do not act as printed fill barriers. **Start over** clears only the current drawing after
+confirmation and keeps the sheet in the sketchbook.
+
+Sheets are full-size **2048 x 2732** white paper. They work offline automatically after updating
+the installed app. The offline-outline counter still counts the ten imported/placeholder pages.
+**Prepare backup** includes sketches and empty sheets too; update the receiving app before
+restoring a sketchbook backup. Older coloring backups remain supported.
+
+### iPad check
+
+Update through **App & offline -> Check for updates -> Update app** while online. If another
+coloring-book tab is open, close it so the app can add its sketchbook storage; keep website data.
+Make two sheets with different drawings, reopen each, and check their previews. Close/reopen the
+app and check both again. Also keep one untouched sheet, try Undo/Redo and Save to Photos, then
+try creating/reopening a sheet in Airplane Mode. Tell Owen's coding assistant whether each
+sheet stays separate and survives reopening. No speed-log screenshot is needed.
+
+This feature is awaiting the real iPad check. Local browsing and blank-sheet creation were
+observed; the in-app browser did not finish a drawn stroke's PNG auto-save callback, so saved
+coloring and backup restore are not claimed as locally verified for this addition.

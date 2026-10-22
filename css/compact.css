@@ -161,3 +161,7 @@ body,#gallery-screen { background:var(--compact-bg); }
   .tool-panel { gap:2px;padding-inline:2px; }.tools,.compact-tool-extras { gap:0; }
   .band-titles h1 { font-size:14px; }.medallion { width:30px;height:30px; }.library-tagline { display:none; }
 }
+
+/* Sketchbook actions share the existing theme colors and comfortable touch targets. */
+#new-sketch { min-height:var(--compact-target); }
+#pages-content > .text-button { grid-column:1 / -1;min-height:var(--compact-target); }
