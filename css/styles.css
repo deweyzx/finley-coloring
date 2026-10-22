@@ -39,6 +39,13 @@
   --ocean-pearl:#e0f1eb;
   --theme-wave-width:44px; --theme-wave-height:24px;
   --theme-wave-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 24'%3E%3Cpath d='M2 6q5-7 11 0t11 0t11 0t11 0M2 18q5-7 11 0t11 0t11 0t11 0' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  --autumn-bg:#faf3e8;
+  --autumn-leather:#62392f;
+  --autumn-leather-light:#89523d;
+  --autumn-leather-deep:#402923;
+  --autumn-gold:#f0d7a6;
+  --theme-leaf-size:30px;
+  --theme-leaf-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M7 28C2 17 7 5 26 3C28 20 18 30 7 28ZM5 30L21 9M12 23V15M16 18L24 17' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   /* Parchment (the icon's pages) */
   --storybook-bg: #f3e8d0;
   --storybook-leather: #25482e;
@@ -481,6 +488,66 @@
   --opening-leaf:#8abbaa; --opening-leaf-edge:#366b66; --opening-leaf-vein:#4d867c;
   --opening-thread-1:#f0fffa; --opening-thread-2:#a7ded8; --opening-thread-3:#dbf6e8;
   --opening-vignette:rgba(4,28,40,.4);
+}
+
+/* Autumn Cottage: warm linen, terracotta covers, muted olive and copper-gold details.
+   Only these appearance tokens change; the accepted compact layout and art stay shared. */
+:root:where([data-theme="autumn-cottage"]) {
+  --compact-bg:var(--autumn-bg); --compact-surface:#fffaf1; --compact-desk:#eadcc8;
+  --compact-cover:var(--autumn-leather);
+  --compact-green:#80432f; --compact-selected:#f1dfc9; --compact-line:#d9c7ae;
+  --compact-ink:#452f28; --compact-muted:#6e5949;
+  --compact-shadow:0 2px 12px rgba(81,45,28,.14);
+  --compact-paper-shadow:0 1px 5px rgba(81,45,28,.18);
+  --bg:var(--autumn-bg); --bg-deep:#ecdbc0;
+  --surface:#fffaf1; --surface-2:#f5e9d6; --desk:#eddfca;
+  --leather:var(--autumn-leather); --leather-light:var(--autumn-leather-light);
+  --leather-deep:var(--autumn-leather-deep);
+  --on-leather:#fff4de; --on-leather-soft:#efdab5;
+  --ink:#452f28; --ink-soft:#5b3c2f; --muted:#6e5949;
+  --accent:#87412e; --accent-deep:#663326; --accent-text:#fff9ee;
+  --control-green-top:#975038;
+  --gold:#caa16e; --gold-light:var(--autumn-gold); --gold-deep:#7a5b28;
+  --ivy:#7a8653; --ivy-leaf:#c4c791; --ivy-vein:#626f40;
+  --hairline:#ddc39b; --edge:#9a7b57;
+  --ribbon:#92603b; --ribbon-deep:#6b402c; --focus:#8b431e;
+  --ink-shadow:#2c1d14; --gilt-bottom:#b5874d;
+  --control-top:#fffdf7; --control-bottom:#f1e1c9;
+  --search-edge:var(--edge);
+  --panel-top-color:var(--surface); --panel-bottom-color:var(--surface-2);
+  --bar-bottom:#f4e8d5; --desk-light:#f6ead6; --desk-deep:#d8c2a2;
+  --sheet-under:#faf3e5;
+  --switch-off:#8b785c; --slider-track-color:#cbb28b;
+  --disabled-edge:#ceb99a; --disabled-ink:#96816a;
+  --swatch-inner-edge:rgba(76,41,26,.6);
+  --gold-rule:rgba(240,215,166,.6); --gold-rule-soft:rgba(240,215,166,.24);
+  --shadow-soft:0 1px 2px rgba(81,45,28,.1),0 4px 12px rgba(81,45,28,.1);
+  --shadow-lift:0 2px 3px rgba(81,45,28,.1),0 12px 28px rgba(81,45,28,.16);
+  --shadow-sheet:0 1px 1px rgba(81,45,28,.12),0 6px 14px rgba(81,45,28,.14);
+  --shadow-paper:0 2px 3px rgba(81,45,28,.1),0 18px 44px rgba(81,45,28,.22);
+  --shadow-stack:rgba(81,45,28,.12); --shadow-selected:0 6px 14px rgba(81,45,28,.3);
+  --shadow-cover:0 8px 22px rgba(64,41,35,.28);
+  --shadow-knob:0 3px 8px rgba(81,45,28,.28); --shadow-track:inset 0 1px 2px rgba(81,45,28,.2);
+  --shadow-swatch:inset 0 -3px 5px rgba(0,0,0,.12),0 2px 4px rgba(81,45,28,.18);
+  --warning-bg:#fbe4ce; --warning-ink:#79401f; --danger:#9e372b;
+  --backdrop:rgba(49,29,21,.48);
+  /* The existing opening uses autumn ivy and a warm amber thread, with no extra motion. */
+  --opening-stem:#b1ad71;
+  --opening-rim-1:#f9e2ac; --opening-rim-2:#c29150; --opening-rim-3:#895b32;
+  --opening-rim-4:#d4b179; --opening-rim-5:#ffedc6;
+  --opening-thread-hair:#fff7dc;
+  --opening-tooling-edge:rgba(240,215,166,.85); --opening-tooling-soft:rgba(240,215,166,.35);
+  --opening-rim-edge:rgba(255,235,194,.4);
+  --opening-light-clear:rgba(255,239,204,0); --opening-light-bright:rgba(255,239,204,.95);
+  --opening-halo:rgba(255,205,133,.28); --opening-halo-clear:rgba(255,205,133,0);
+  --opening-ripple-edge:rgba(255,231,180,.9); --opening-ripple-glow:rgba(255,205,133,.4);
+  --opening-parchment-clear:rgba(250,243,232,0);
+  --opening-spark-white:#fffdf2; --opening-spark-core:#fff2cf;
+  --opening-spark-glow:rgba(255,218,153,.85); --opening-spark-clear:rgba(255,218,153,0);
+  --opening-mote-core:#fff8de; --opening-mote-clear:rgba(255,218,153,0);
+  --opening-leaf:#b8b178; --opening-leaf-edge:#746738; --opening-leaf-vein:#8c824a;
+  --opening-thread-1:#fff2ce; --opening-thread-2:#e5b56e; --opening-thread-3:#fae0ae;
+  --opening-vignette:rgba(31,15,9,.42);
 }
 
 :root { color-scheme:var(--ui-color-scheme); }
@@ -1957,6 +2024,8 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
 .theme-preview[data-theme-preview="storybook"] { --preview-leather: var(--storybook-leather); --preview-leather-light: var(--storybook-leather-light); --preview-leather-deep: var(--storybook-leather-deep); --preview-gold: var(--storybook-gold-light); --preview-paper: var(--paper); --preview-parchment: var(--storybook-bg); }
 .theme-preview[data-theme-preview="midnight-forest"] { --preview-leather: var(--midnight-leather); --preview-leather-light: var(--midnight-leather-light); --preview-leather-deep: var(--midnight-leather-deep); --preview-gold: var(--midnight-moon); --preview-paper: var(--paper); --preview-parchment: var(--midnight-bg); }
 .theme-preview[data-theme-preview="ocean-dreams"] { --preview-leather:var(--ocean-leather); --preview-leather-light:var(--ocean-leather-light); --preview-leather-deep:var(--ocean-leather-deep); --preview-gold:var(--ocean-pearl); --preview-paper:var(--paper); --preview-parchment:var(--ocean-bg); }
+.theme-preview[data-theme-preview="autumn-cottage"] { --preview-leather:var(--autumn-leather); --preview-leather-light:var(--autumn-leather-light); --preview-leather-deep:var(--autumn-leather-deep); --preview-gold:var(--autumn-gold); --preview-paper:var(--paper); --preview-parchment:var(--autumn-bg); }
+.theme-preview[data-theme-preview="autumn-cottage"]::after { content:""; position:absolute; top:var(--theme-moon-inset); right:var(--theme-moon-inset); width:var(--theme-leaf-size); height:var(--theme-leaf-size); background:var(--preview-gold); -webkit-mask:var(--theme-leaf-mask) center/contain no-repeat; mask:var(--theme-leaf-mask) center/contain no-repeat; }
 .theme-preview[data-theme-preview="ocean-dreams"]::after { content:""; position:absolute; top:var(--theme-moon-inset); right:var(--theme-moon-inset); width:var(--theme-wave-width); height:var(--theme-wave-height); background:var(--preview-gold); -webkit-mask:var(--theme-wave-mask) center/contain no-repeat; mask:var(--theme-wave-mask) center/contain no-repeat; }
 .theme-preview[data-theme-preview="midnight-forest"]::after { content:""; position:absolute; top:var(--theme-moon-inset); right:var(--theme-moon-inset); width:var(--theme-moon-size); height:var(--theme-moon-size); border-radius:50%; background:var(--preview-gold); -webkit-mask:radial-gradient(circle at 70% 30%,var(--clear) 48%,var(--opening-mask-solid) 51%); mask:radial-gradient(circle at 70% 30%,var(--clear) 48%,var(--opening-mask-solid) 51%); }
 .theme-preview { position: relative; display: flex; align-items: center; justify-content: center; gap: var(--modal-gap); height: var(--theme-preview-height); background: var(--leather-grain),radial-gradient(100% 150% at 30% 10%,var(--preview-leather-light),var(--preview-leather) 60%,var(--preview-leather-deep)); }

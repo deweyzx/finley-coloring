@@ -383,8 +383,13 @@ this issue. The repair copies the backup's compressed data independently of the 
 
 ### Project checkpoint and next step
 
-Current checkpoint: **Ocean Dreams, version 20261021233948**. Owen requested direct upload
-for her iPad test, skipping separate PC approval. Local checks passed; iPad acceptance is pending.
+Current checkpoint: **Autumn Cottage, version 20261021235410**. Local checks passed;
+separate PC approval is skipped under the requested direct iPad workflow. The iPad test is next.
+
+Previous accepted app checkpoint: **f70d0ae, Ocean Dreams, version 20261021233948**, uploaded and
+verified live. Local checks passed and Owen confirmed her iPad test "everything worked great".
+Separate PC approval was skipped at his request. This checkpoint includes that iPad
+acceptance and the new Autumn Cottage theme.
 
 Previous accepted app checkpoint: **153d049, Midnight Forest, version 20261021211413**, uploaded and
 verified live. PC accepted ("everything works good"); iPad accepted ("everything worked").
@@ -687,7 +692,7 @@ Keep website data and backups. This checklist passed; no repeat is pending. Owen
 authorized Ocean Dreams and asked to go directly to the iPad test (below).
 
 
-## Ocean Dreams (iPad test next)
+## Ocean Dreams (iPad accepted)
 
 Ocean Dreams adds pale sea-glass surfaces, ocean blues, teal controls and pearl accents.
 The opening has a cooler shimmer, and its theme card has a small wave detail. Coloring paper
@@ -705,5 +710,33 @@ coloring across switches, Undo/Redo, full-size PNG export and offline reopening.
 4. Close/reopen the app: Ocean Dreams should remain selected and recolor the opening too.
    Switch to Storybook and Midnight Forest, then back to Ocean Dreams.
 
-Keep website data and backups. The iPad result is pending. Autumn Cottage is the next planned
-separate theme round after this one passes; it has not been built.
+Keep website data and backups. Owen confirmed this checklist "everything worked great"
+after upload f70d0ae; no repeat is pending.
+
+### What is left
+
+The core coloring app (steps 1-11) is complete. **Autumn Cottage** is now ready for its iPad
+test. The **clean minimal theme** comes afterward in its own round. Then comes a final polish
+and review of the completed theme set and any reported small UI issues. Storybook, the compact
+interface, Midnight Forest and Ocean Dreams are already accepted on her iPad. The illustrated
+brush-column idea is saved as a separate deferred follow-up.
+
+
+## Autumn Cottage (iPad test next)
+
+Autumn Cottage uses warm linen, terracotta, olive leaves and copper-gold details throughout
+its library, controls and opening. Its preview has a small outline leaf. Coloring paper stays
+white, and all four themes share the same brushes, palettes and saved coloring.
+
+Local checks passed for six layouts, readable controls, switching through all four themes,
+exact saved coloring, Undo/Redo, full-size PNG export and offline reopening. This follows the
+requested direct iPad workflow, without a separate PC approval round.
+
+1. Choose **App & offline -> Check for updates -> Update app** while online.
+2. Choose **Themes -> Autumn Cottage -> Done**.
+3. Try Pages, settings, Brushes and full colors in both orientations. Scroll the theme list.
+4. Draw, Undo/Redo, leave/reopen and Save to Photos. Close/reopen to check the remembered look
+   and its opening; switch to another theme and back.
+
+Keep website data and backups. Report the iPad result before the clean minimal theme, which
+will be the last theme. The illustrated brush-column idea remains a separate future project.

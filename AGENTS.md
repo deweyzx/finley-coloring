@@ -44,16 +44,22 @@ table, and any decisions that changed.
   153d049, Owen reported "everything worked", accepting Midnight Forest on her iPad too.
   Owen then authorized Ocean Dreams ("lets do it") and explicitly asked to skip its separate
   PC approval and go straight to her iPad. Ocean Dreams `20261021233948` passed local checks
-  and is approved for checkpoint/upload; iPad acceptance is pending. Autumn Cottage and
-  minimal remain unbuilt.
+  was uploaded as f70d0ae. Owen then reported "everything worked great", accepting Ocean
+  Dreams on her iPad. Owen then said "okay keep working", authorizing Autumn Cottage next
+  under the requested local-checks -> direct-iPad workflow. Autumn Cottage `20261021235410`
+  passed local checks and is ready for checkpoint/upload; iPad acceptance is pending. The
+  minimal theme remains unbuilt.
   A future brush-column request is recorded below; it is not part of this implementation.
 - **Earlier step 11 acceptance:** after repair 173f41d, Owen said "everything returned". He then explicitly
   confirmed the entire final checklist "all worked perfectly": Save all pages offline showed
   10 of 10; the installed app reopened in Airplane Mode; a colored page opened, a new stroke
   survived leaving/reopening, and rotation worked. This supersedes older pending-retest notes.
-- **Current checkpoint:** Ocean Dreams, version `20261021233948`; local checks passed,
-  direct checkpoint/upload for iPad testing explicitly authorized. No Owen PC test was
-  requested/performed for this theme; iPad acceptance is pending.
+- **Current checkpoint:** Autumn Cottage, version `20261021235410`; local checks passed,
+  direct checkpoint/upload for iPad testing authorized by the ongoing theme workflow.
+  Separate Owen PC approval is skipped; iPad acceptance is pending.
+- **Previous accepted app checkpoint:** f70d0ae, Ocean Dreams, version `20261021233948`; committed
+  and pushed to main, with live files verified. Local checks passed; Owen accepted her iPad
+  checklist ("everything worked great"). Separate Owen PC approval was explicitly skipped.
 - **Previous accepted app checkpoint:** 153d049, Midnight Forest, version `20261021211413`; committed
   and pushed to main, with live files verified. PC accepted ("everything works good");
   iPad accepted ("everything worked").
@@ -93,7 +99,9 @@ table, and any decisions that changed.
   The preview-server repair is included too. The Midnight Forest checkpoint includes the subsequent compact iPad acceptance and
   Midnight Forest implementation/PC acceptance in all three guides. Its subsequent iPad
   acceptance and the Ocean Dreams implementation/direct-iPad workflow are included in this
-  checkpoint in all three guides. Alternate themes remain separate test rounds.
+  checkpoint in all three guides. The subsequent Ocean Dreams iPad acceptance and Autumn
+  Cottage implementation/direct-iPad handoff are included in this checkpoint. Themes remain
+  separate test rounds.
 
 ### Accepted checkpoints
 
@@ -107,7 +115,8 @@ table, and any decisions that changed.
 | 38b4c83, Step 12 part 3, version 20261021174002 | Storybook Themes selector, matching windows and shared modal focus | Uploaded; PC and iPad accepted |
 | a944bea, version 20261021201511 | Compact library, coloring controls, Pages drawer and preview-server repair | Uploaded; PC and iPad accepted |
 | 153d049, version 20261021211413 | Midnight Forest appearance, remembered selection and keyboard theme radios | Uploaded; PC and iPad accepted |
-| This checkpoint, version 20261021233948 | Ocean Dreams appearance and fixed wave preview | Local checks passed; direct iPad checkpoint/upload authorized; iPad pending |
+| f70d0ae, version 20261021233948 | Ocean Dreams appearance and fixed wave preview | Uploaded; local checks and her iPad accepted; separate PC approval skipped by request |
+| This checkpoint, version 20261021235410 | Autumn Cottage appearance and fixed leaf preview | Local checks passed; direct iPad upload authorized; iPad pending |
 
 ## Where we are
 
@@ -187,9 +196,11 @@ table, and any decisions that changed.
   a944bea, and passed her iPad test ("everythging worked perfect").
   Midnight Forest (`20261021211413`) passed Owen's PC review ("everything works good"), was
   uploaded as 153d049, and passed her iPad test ("everything worked"). Ocean Dreams is now
-  built as `20261021233948`; Owen explicitly authorized direct upload for iPad testing, with
-  local checks passed and iPad acceptance pending. Other themes remain separate later rounds; the
-  illustrated brush column remains deferred.
+  built as `20261021233948`, uploaded as f70d0ae under Owen's direct-iPad authorization, and
+  accepted on her iPad ("everything worked great"). Autumn Cottage is now built as
+  `20261021235410`, local checks passed; direct upload for iPad testing is authorized. Wait
+  for its iPad acceptance before the separate minimal theme round. The illustrated brush
+  column remains deferred.
 
 ## How to work with Owen
 
@@ -205,7 +216,8 @@ table, and any decisions that changed.
 - **Ocean Dreams exception:** Owen explicitly said "just jump straight to the ipad because its
   worked every other time". Finish local checks, commit/push and hand off directly for her
   iPad test; do not wait for or invent a PC acceptance report for this theme. This overrides
-  the separate PC approval gate for this round. Keep later themes as separate rounds.
+  the separate PC approval gate for this round. His subsequent "okay keep working" continues
+  this local-checks -> direct-iPad flow for Autumn Cottage. Keep the themes as separate rounds.
 
 ## Rules for the code
 
@@ -239,7 +251,7 @@ table, and any decisions that changed.
 | 9 | Export the finished picture to Photos | ✅ |
 | 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | ✅ all three batches confirmed on iPad |
 | 11 | Installable + offline (manifest, service worker, icons), coloring backup/transfer | ✅ PC and installed iPad app accepted, including offline/reopen |
-| 12 | Magical storybook look, Themes, polish | parts 1–3 PC/iPad accepted; both compact mockups approved; real compact interface PC/iPad accepted; Midnight Forest PC/iPad accepted; Ocean Dreams direct iPad test pending; remaining themes later, one at a time |
+| 12 | Magical storybook look, Themes, polish | parts 1–3 PC/iPad accepted; both compact mockups approved; real compact interface PC/iPad accepted; Midnight Forest PC/iPad accepted; Ocean Dreams iPad accepted; Autumn Cottage direct iPad test pending; minimal later |
 
 ### Notes for future steps
 
@@ -1019,7 +1031,7 @@ implementations. Use the current settings table and later optimization notes for
 | `js/library.js` | Reads `pages/pages.js`, builds page objects |
 | `js/gallery.js` | Library screens, progress ribbons, collection stacks and actual most-recent continue card |
 | `js/splash.js` | Separate opening cover/thread helper: once per document, skip, Reduce Motion, cleanup |
-| `js/themes.js` | Remembered device theme, live selection and keyboard radios; Storybook, Midnight Forest and Ocean Dreams |
+| `js/themes.js` | Remembered device theme, live selection and keyboard radios; Storybook, Midnight Forest, Ocean Dreams and Autumn Cottage |
 | `js/modal.js` | Shared window focus, nested questions, background input blocking and return focus |
 | `fonts/` | Bundled Literata/Figtree WOFF2 files, licenses and source record; cached offline |
 | `js/thumbnails.js` | Browser-made thumbnails (fallback) |
@@ -1845,12 +1857,13 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   brush column is still deferred.
 
 
-### Ocean Dreams implementation and iPad handoff (2026-10-21; iPad pending)
+### Ocean Dreams implementation and iPad handoff (2026-10-21; iPad accepted)
 
 - **Authorization:** after Midnight Forest passed her iPad test, Owen said "lets do it" to
   Ocean Dreams, then explicitly requested "just jump straight to the ipad because its worked
-  every other time". Version `20261021233948` passed local checks and is authorized for
-  checkpoint/upload directly to her iPad. No separate Owen PC acceptance is required or claimed.
+  every other time". Version `20261021233948` passed local checks, was committed/pushed as
+  f70d0ae, and its live files were verified. Owen then reported "everything worked great"
+  after the iPad checklist, accepting this theme. Separate Owen PC approval was skipped.
 - **Look:** pale sea-glass background/desk, ocean-blue covers, teal controls, pearl detailing
   and sea-green ivy. Library, Pages drawer, editor, settings, Brushes, full picker, palette
   naming, confirmations, App & offline and export all use these materials. Splash D keeps its
@@ -1877,10 +1890,54 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   10 outlines. No new external assets or dependencies. Painting, fill, touch, undo, storage,
   backup and export code changes are version stamps only. Development checks/screenshots in
   tools/*.tmp are ignored. This checkpoint also records Midnight Forest's iPad acceptance.
-- **iPad handoff:** while online, App & offline -> Check for updates -> Update app. Choose
-  Themes -> Ocean Dreams -> Done. Check library/Pages, brush settings, Brushes and full picker
+- **iPad acceptance:** Owen reported "everything worked great" after upload f70d0ae. This
+  checklist is retained for reference, not a pending repeat test. While online, App & offline
+  -> Check for updates -> Update app. Choose Themes -> Ocean Dreams -> Done. Check library/Pages, brush settings, Brushes and full picker
   in both orientations. Draw/Undo/Redo, leave/reopen and Save to Photos; reopen the app to check
   the remembered look and its opening. Switch to Storybook/Midnight and back. Paper should
   remain white and painted colors unchanged. Keep website data and backups.
-- **Next:** wait for Ocean Dreams iPad acceptance; then Autumn Cottage is the next planned
-  separate theme round, followed by minimal. The illustrated brush column remains deferred.
+- **Remaining step 12:** Owen subsequently authorized Autumn Cottage; its direct-iPad
+  handoff is below. After its acceptance, build the clean minimal theme in a separate round,
+  then finish with a final polish/review of the theme set and any reported small UI issues. Steps 1-11, the Storybook/compact interface, Midnight Forest and
+  Ocean Dreams are accepted; there are no unfinished core coloring steps. The illustrated
+  brush column remains a separate deferred follow-up. Do not start another theme until Owen
+  asks to proceed.
+
+
+### Autumn Cottage implementation and iPad handoff (2026-10-21; iPad pending)
+
+- **Authorization:** after accepting Ocean Dreams on her iPad and reviewing the remaining
+  steps, Owen said "okay keep working". Continue the requested local checks -> commit/upload
+  -> iPad test flow for the next visual theme; separate Owen PC approval is skipped. Version
+  `20261021235410` passed local checks. Wait for Autumn Cottage's iPad report before minimal.
+- **Look:** warm cream/linen surfaces, terracotta covers and controls, olive ivy and copper-gold
+  details. Library, Pages, settings, Brushes, full picker, palette names, confirmations,
+  App & offline and export share the materials. Splash D keeps its accepted timing/geometry
+  and book icon, with autumn ivy/rim/amber thread. Same fonts; no new runtime requests or
+  ongoing animation. White coloring paper and actual brush/palette colors remain untouched.
+- **Structure:** one `:root:where([data-theme="autumn-cottage"])` variable block near the top
+  of css/styles.css. Stable Autumn preview colors and an original tiny static outline leaf
+  mask match the existing crescent/wave card details. THEMES in js/themes.js gains one entry,
+  making four choices. Existing localStorage `theme`, immediate application, browser color,
+  early preference read, radio keyboard handling and default Storybook remain unchanged.
+  Previous theme blocks are unchanged; fonts/icons are shared and remain available offline.
+- **Checks passed, isolated Chrome/storage:** four choices and keyboard selection; checked
+  text/action pairs at least 5.69:1; six layouts (834x1194, 1194x834, 768x1024, 1024x768,
+  390x844, 320x740). Settings/colors/Pages/options fit; the longer theme list scrolls and Done
+  remains reachable. Daffodil real marker stroke, exact Undo/Redo, saved-pixel equality through
+  all four themes and leaving/reopening; eleven brushes, full picker and naming; actual
+  2048x2732 PNG download, 10/10 offline outlines, offline reload/Continue, remembered selection
+  and Reduce Motion passed. Inspected library/editor/theme-list/opening screenshots; no
+  browser JS errors or external requests. Her real iPad test is pending, not simulated here.
+- **Files/version:** functional edits only css/styles.css and js/themes.js; other modified JS,
+  index.html, sw.js and offline-assets.js contain generated version updates. Version
+  `20261021235410`; 59 app/thumbnail assets and the same 10 outlines. No painting, fill,
+  gesture, undo, storage, backup or export algorithm changes. Ignored tools/*.tmp holds
+  development checks and screenshots. This checkpoint includes Ocean Dreams's iPad acceptance.
+- **iPad handoff:** while online, App & offline -> Check for updates -> Update app. Choose
+  Themes -> Autumn Cottage -> Done. Check library, Pages, brush settings, Brushes and full
+  picker in both orientations. Draw/Undo/Redo, leave/reopen and Save to Photos; close/reopen
+  to verify remembered look/opening. Switch to another theme and back. Keep website data
+  and backups; no speed-log round is needed for this appearance-only update.
+- **Next:** wait for her Autumn Cottage acceptance. Then the clean minimal theme is the last
+  theme, followed by final polish/review. The illustrated brush column is still deferred.

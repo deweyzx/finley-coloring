@@ -1,7 +1,7 @@
 // Compact interface only. Drawing stays in editor.js and its original engines.
-import { openModal, closeModal, modalIsOpen } from './modal.js?v=20261021233948';
-import { setupPageBrowser } from './page-browser.js?v=20261021233948';
-import { currentColor, onPaletteChange, activePalette, recentColors } from './palette.js?v=20261021233948';
+import { openModal, closeModal, modalIsOpen } from './modal.js?v=20261021235410';
+import { setupPageBrowser } from './page-browser.js?v=20261021235410';
+import { currentColor, onPaletteChange, activePalette, recentColors } from './palette.js?v=20261021235410';
 
 export function setupWorkspace({currentPage, prepareChange, busy, preview, fit}) {
   const get=id=>document.getElementById(id), screen=get('coloring-screen');

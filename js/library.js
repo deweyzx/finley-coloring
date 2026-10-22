@@ -1,7 +1,7 @@
 // library.js - reads the list in pages/pages.js and fills in the details the app needs
 // (full file path, id, title), so the list itself can stay short and easy to edit.
 
-import { LIBRARY } from "../pages/pages.js?v=20261021233948";
+import { LIBRARY } from "../pages/pages.js?v=20261021235410";
 
 export const categories = [];
 const pagesById = new Map();
