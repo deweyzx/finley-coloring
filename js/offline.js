@@ -1,10 +1,10 @@
 // offline.js - Home Screen help, offline downloads, updates and moving her saved coloring.
 // The separate service worker keeps downloaded files; IndexedDB still keeps her artwork.
-import { categories, findPage } from "./library.js?v=20261021174002";
-import { SETTINGS } from "./settings.js?v=20261021174002";
-import { makeBackup, readBackup, restoreBackup } from "./backup.js?v=20261021174002";
-import { askConfirm } from "./dialogs.js?v=20261021174002";
-import { openModal, closeModal } from './modal.js?v=20261021174002';
+import { categories, findPage } from "./library.js?v=20261021201511";
+import { SETTINGS } from "./settings.js?v=20261021201511";
+import { makeBackup, readBackup, restoreBackup } from "./backup.js?v=20261021201511";
+import { askConfirm } from "./dialogs.js?v=20261021201511";
+import { openModal, closeModal } from './modal.js?v=20261021201511';
 
 const pages = categories.flatMap(c => c.subcategories.flatMap(s => s.pages));
 let registration = null, panel = null, busy = false, installPrompt = null;

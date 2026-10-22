@@ -5,39 +5,62 @@
 //   #/flowers/tulips    -> the pages in Tulips
 //   #/page/tulips       -> coloring the page "tulips"
 
-import { findCategory, findSubcategory, findPage } from "./library.js?v=20261021174002";
-import { showLibrary, showCategory, showSubcategory } from "./gallery.js?v=20261021174002";
-import { openEditor, closeEditor, prepareAppReload } from "./editor.js?v=20261021174002";
-import { setupOffline, offlineBusy } from "./offline.js?v=20261021174002";
+import { findCategory, findSubcategory, findPage } from "./library.js?v=20261021201511";
+import { showLibrary, showCategory, showSubcategory } from "./gallery.js?v=20261021201511";
+import { openEditor, closeEditor, prepareAppReload, preparePageChange, showToast } from "./editor.js?v=20261021201511";
+import { setupOffline, offlineBusy } from "./offline.js?v=20261021201511";
 
 const galleryScreen = document.getElementById("gallery-screen");
 const coloringScreen = document.getElementById("coloring-screen");
 const coloringBack = document.getElementById("back-button");
 let previousHash = location.hash || "#/";
+let editorPage = null;
+let navigation = Promise.resolve();
 setupOffline({prepareForReload:prepareAppReload, isLibrary:() => coloringScreen.hidden});
 
 function route() {
+  const target = location.hash || '#/';
+  // A quick page/back/page sequence must never let two image decodes paint the same canvas
+  // at once. Finish the current navigation, then honor the latest address.
+  navigation = navigation.then(() => showRoute(target)).catch(error => {
+    console.error('Could not change pages',error);
+    showToast('Your coloring could not finish saving. Keep this page open and try again.');
+    location.replace(previousHash);
+  });
+}
+async function showRoute(target) {
+  if (target !== (location.hash || '#/')) return;
   // A browser Back gesture during a restore/update must not open a page being replaced.
   if (offlineBusy()) { location.replace(previousHash); return; }
-  previousHash = location.hash || "#/";
-  const parts = location.hash
+  const parts = target
     .replace(/^#\/?/, "")
     .split("/")
     .filter(Boolean)
     .map(decodeURIComponent);
 
+  const nextPage = parts[0] === 'page' ? findPage(parts[1]) : null;
+  if(editorPage && nextPage?.id !== editorPage.id){
+    if(!await preparePageChange()){
+      location.replace(previousHash);
+      showToast('Finish the current stroke or let your coloring save before changing pages.');
+      return;
+    }
+    if(target !== (location.hash || '#/'))return;
+    closeEditor();editorPage=null;
+  }
+  previousHash = target;
+
   if (parts[0] === "page") {
     const page = findPage(parts[1]);
     if (!page) return redirect("#/");
-    const sub = page.subcategory;
-    coloringBack.href = `#/${sub.category.folder}/${sub.folder}`;
+    coloringBack.href = '#/';
     galleryScreen.hidden = true;
     coloringScreen.hidden = false;
-    openEditor(page);
+    if(editorPage?.id !== page.id){editorPage=page;await openEditor(page);}
     return;
   }
 
-  closeEditor();
+  if(editorPage){closeEditor();editorPage=null;}
   coloringScreen.hidden = true;
   galleryScreen.hidden = false;
 

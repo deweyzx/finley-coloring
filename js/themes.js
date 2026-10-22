@@ -1,6 +1,6 @@
 // themes.js - appearance only. Storybook is the first theme; add the next theme only after
 // Owen has tested this selector. Painting, palettes and the white artwork paper are separate.
-import { openModal, closeModal } from './modal.js?v=20261021174002';
+import { openModal, closeModal } from './modal.js?v=20261021201511';
 
 export const THEMES = [{id:'storybook', name:'Storybook', description:'Forest-green leather, warm parchment and gold.'}];
 const KEY = 'theme';

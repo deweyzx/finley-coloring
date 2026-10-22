@@ -3,6 +3,20 @@
 /* :where keeps this default theme at the same priority as :root. The smaller-screen
    sizing rules below can still adjust the layout when she rotates the iPad. */
 :root, :root:where([data-theme="storybook"]) {
+  /* Compact workspace/library materials and dimensions (approved refinement). */
+  --compact-bg:#f9f6ee; --compact-surface:#fffdf7; --compact-desk:#eee9dc;
+  --compact-green:#2d5942; --compact-selected:#e5ece0; --compact-line:#d9d4c6;
+  --compact-ink:#263c30; --compact-muted:#626759;
+  --compact-shadow:0 2px 10px rgba(35,39,25,.13);
+  --compact-target:44px; --compact-icon:21px; --compact-small-icon:13px;
+  --compact-topbar:60px; --compact-dock:64px; --compact-rail:68px;
+  --compact-drawer:320px; --compact-popover:340px; --compact-library:1080px;
+  --compact-heading:19px; --compact-section:23px; --compact-copy:13px;
+  --compact-small:11px; --compact-tiny:10px;
+  --compact-gap:24px; --compact-padding:28px; --compact-radius:8px;
+  --compact-header-icon:42px; --compact-continue-width:82px; --compact-continue-height:108px;
+  --compact-preview:64px; --compact-dot:27px;
+  --compact-paper-shadow:0 1px 4px rgba(25,38,29,.18);
   /* Parchment (the icon's pages) */
   --storybook-bg: #f3e8d0;
   --storybook-leather: #25482e;

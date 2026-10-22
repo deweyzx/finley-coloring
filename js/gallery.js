@@ -1,9 +1,9 @@
 // gallery.js - the library screens: all categories -> one category -> one sub-category.
 // They all use the same grid of cards; only the cards and the header change.
 
-import { categories, coverPage, problems, findPage } from "./library.js?v=20261021174002";
-import { getThumbnailURL } from "./thumbnails.js?v=20261021174002";
-import { getPreviewURL, getProgressTimes, previewsReady } from "./autosave.js?v=20261021174002";
+import { categories, coverPage, problems, findPage } from "./library.js?v=20261021201511";
+import { getThumbnailURL } from "./thumbnails.js?v=20261021201511";
+import { getPreviewURL, getProgressTimes, previewsReady } from "./autosave.js?v=20261021201511";
 
 const grid = document.getElementById("gallery-grid");
 const titleEl = document.getElementById("library-title");
@@ -13,6 +13,24 @@ const noticeEl = document.getElementById("library-notice");
 const sectionTitle = document.getElementById("library-section-title");
 const scroll = document.getElementById("library-scroll");
 const continueCard = document.getElementById("continue-card");
+const search = document.getElementById('library-search');
+const allPages = categories.flatMap(cat=>cat.subcategories.flatMap(sub=>sub.pages));
+let browsing = null;
+function showView(title,crumb,back,cards,home=false){
+  browsing={title,crumb,back,cards,home};search.value='';refreshView();
+}
+function refreshView(){
+  if(!browsing)return;
+  const query=search.value.trim().toLocaleLowerCase();
+  const cards=query?allPages.filter(page=>`${page.title} ${page.subcategory.name} ${page.subcategory.category.name}`.toLocaleLowerCase().includes(query)).map(page=>({title:page.title,detail:`${page.subcategory.category.name} / ${page.subcategory.name}`,cover:page,pages:[page],href:`#/page/${encodeURIComponent(page.id)}`})):browsing.cards;
+  setHeader(query?'Search results':browsing.title,query?'':browsing.crumb,query?'#/':browsing.back);
+  const total=countText(cards.reduce((sum,card)=>sum+card.pages.length,0));
+  document.getElementById('library-count').textContent=query?countText(cards.length):`${cards.some(card=>card.stacked)?`${cards.length} collections · `:''}${total}`;
+  grid.dataset.collections=String(!query&&cards.some(card=>card.stacked));
+  renderCards(cards.map(card=>({...card})),browsing.home&&!query);
+}
+search.addEventListener('input',refreshView);
+backLink.addEventListener('click',()=>{if(search.value){search.value='';if(location.hash==='#/'||!location.hash)showLibrary();}});
 
 const APP_NAME = "Finley's Coloring Book";
 
@@ -23,8 +41,7 @@ if (problems.length) {
 }
 
 export function showLibrary() {
-  setHeader(APP_NAME, "", null);
-  renderCards(categories.map((cat) => ({
+  showView(APP_NAME, "", null, categories.map((cat) => ({
     title: cat.name,
     detail: countText(cat.pageCount),
     cover: coverPage(cat),
@@ -35,8 +52,7 @@ export function showLibrary() {
 }
 
 export function showCategory(cat) {
-  setHeader(cat.name, "", "#/");
-  renderCards(cat.subcategories.map((sub) => ({
+  showView(cat.name, "", "#/", cat.subcategories.map((sub) => ({
     title: sub.name,
     detail: countText(sub.pages.length),
     cover: coverPage(sub),
@@ -47,8 +63,7 @@ export function showCategory(cat) {
 }
 
 export function showSubcategory(sub) {
-  setHeader(sub.name, sub.category.name, `#/${sub.category.folder}`);
-  renderCards(sub.pages.map((page) => ({
+  showView(sub.name, sub.category.name, `#/${sub.category.folder}`, sub.pages.map((page) => ({
     title: page.title,
     cover: page,
     pages: [page],
@@ -104,7 +119,7 @@ async function renderCards(cards, home = false) {
   if (cards.length === 0) {
     const empty = document.createElement("p");
     empty.className = "empty-message";
-    empty.textContent = "No pages here yet.";
+    empty.textContent = search.value.trim() ? 'No pages match this search.' : 'No pages here yet.';
     grid.append(empty);
     return;
   }

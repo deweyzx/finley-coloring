@@ -2,24 +2,25 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=20261021174002";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=20261021174002";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=20261021174002";
-import { setupColorPicker } from "./color-picker.js?v=20261021174002";
-import { setupSavePicture } from "./save-picture.js?v=20261021174002";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=20261021174002";
-import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=20261021174002";
-import { createSlider } from "./slider.js?v=20261021174002";
-import { History } from "./history.js?v=20261021174002";
-import { Viewport } from "./viewport.js?v=20261021174002";
-import { setupInput } from "./touch-input.js?v=20261021174002";
-import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=20261021174002";
-import { runSpeedTest } from "./speed-test.js?v=20261021174002";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=20261021174002";
-import { SETTINGS } from "./settings.js?v=20261021174002";
-import { hexToHsv, hsvToHex } from "./color.js?v=20261021174002";
-import { rememberPageForOffline } from "./offline.js?v=20261021174002";
-import { openModal, closeModal, modalIsOpen } from './modal.js?v=20261021174002';
+import { loadImage, drawLineArt } from "./lineart.js?v=20261021201511";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=20261021201511";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=20261021201511";
+import { setupColorPicker } from "./color-picker.js?v=20261021201511";
+import { setupSavePicture } from "./save-picture.js?v=20261021201511";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=20261021201511";
+import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=20261021201511";
+import { createSlider } from "./slider.js?v=20261021201511";
+import { History } from "./history.js?v=20261021201511";
+import { Viewport } from "./viewport.js?v=20261021201511";
+import { setupInput } from "./touch-input.js?v=20261021201511";
+import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=20261021201511";
+import { runSpeedTest } from "./speed-test.js?v=20261021201511";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=20261021201511";
+import { SETTINGS } from "./settings.js?v=20261021201511";
+import { hexToHsv, hsvToHex } from "./color.js?v=20261021201511";
+import { rememberPageForOffline } from "./offline.js?v=20261021201511";
+import { openModal, closeModal, modalIsOpen } from './modal.js?v=20261021201511';
+import { setupWorkspace } from './workspace-ui.js?v=20261021201511';
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");
@@ -44,7 +45,15 @@ const view = new Viewport(area, paper, () => schedulePreview());
 // ---------- Tools ----------
 // Fill reacts to taps; every brush in brushes.js draws strokes.
 
-const tools = { fill: { tap: (point) => fillAt(point) } };
+const pendingFills = new Set();
+const tools = { fill: { tap: (point) => {
+  const job = fillAt(point);
+  pendingFills.add(job);
+  job.then(() => pendingFills.delete(job), error => {
+    pendingFills.delete(job);console.error('Fill failed',error);showToast('This fill could not finish. Please try again.');
+  });
+  return job;
+} } };
 for (const id of Object.keys(BRUSHES)) tools[id] = { brush: BRUSHES[id] };
 let currentTool = "fill";
 
@@ -171,6 +180,10 @@ function makeSwitch(id, storageKey, startOn) {
 }
 const lineLock = makeSwitch("line-lock", "line-lock", true);
 const buildUp = makeSwitch("build-up", "build-up", true);
+// Keep the accepted finger behavior as the default, and expose its remembered switch.
+const fingerDraw = makeSwitch("finger-draw", "finger-draw", SETTINGS.fingersDraw);
+SETTINGS.fingersDraw = fingerDraw.on;
+fingerDraw.button.addEventListener('click', () => { SETTINGS.fingersDraw = fingerDraw.on; });
 
 // Hidden: tapping the page title 5 times quickly shows/hides the touch debug log.
 let titleTaps = [];
@@ -213,7 +226,7 @@ redoButton.addEventListener("click", () => redo());
 
 // A small label that flashes in the middle of the page, so she knows a gesture worked.
 const toast = document.getElementById("toast");
-function showToast(text) {
+export function showToast(text) {
   toast.textContent = text;
   toast.classList.remove("show");
   void toast.offsetWidth; // restart the fade animation
@@ -315,7 +328,13 @@ selectTool(currentTool);
 // opacity, texture and color, drawn from light pressure (left) to full pressure (right).
 function drawPreview() {
   const brush = BRUSHES[currentTool];
+  const size = brush ? Math.round(brushSettings(currentTool).size) : '—';
+  document.getElementById('dock-size').textContent = size;
+  document.getElementById('brush-options-title').textContent = brush?.name || 'Fill';
+  document.getElementById('brush-options-button').setAttribute('aria-label', brush ? `${brush.name} settings, size ${size}` : 'Fill settings');
   if (brush && brush.paint === "color") lastColorTool = currentTool;
+  // There is no need to render textures while the popover is closed.
+  if (document.getElementById('brush-options').hidden) return;
   // Size as it looks on screen right now (capped so it fits in the preview).
   drawSample(preview, currentTool, (box, ratio) => {
     const onScreen = brushSettings(currentTool).size * (view.scale || 1) * ratio;
@@ -426,6 +445,7 @@ export async function openEditor(page) {
   currentPage = page;
   fillReady = null;
   titleEl.textContent = page.title;
+  document.getElementById('page-subtitle').textContent = `${page.subcategory.category.name} / ${page.subcategory.name}`;
   paper.setAttribute("aria-label", `${page.title} coloring page`);
   paper.hidden = true;
   messageEl.textContent = "Loading…";
@@ -560,6 +580,19 @@ export async function prepareAppReload() {
   if (currentPage || stroke) return false;
   await lastSave;
   return !lastSaveFailed && !unsaved;
+}
+
+// Both drawer choices and browser Back use this gate. Keep the canvas/paint memory alive
+// until the outgoing PNG and progress thumbnail have finished saving.
+export async function preparePageChange() {
+  if (stroke) return false;
+  if (pendingFills.size) await Promise.all([...pendingFills]);
+  // Let an earlier autosave finish before starting another snapshot for navigation.
+  await lastSave;
+  if (stroke || pendingFills.size) return false;
+  saveNow();
+  await lastSave;
+  return !stroke && !pendingFills.size && !lastSaveFailed && !unsaved;
 }
 
 function markChanged(keepBlendPass = false) {
@@ -1018,3 +1051,7 @@ window.addEventListener("resize", () => {
   if (currentPage && !paper.hidden) view.fit();
   else drawPreview();
 });
+
+setupWorkspace({currentPage:() => currentPage, prepareChange:preparePageChange,
+  busy:() => !!stroke, preview:drawPreview,
+  fit:() => { if(currentPage && !paper.hidden) view.fit(); }});

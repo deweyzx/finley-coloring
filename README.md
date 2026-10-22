@@ -19,6 +19,8 @@ Don't open `index.html` by double-clicking. Browsers block some features for fil
 | `sw.js`, `offline-assets.js` | Offline files and verified updates; generated file list |
 | `js/offline.js`, `js/backup.js` | App/offline window, downloads, updates and editable-coloring backups |
 | `css/styles.css` | All the looks: colors, sizes, layout |
+| `css/compact.css` | Compact library and coloring layout (tokens stay in styles.css) |
+| `js/workspace-ui.js`, `js/page-browser.js` | Pop-open controls, focus mode and Pages drawer |
 | `fonts/` | Local Literata/Figtree fonts and their free-font licenses; available offline |
 | `js/app.js` | Starts the app and picks the screen from the address (`#/flowers/tulips`) |
 | `js/library.js` | Reads `pages/pages.js` and works out each page's path, id and title |
@@ -37,6 +39,7 @@ Don't open `index.html` by double-clicking. Browsers block some features for fil
 | `pages/<category>/<sub-category>/` | The page images |
 | `thumbs/<category>/<sub-category>/` | Small previews of each page for the library (made by the import tool) |
 | `serve.py`, `start-server.bat` | Local test server (only for your PC, not part of the app) |
+| `start-design-preview.bat` | Separate mockup server on port 8001; avoids the app's offline cache |
 | `import-pages.bat`, `tools/import_pages.py` | The import tool (see below) |
 | `tools/stamp_version.py` | Gives every file a version stamp before an upload, so the iPad never mixes old and new files |
 | `tools/import-log.json` | The import tool's record of what it has imported |
@@ -380,9 +383,12 @@ this issue. The repair copies the backup's compressed data independently of the 
 
 ### Project checkpoint and next step
 
-Latest app checkpoint: **Step 12 part 3, version 20261021174002**, the Storybook Themes selector
-and matching windows. **PC review passed** ("everything worked"); checkpoint/upload approved,
-**iPad check pending**. The previous checkpoint **14eb58e, version 20261021162959** delivered the
+Current checkpoint: **compact interface, version 20261021201511**, accepted on PC ("works great").
+Checkpoint/upload is approved; the iPad review is next. Use `git log -1` for the checkpoint hash.
+
+Previous accepted app checkpoint: **38b4c83, Step 12 part 3, version 20261021174002**, the Storybook Themes selector
+and matching windows, uploaded with live files verified. **PC and iPad reviews passed**
+("everything worked", then "ipad test worked"). The previous checkpoint **14eb58e, version 20261021162959** delivered the
 approved opening animation, accepted on PC and iPad (2026-10-21). Earlier checkpoint **0ff818a** delivered
 part 1's Storybook library/coloring design and slider repair, accepted on PC and iPad (2026-10-21).
 Home Screen installation and offline coloring were accepted on Finley's iPad in step 11,
@@ -392,7 +398,10 @@ This checkpoint includes the part 1 iPad acceptance, part 2 PC acceptance and fu
 request. The brush chooser idea is recorded below and has not been implemented.
 This checkpoint includes part 2's subsequent iPad acceptance and part 3's implementation and
 passed PC review in all three guides. Storybook is the only theme in this first selector round;
-each alternate theme will be built and tested separately after its iPad check passes.
+its iPad check has passed. Each alternate theme will still be built and tested separately.
+Both compact mockups are approved ("everything looks great!"). The actual compact interface
+**20261021201511** also passed its PC test ("works great"). This checkpoint includes that
+implementation, part 3's iPad acceptance and the preview-server repair. The iPad test is next.
 
 ## Storybook design (step 12, part 1)
 
@@ -478,8 +487,8 @@ for reference; there is no pending repeat check.
 
 ## Themes and matching windows (step 12, part 3)
 
-**PC review passed:** Owen confirmed "everything worked". This checkpoint is approved for
-upload; the iPad review is the next check.
+**PC and iPad reviews passed:** Owen confirmed "everything worked", then "ipad test worked"
+after upload 38b4c83. This round is complete.
 
 The library now has a **Themes** button. It offers **Storybook** first: forest-green leather,
 warm parchment and gold, with a preview and selected checkmark. Tap its card to remember the
@@ -508,7 +517,9 @@ Theme choice is a device preference and is not included in the coloring backup.
 5. Try **Save → Download picture** and inspect the matching **App & offline** window.
 6. Owen reported "everything worked", approving checkpoint/upload. No repeat PC check is needed.
 
-### Check part 3 on her iPad
+### Part 3 iPad checklist (passed)
+
+Owen reported "ipad test worked". Keep this checklist for reference; no repeat check is pending.
 
 1. While online in the installed app, choose **App & offline → Check for updates → Update app**
    when offered. The update should show the **Themes** button on the library.
@@ -521,8 +532,9 @@ Theme choice is a device preference and is not included in the coloring backup.
 Local checks passed for window layouts, color/palette controls, large saved palettes, keyboard
 focus, drawing/Undo, PNG download, backup/restore, offline opening, safe updates and the existing
 intro/sliders. They used separate test storage. Chrome checks with an Apple-platform stub
-covered the share/download buttons; real Safari, Pencil and VoiceOver checks still require the
-iPad after upload. The full development notes are in CLAUDE.md and AGENTS.md.
+covered the share/download buttons. The later iPad report supplies acceptance of the requested
+Safari/Pencil checklist; VoiceOver was not explicitly reported. The full development notes
+are in CLAUDE.md and AGENTS.md.
 
 ## Saved idea for later: brush column
 
@@ -530,3 +542,98 @@ Owen would like the brushes displayed individually in a column, each with its ow
 icon or brush-type illustration, instead of the current brush chooser presentation. This is
 saved for a future UI change, not built or scheduled yet. We'll review the exact layout when
 that work starts; the brushes' drawing behavior stays the same.
+
+## Requested design refinement: a more compact workspace
+
+Owen would like a smaller, cleaner, more professional interface with Storybook character,
+and a side menu for picking pages. The proposed direction is more room for the picture,
+less bulky padding and decoration, and a **Pages** button opening categories, sub-categories
+and small progress thumbnails beside the editor. The drawer would close out of the way and
+overlay the picture on narrow screens. Controls should look lighter while staying comfortable
+to tap with the Pencil or a finger.
+
+This request is recorded for a layout mockup/review before replacing the accepted interface.
+Both mockups are now approved. The real compact interface also passed its own PC test
+("works great"). It comes before the
+alternate themes; those still come one at a time. The separate brush-column idea remains saved.
+Part 3's iPad check passed. This checkpoint includes the compact implementation and
+acceptance/design notes; the compact app's iPad review remains pending.
+
+### Try the compact layout mockup
+
+Owen authorized the preview with "okay lets do it". Double-click **`start-design-preview.bat`**,
+leave its window open, then open:
+
+**http://localhost:8001/tools/design.tmp/compact-workspace.html**
+
+This is a separate local preview; it has not replaced or updated the working app.
+Use **8001** for mockups and **8000** for normal app testing. The app's offline helper can
+substitute its home screen for other pages on port 8000, making a mockup appear unstyled.
+The preview server prevents that conflict. No website data needs clearing.
+
+- **Pages:** browse back through sub-categories and collections, search, and choose a page.
+- **Tool strip:** pick tools, open all Brushes, then try the size/settings button and color dot.
+- **Options (…):** choose **Focus on picture** to hide the controls; **Show tools** brings them back.
+- Try a tall and a wide window. The bottom strip becomes a slim side rail when wide.
+
+The colored Daffodil is an example. This preview does not paint, export or save coloring; those
+actions stay in the working app. Settings in the preview last only for the visit. It does not
+read or change your saved pages. Tell us what you think of the space, control sizes and layout
+before we implement it. The prototype files are in the same Git-ignored `tools/design.tmp/`
+folder as the older mockups, so they are local and not part of a fresh clone or the live app.
+
+### Try the matching home/library preview
+
+Owen approved the coloring design's visual direction ("looks amazing", "spectacular") and
+agreed to a matching home page. Open:
+
+**http://localhost:8001/tools/design.tmp/compact-library.html**
+
+Use `start-design-preview.bat` if needed. The home preview has a shorter green header,
+smaller collection covers, a compact continue banner, search and quieter gold/green details.
+Click **Flowers → Tiger Lilies → a page** to open the coloring preview. In that preview,
+**… → Back to library** returns here. **Continue** opens the example Daffodil.
+
+Review the home design in a tall and a wide window. The example progress is not your actual
+saved coloring. Both mockups were accepted; the real app implementation subsequently passed
+its PC test (below) and is approved for upload and iPad testing.
+
+## Working compact app (PC accepted; iPad test next)
+
+This is the real app with the approved compact design, not the mockups. Start
+**`start-server.bat`**, then open **http://localhost:8000**. If you still see the old cached
+layout, choose **App & offline → Check for updates → Update app** when offered. Keep website
+data. The separate port **8001** still serves only design previews.
+
+1. Check the smaller home page, search, collection navigation and real **Where you left off**
+   card (it appears only when you have saved coloring).
+2. Open a real page and color a little. Tap **Pages**, choose another page, then return to
+   the first. Your latest coloring should remain, and thumbnails should show it. The app
+   waits for the save before changing pages; it keeps the picture open if saving fails.
+3. Tap the **size number** for brush size, opacity, preview and the three switches. Try
+   **Brushes** and the **color dot → More** for the full picker and saved palettes.
+4. Try Undo/Redo, **… → Focus on picture → Show tools**, **Fit**, **… → Back to library**,
+   and **… → Start over → Keep coloring**. Try a tall and a wide window.
+5. Check **Save → Download picture** and leave/reopen a colored page once more.
+
+The original brush textures, pressure settings, line-lock, build-up, gestures and data format
+remain. Draw with finger is available in the settings popup and remembers its choice; its
+default stays on, matching the accepted app behavior. All original brushes, full palettes,
+Photos export, backups and offline pages stay connected. Your actual progress is used here;
+the colored demo Daffodil exists only in the separate mockup.
+
+Local checks passed for layouts, real strokes/Undo, page switching/saves, progress, full color
+picker, settings, export, backup restore, offline operation, safe updates and the opening.
+A failed-save simulation kept the editable picture open. A separate 300-page simulation
+loaded only nearby thumbnails and the full outline of the opened page. These used isolated
+test storage. Owen confirmed the actual PC app "works great", approving checkpoint/upload.
+
+### Check the compact app on her iPad
+
+1. Open the installed app, then **App & offline → Check for updates → Update app**.
+2. Check the compact library, search and Continue. Open a page, color a little, switch using
+   **Pages**, then return. The latest coloring and progress thumbnail should remain.
+3. Try the Pencil and finger, size/settings, color dot → More, Brushes and Undo/Redo.
+4. Try **… → Back to library**, Focus/Show tools, Fit and Save to Photos in both orientations.
+
+Keep website data and backups. Report how this feels on her iPad before we start another theme.

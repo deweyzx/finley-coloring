@@ -19,8 +19,8 @@ table, and any decisions that changed.
   fonts, including the slider overlap repair. Owen accepted the repaired sliders with "looks good"
   on 2026-10-21, approving the checkpoint/upload under the agreed PC → commit/push → iPad flow.
   After upload 0ff818a, Owen confirmed the iPad checklist "everything works good" (2026-10-21).
-  Part 2, Splash D, is also complete and accepted on PC and her iPad. Part 3 passed Owen's PC
-  review ("everything worked"); this checkpoint is approved for upload and the iPad check.
+  Parts 2 (Splash D) and 3 (Storybook Themes and matching windows) are also complete and
+  accepted on PC and her iPad. Part 3: PC "everything worked", then "ipad test worked".
   Themes start with Storybook alone,
   followed by one alternate theme at a time, with Owen testing each before the next is built.
 - **Latest report:** step 12 part 1 works on her iPad ("everything works good", 2026-10-21).
@@ -31,15 +31,24 @@ table, and any decisions that changed.
   for careful progress while he was at the gym, authorizing part 3: the Themes button with
   Storybook alone plus the remaining window restyles. Owen confirmed "everything worked"
   after the PC checklist, approving version `20261021174002` for checkpoint/upload under the
-  agreed workflow. Part 3's iPad review is pending. Do not add alternate themes before it passes.
+  agreed workflow. After upload 38b4c83, Owen confirmed "ipad test worked" (2026-10-21).
+  Parts 1–3 are accepted. Owen then said "okay lets do it" to the compact-workspace mockup.
+  Owen then said the coloring mockup "looks amazing" and "spectacular", approving its visual
+  direction, and agreed to a matching home/library preview. He then said "everything looks
+  great!", accepting both mockups. Owen then tested the actual compact app and reported
+  "works great", accepting version `20261021201511` on PC and approving its checkpoint/upload.
+  The compact interface now awaits its iPad review. No alternate theme has started.
   A future brush-column request is recorded below; it is not part of this implementation.
 - **Earlier step 11 acceptance:** after repair 173f41d, Owen said "everything returned". He then explicitly
   confirmed the entire final checklist "all worked perfectly": Save all pages offline showed
   10 of 10; the installed app reopened in Airplane Mode; a colored page opened, a new stroke
   survived leaving/reopening, and rotation worked. This supersedes older pending-retest notes.
-- **Latest app code checkpoint:** this Step 12 part 3 checkpoint, version `20261021174002`:
-  Storybook Themes selector and remaining windows; PC accepted, upload authorized, iPad pending.
-  Read `git log -1` for its commit ID. Previous checkpoint: 14eb58e, Step 12 part 2, version
+- **Current checkpoint:** compact library, coloring controls and Pages drawer, version
+  `20261021201511`; PC accepted ("works great"), checkpoint/upload approved, iPad pending.
+  Use `git log -1` for this checkpoint hash.
+- **Previous accepted app checkpoint:** 38b4c83, Step 12 part 3, version `20261021174002`:
+  Storybook Themes selector and remaining windows; committed/pushed to main, live files verified
+  against the checkpoint, PC and iPad accepted. Previous checkpoint: 14eb58e, part 2, version
   `20261021162959`, deployed and accepted on PC and her iPad. Earlier checkpoint: 0ff818a,
   Step 12 part 1 (`20261021155109`), accepted
   on her iPad. Earlier app checkpoint: 173f41d,
@@ -65,8 +74,9 @@ table, and any decisions that changed.
   The part 2 checkpoint includes part 1's iPad acceptance, part 2's PC acceptance, and the
   deferred brush-column request in all three guides. Keep these guides synchronized.
   This part 3 checkpoint includes part 2's iPad acceptance, part 3's implementation and passed
-  PC review in all three guides. Part 3's iPad acceptance is still pending; keep both guides
-  and README synchronized when Owen reports it. Alternate themes remain separate test rounds.
+  PC review in all three guides. The compact checkpoint includes part 3's iPad acceptance,
+  both approved mockups, the real implementation and Owen's PC acceptance ("works great").
+  The preview-server repair is included too. Alternate themes remain separate test rounds.
 
 ### Accepted checkpoints
 
@@ -77,7 +87,8 @@ table, and any decisions that changed.
 | 173f41d | Independent restored bytes, matching-date repair, readback verification | iPad restore recovered; final offline/reopen checklist then passed |
 | 0ff818a, Step 12 part 1, version 20261021155109 | Storybook library/coloring screens, offline fonts, accessible controls and slider repair | PC and her iPad accepted |
 | 14eb58e, Step 12 part 2, version 20261021162959 | Approved opening cover, ivy/golden thread, skip and Reduce Motion | PC and her iPad accepted |
-| This checkpoint, Step 12 part 3, version 20261021174002 | Storybook Themes selector, matching windows and shared modal focus | PC accepted; iPad check pending |
+| 38b4c83, Step 12 part 3, version 20261021174002 | Storybook Themes selector, matching windows and shared modal focus | Uploaded; PC and iPad accepted |
+| This checkpoint, version 20261021201511 | Compact library, coloring controls, Pages drawer and preview-server repair | PC accepted; approved checkpoint/upload; iPad pending |
 
 ## Where we are
 
@@ -150,8 +161,12 @@ table, and any decisions that changed.
   See "Step 12: approved design and build plan" for the exact
   scope and local checks. Part 2, Splash D, is committed/uploaded as 14eb58e and accepted on
   PC and her iPad. Part 3 (`20261021174002`) passed PC review ("everything worked"); checkpoint
-  and upload approved, iPad review pending. Themes starts with Storybook alone and the remaining
-  windows share its design. Then each alternate theme is built and tested separately.
+  and upload completed as 38b4c83, then iPad accepted ("ipad test worked"). Themes starts with
+  Storybook alone and the remaining windows share its design. The new compact-workspace/page
+  drawer and matching library mockups were approved ("everything looks great!"). The real
+  compact interface (`20261021201511`) passed Owen's PC test ("works great"); checkpoint/upload
+  approved, iPad review pending.
+  Alternate themes still come separately after this interface passes PC and iPad.
 
 ## How to work with Owen
 
@@ -197,7 +212,7 @@ table, and any decisions that changed.
 | 9 | Export the finished picture to Photos | ✅ |
 | 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | ✅ all three batches confirmed on iPad |
 | 11 | Installable + offline (manifest, service worker, icons), coloring backup/transfer | ✅ PC and installed iPad app accepted, including offline/reopen |
-| 12 | Magical storybook look, Themes, polish | parts 1 + 2 PC/iPad accepted; part 3 PC accepted, iPad check pending; alternate themes later, one at a time |
+| 12 | Magical storybook look, Themes, polish | parts 1–3 PC/iPad accepted; both compact mockups approved; real compact interface PC accepted, iPad pending; alternate themes later, one at a time |
 
 ### Notes for future steps
 
@@ -970,6 +985,9 @@ implementations. Use the current settings table and later optimization notes for
 | `js/offline.js` | App/offline window, downloads, install help, update and backup controls |
 | `js/backup.js` | Download/restore editable coloring backups |
 | `css/styles.css` | All styling; design tokens in `:root` |
+| `css/compact.css` | Approved compact library/workspace layout; its tokens live in styles.css |
+| `js/workspace-ui.js` | Settings/color/options windows, focus mode, fit, current color indicator |
+| `js/page-browser.js` | Editor Pages drawer, categories/search, lazy real progress thumbnails, safe choices |
 | `js/app.js` | Router: address → screen |
 | `js/library.js` | Reads `pages/pages.js`, builds page objects |
 | `js/gallery.js` | Library screens, progress ribbons, collection stacks and actual most-recent continue card |
@@ -1002,6 +1020,7 @@ implementations. Use the current settings table and later optimization notes for
 | `pages/pages.js` | The library list |
 | `tools/import_pages.py`, `import-pages.bat` | Import tool |
 | `serve.py`, `start-server.bat` | Local test server |
+| `start-design-preview.bat` | Isolated design-preview server, port 8001, no app offline helper |
 | `README.md` | Owen's beginner guide (running, importing, settings) |
 
 ## Home Screen, offline files and backups (step 11)
@@ -1143,7 +1162,8 @@ animation on PC ("looks perfect"). Part 2 was committed/uploaded as 14eb58e (ver
 artwork matched local files. Owen then confirmed the iPad checklist "everything works perfect"
 (2026-10-21). Parts 1 and 2 are complete. Owen subsequently authorized careful progress while
 away at the gym. Part 3 subsequently passed his PC review ("everything worked"); this checkpoint
-is approved for upload, with the iPad check pending. See its handoff below.
+was uploaded as 38b4c83, then Owen confirmed "ipad test worked". Parts 1–3 are accepted.
+His newer compact-workspace/page-drawer request is recorded below; exact layout awaits review.
 The separate brush-column idea is saved for later; no brush UI was redesigned here.
 
 ### Owen's choices
@@ -1161,7 +1181,8 @@ The separate brush-column idea is saved for later; no brush UI was redesigned he
 
 `tools/design.tmp/` on Owen's PC. **That folder is git-ignored (`*.tmp`) and exists only on
 his PC; it is not in the repository or on GitHub.** View it with `start-server.bat`, then
-http://localhost:8000/tools/design.tmp/... Final versions:
+http://localhost:8001/tools/design.tmp/... (start `start-design-preview.bat`; use the separate
+preview port to avoid the working app's offline navigation fallback). Final versions:
 
 | File | What it is |
 |---|---|
@@ -1297,7 +1318,7 @@ No text, about 2.9 s, shown when the app opens, then removed from the page.
   finger/Pencil skip. A separate iPad Reduce Motion/VoiceOver report has not been supplied.
   Splash colors come from theme variables so each later theme can recolor it.
 
-### Build order (parts 1 + 2 PC/iPad accepted; part 3 PC accepted, iPad pending)
+### Build order (parts 1–3 PC/iPad accepted; compact layout PC accepted, iPad pending)
 
 1. **Library and coloring screens:** new tokens and components in css/styles.css (all colors,
    fonts, sizes as variables), bundled fonts, header/continue card/collection stacks in
@@ -1306,6 +1327,10 @@ No text, about 2.9 s, shown when the app opens, then removed from the page.
 2. **Splash D** (theme-colored, Reduce Motion, skip, removed after it ends). Owen tests on PC.
 3. **Themes button with Storybook first**, plus the remaining windows (picker, Brushes,
    dialogs, App & offline, export). Test the Storybook selector/settings before adding themes.
+   **New refinement after part 3 acceptance:** Owen requested a smaller, cleaner workspace
+   with a Pages drawer and authorized its mockup. Both coloring and library mockups are now
+   accepted. Their real implementation is local and awaits PC testing. This does not authorize all
+   alternate themes or the separate illustrated brush column.
 4. **Other themes ONE AT A TIME:** Midnight Forest, Ocean Dreams, Autumn Cottage, then a clean
    minimal one. Owen explicitly requested an opportunity to test EACH before the next is built.
    Each theme is one CSS-variable block `:root[data-theme="..."]` plus a small JS settings object
@@ -1382,7 +1407,7 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   and checkpoint/upload under the agreed workflow. Version `20261021162959` was uploaded as
   14eb58e. Owen subsequently reported "everything works perfect" on the iPad (2026-10-21).
   Part 2 is complete and accepted. Part 3 was subsequently authorized and passed PC review;
-  its iPad review is pending. It is not included in 14eb58e.
+  its later iPad review also passed after 38b4c83. It is not included in 14eb58e.
 - **Approved sequence:** about 2.87 seconds: green leather, gold tooling/corner flourishes,
   growing ivy, enchanted-book medallion and rim light, pencil-tip flare, golden thread with
   aligned star/dust, landing flare and a soft parchment circle fading into the existing screen.
@@ -1428,14 +1453,15 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
 - **Next after this part:** the Themes button with Storybook alone and the remaining windows,
   then each alternate theme separately. Do not build them during part 2.
 
-### Part 3 implementation and handoff (2026-10-21; PC accepted, iPad pending)
+### Part 3 implementation and handoff (2026-10-21; PC and iPad accepted)
 
 - **Authorization/status:** Owen asked for as much careful progress as possible while he was
   at the gym. This authorized the next agreed part, not batching the alternate themes. Local
   version `20261021174002` contains the working Storybook Themes selector and remaining window
   restyles. Owen then confirmed "everything worked" after the PC checklist, approving this
-  checkpoint/upload under the agreed workflow. Its iPad check is pending. Do not start
-  Midnight Forest until Owen confirms this Storybook round on the iPad.
+  checkpoint/upload under the agreed workflow. Uploaded as 38b4c83; Owen then reported
+  "ipad test worked" (2026-10-21). Part 3 is accepted. The new compact-layout request below
+  should be reviewed before implementing it; no alternate theme has started.
 - **Themes:** the library's new Themes button opens a parchment window with one Storybook
   preview/card and a clear selected checkmark. `js/themes.js` owns the small theme list,
   applies `data-theme` to the HTML root, updates the browser theme-color and remembers the
@@ -1492,7 +1518,9 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   a shared PNG file, Download instead and its position at three sizes. This is not real Safari,
   the native share sheet, Pencil input, VoiceOver or an iPad software-keyboard check. Safari
   long-press styling was preserved, not retested on-device. Owen/Finley supply iPad acceptance
-  after an approved upload; do not report part 3 as accepted yet.
+  after an approved upload. Owen's subsequent "ipad test worked" supplies acceptance of the
+  requested device checklist. VoiceOver and a separate software-keyboard check were not
+  explicitly reported; do not claim those as independently verified.
 - **PC review passed:** Owen reported "everything worked" after the following checklist.
   Start `start-server.bat`, open http://localhost:8000 in Chrome. If an existing
   local tab serves the older cache, use App & offline → Check for updates → Update app when
@@ -1500,12 +1528,220 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   Open a real page and inspect More colors (including naming/canceling a palette), Brushes,
   Save/Download picture, Start over → Keep coloring, and App & offline. Try tall/wide windows,
   verify a short stroke/Undo and leave/reopen. This is accepted, not a pending repeat check.
-- **iPad check pending:** while online in the installed app, use App & offline → Check for
+- **iPad check passed:** Owen reported "ipad test worked" after upload 38b4c83. The requested
+  checklist is kept for reference, not a pending repeat check: while online, App & offline → Check for
   updates → Update app when offered. Check Themes → Storybook (select, close/reopen), More
   colors and palette naming with Pencil/finger, Brushes, Save to Photos/Download instead,
   upright/sideways scrolling, then a short stroke/Undo and leave/reopen. Keep existing data;
-  do not clear website data or reinstall. Real device acceptance remains Owen's next report.
-- **Next:** after Storybook part 3 passes PC and iPad, Midnight Forest gets its own build/test
-  round, then Ocean Dreams, Autumn Cottage and the minimal theme separately. Gentle effect
-  polish remains within the approved theme plan and must respect Reduce Motion. Do not start
-  alternate themes or the future brush column merely because Owen is away.
+  do not clear website data or reinstall. This round is accepted on PC and iPad.
+- **Next:** part 3 has passed PC and iPad. Owen's subsequent compact-workspace/library
+  refinement is now in design review (below). After the shared layout is settled, Midnight
+  Forest, Ocean Dreams, Autumn Cottage and the minimal theme still get separate build/test
+  rounds. Gentle effect polish must respect Reduce Motion. No alternate themes or future
+  illustrated brush column have been implemented.
+
+### New design direction: compact workspace and page drawer (2026-10-21)
+
+- **Owen's feedback after part 3 upload:** the UI feels too large. He wants an option to pick
+  pages from a side menu, and an overall cleaner, smoother, smaller, more professional feel,
+  with the character of Storybook. Pigment is a quality/usability reference; retain original
+  visuals and do not copy its assets or exact interface.
+- **Proposed refinement, not an approved detailed layout yet:** give the artwork more room;
+  add a Pages button in the editor opening a closable side drawer with categories,
+  sub-categories and small progress thumbnails. On narrow screens it should overlay rather
+  than permanently take canvas space. Keep full outlines lazy-loaded and preserve auto-save
+  when changing pages. A persistent pinned drawer on wide screens is optional, not requested.
+- Reduce padding, header height, heavy borders/shadows, repeated labels and permanently
+  visible secondary controls. Keep a concise primary tool area; expose brush options and
+  detailed colors when needed. Preserve white art paper, clear selection/focus and comfortable
+  finger/Pencil hit areas even when the visible icons and surfaces become smaller. Finley's
+  long nails remain relevant; do not obtain compactness by making gestures harder to use.
+- Keep forest green, parchment, restrained gold and readable Storybook titles, with decoration
+  concentrated in the library/edges so the coloring workspace is calm. Motion should be brief,
+  inexpensive and honor Reduce Motion. Do not introduce decorative work during drawing.
+- Review a compact workspace/page-drawer mockup before replacing the accepted layout. This
+  feedback does not specify exact dimensions or approve a new layout. Recommend settling the
+  shared layout before styling more themes; theme rollout still must happen one at a time.
+  The separate future brush-column idea remains recorded and is not automatically authorized
+  for implementation by this feedback.
+- **Status:** request and proposal recorded locally in CLAUDE.md, AGENTS.md and README.md.
+  No app code, brush behavior, stored coloring or deployed files changed for this feedback.
+  At the time of this feedback, part 3's iPad check had not been confirmed. Owen subsequently
+  reported "ipad test worked"; part 3 is now accepted. The compact layout was subsequently
+  approved through both mockups and is now implemented locally for the actual PC test.
+
+### Compact workspace mockup and review handoff (2026-10-21)
+
+- **Authorization:** after part 3's iPad pass, Owen said "okay lets do it" to the proposed
+  compact-layout mockup. This round builds a separate interactive preview, not the production
+  layout. Owen subsequently approved the coloring mockup's visual direction ("looks amazing",
+  "spectacular"), then approved the matching library ("everything looks great!"). Both mockups
+  are accepted; the following implementation section distinguishes the pending real-app test.
+- **Open:** start `start-design-preview.bat`, then
+  http://localhost:8001/tools/design.tmp/compact-workspace.html . No app update is needed for
+  this preview; it is a different local address. Do not send the live GitHub Pages URL as if
+  this mockup were deployed. It is not installed/offline-enabled or uploaded.
+- **Files:** `tools/design.tmp/compact-workspace.html`, `compact-workspace.css`,
+  `compact-workspace.js`, `compact-brush-icons.js`. The icon file copies the accepted original
+  brush icons, without importing brush-settings/storage code. Uses existing local fonts,
+  the icon, read-only pages/pages.js, real outlines/thumbnails, and the existing white-paper
+  colored Daffodil example. The `design.tmp` directory remains Git-ignored like older mockups;
+  these files are local review aids and are not guaranteed after a fresh clone.
+- **Proposed geometry:** 60px top bar (56px on narrow windows), a 64px bottom tool strip
+  upright, or a 68px right tool rail on landscape screens at least 880px wide. Smaller visible
+  21px icons retain non-overlapping 44px targets. Settings/colors are on demand. The 320px
+  Pages drawer overlays the canvas, closes after choosing a page, and never permanently
+  reduces the canvas width. White page, quiet cream desk, Literata headings, restrained green
+  and gold, lighter borders and shadows; Storybook character is concentrated in drawer details.
+  All dimensions are proposals, not changes to accepted production control sizes.
+- **Interactive scope:** Pages starts at the current sub-category; step back to sub-categories
+  and collections; pick any of the 10 real pages; search names/collections, with an empty state.
+  Only the opened full outline is used, apart from small existing/simple SVG previews.
+  Daffodil's colored thumbnail is example progress, not her actual saved coloring. Choose
+  tools/all eleven brushes, try size/opacity and three switches, colors/recents/custom color,
+  and Options → Focus on picture (F/Escape or Show tools). Tool settings persist only for
+  the current preview visit. The simple sample stroke demonstrates controls, not brush texture.
+  Fill disables the two sliders. Save/Undo/Redo/Start over show truthful preview notices;
+  drawing, Photos export, zoom and auto-save remain features of the working app.
+- **Isolation:** no IndexedDB access in preview code, no localStorage read/write, no service
+  worker registration, no importing production controllers/brush engine and no third-party
+  requests. Choosing another page is visit-only. The read-only page list is the only imported
+  production JS. This does not alter Finley's existing coloring or app preferences.
+- **Local checks:** isolated Chrome, eight layouts (834×1194, 1194×834, 768×1024, 1024×768,
+  390×844, 320×740, 1366×768, 1024×600); no page/panel horizontal overflow, complete on-screen
+  panel bounds, 44px primary targets, all panel opening/closing and inert backdrop, category
+  navigation, selection/search, tool settings, colors, focus mode/return and Reduce Motion.
+  Separate test storage remained empty with no registered worker or external requests. Real
+  iPad/Safari/Pencil feel is not claimed. Portrait/landscape screenshots were inspected.
+- **Review request:** try Pages/back/search/page selection, brush-settings and color buttons,
+  Options → Focus on picture, then tall/wide windows. Review whether the size, positioning,
+  amount of Storybook decoration and number of taps feel right. Implement the accepted design
+  in a later round, preserving original brush behavior, real progress thumbnails, safe saving
+  on page switches, full color picker/palettes and accessibility. The separate future brush
+  column and alternate themes remain outside this mockup's implementation scope.
+- **Preview-address repair:** Owen's screenshot showed the main app without styling instead
+  of the compact mockup at the port-8000 preview URL. Reproduced with an installed worker:
+  sw.js handles every navigation under its origin with cached index.html; its relative
+  stylesheet/module paths then resolve incorrectly beneath tools/design.tmp. Fresh-profile
+  layout checks had not installed the worker, so did not expose this existing interaction.
+  Do not clear her cache/data or unregister the app to work around it. `serve.py` now accepts
+  optional `--port` and `--design-preview` flags; the new launcher uses port 8001, redirects
+  that origin's root/index.html to the mockup and refuses sw.js in preview mode. Default
+  port-8000 app serving stays unchanged. An isolated browser reproduced the old failure and
+  confirmed the separate-origin preview styled/interactive while the app worker stayed intact.
+  This developer-server repair is local, uncommitted and not an app/offline-format change.
+
+### Matching compact library mockup (2026-10-21; design accepted)
+
+- **Authorization/acceptance:** Owen called the coloring mockup "amazing", then "spectacular",
+  and said "yes that sounds good" to a matching home/library design. Preserve the accepted
+  compact editor direction. This authorizes the companion prototype; production implementation
+  and its PC/iPad acceptance are still separate work.
+- **Open:** http://localhost:8001/tools/design.tmp/compact-library.html ; use
+  `start-design-preview.bat` if the preview server is stopped. Files are `compact-library.html`,
+  `compact-library.css`, `compact-library.js` in the existing Git-ignored design.tmp directory.
+  They reuse the workspace's fonts/tokens; the previous approved mockups are unchanged.
+- **Appearance:** 82px forest-green header (narrow layout adapts), small book medallion,
+  quiet gold rule, compact horizontal continue banner (140px, 120px narrow), lighter shadows,
+  small paper-stack collection covers and restrained gold vine. Four collection columns on
+  iPad, two narrow; page grids can use five columns when wide. Search stays accessible, and
+  the canvas/preview paper stays white. Large blank space with the current four categories
+  is intentional; do not invent pages/counts to fill it. It will grow with real collections.
+- **Navigation:** all actual categories/sub-categories/pages work via local hash navigation;
+  breadcrumbs step up and search matches page/collection names with an empty state. Continue
+  opens the Daffodil example. Page cards open compact-workspace.html?page=<id>, which now
+  honors that validated ID; editor Options → Back to library returns to the companion.
+  Themes shows Storybook alone in a preview dialog; App & offline explains the preview scope.
+  Existing original tool icons are retained. No alternate themes or brush-column redesign.
+- **Isolation/checks:** no production app/controller/storage code changes. Both mockups keep
+  all state in the visit; example coloring is explicitly labeled. No localStorage/IndexedDB
+  writes or worker registration, external resources or browser JS errors in isolated Chrome.
+  Seven sizes checked: 834×1194, 1194×834, 768×1024, 1024×768, 390×844, 320×740, 1366×768.
+  Headers, continue/search/grids fit horizontally; option controls retain 44px targets.
+  Category/subcategory/page browsing, workspace return, Continue, search/empty state and
+  native dialog dismissal passed. No full imported outlines downloaded while browsing the
+  library; full page is used only after opening it in the coloring preview. Existing colored
+  Daffodil demonstration art is a mockup asset, not a real saved-progress lookup.
+- **Review outcome:** Owen said "everything looks great!", accepting the companion and editor
+  designs. The real app implementation followed locally (below) with real autosave, progress,
+  tools, full color picker and offline assets. Neither prototype is published. The real
+  implementation passed its own PC review ("works great") and awaits the iPad test.
+
+### Compact interface implementation (2026-10-21; PC accepted, iPad pending)
+
+- **Status:** both mockups accepted; real interface version `20261021201511` also passed
+  Owen's PC test ("works great"). This approves checkpoint/upload under the agreed workflow.
+  Wait for the compact app's iPad acceptance before starting an alternate theme.
+- **Library:** compact forest header, smaller paper stacks/cover cards, quiet gold detail,
+  actual page/collection counts, real continue card and colored progress thumbnails. Search
+  matches page/category/sub-category names across the library; empty results are explained.
+  Existing routes, category back steps, per-page IDs and imported assets remain unchanged.
+  Continue remains hidden on a device with no saved coloring. No demo colors/progress are
+  inserted into the actual app. Colored previews still use IndexedDB thumbnails.
+- **Editor:** 60px header (56px narrow), 64px bottom strip (60px narrow), 68px right rail on
+  landscape screens at least 880px wide. Visible icons are 21px within 44px targets. All 11
+  original brushes/sample strokes remain in the existing Brushes window. The size-number
+  button opens the existing 50px sliders, live textured preview and switches. The color dot
+  opens recents/active palette, with More opening the full original ring/square/palettes.
+  The chosen-color indicator and brush size/name update live. Preview textures render only
+  while their window is visible; last-color-tool tracking still works while hidden.
+- **Options:** top-right … contains Focus on picture, Back to library (home), and Start over.
+  Start over keeps its existing confirmation and Undo. Focus hides the header/tools, keeps
+  a Show tools button, supports F/Escape, and refits the canvas without changing artwork.
+  Fit is outside the drawing input area, so its click cannot become a fill/stroke. UI layout
+  controls decline to move the viewport/open windows during a captured stroke.
+- **Switches:** line-lock and build-up retain their storage keys/behavior. Draw with finger is
+  exposed in the options window with localStorage key `finger-draw`, feeding the existing
+  `SETTINGS.fingersDraw` flag. Its default remains the accepted true value from settings.js;
+  no gesture/palm thresholds change. It is a device preference, not a backup-format change.
+- **Pages drawer:** overlays without shrinking the canvas, opens at the current sub-category,
+  steps back through sub-categories and categories, searches all names and closes after a
+  choice. Current page is marked. Small real progress thumbnails (or import thumbnails/simple
+  SVG fallback previews) load near the visible scroll area, with stale-view guards and
+  readable preview failure labels. Full imported PNG outlines load only on opening a page.
+- **Safe page changes:** preparePageChange waits for pending fills and previous autosave,
+  flushes the outgoing snapshot and waits for its completion before navigation. If a stroke
+  is still active, new edits occur, or saving fails, it keeps the editable canvas open and
+  reports the problem. The same guard protects browser Back/hash navigation. Routes are
+  serialized and stale targets skipped so overlapping image decodes cannot overwrite a new
+  page's canvas. This deliberately extends navigation safety; the save format and original
+  autosave/compression/backup algorithms are unchanged. Closing a loading drawer cancels
+  its pending UI choice, not the save.
+- **Files/materials:** compact.css contains layout rules; all new material/font/control-size
+  tokens are at the top of styles.css, alongside existing theme variables. workspace-ui.js
+  connects UI callbacks to editor.js; page-browser.js handles metadata/thumbnails. index.html
+  moves existing controls, preserving IDs and original handlers. Brush/fill/gesture engine
+  files and settings thresholds differ only by generated import stamps where needed.
+  Existing modal focus/inert/nested Escape behavior is reused. Generated offline shell:
+  59 app/thumbnail files, same 10 outlines; new helpers/CSS are included. Preview-server repair
+  from the earlier mockup round is included in this approved checkpoint.
+- **Checks passed, isolated Chrome/data:** actual Daffodil marker stroke, exact Undo/Redo,
+  drawer opened immediately after a stroke with real colored thumbnail, switching to Tiger
+  Lily and exact return; full picker/named palettes/nested Escape; all brushes/settings,
+  remembered finger switch, focus/refit; eight layouts (834×1194, 1194×834, 768×1024, 1024×768,
+  390×844, 320×740, 1366×768, 1024×600), 44px tools and 50px sliders clear at both extremes.
+  Home card labels clear thumbnails; visual inspection caught/fixed inherited thumbnail
+  aspect-ratio overflow and grid sizing of the new popovers. A simulated full-storage error
+  blocked drawer and browser navigation, kept pixels editable and allowed a successful retry.
+  Start over/Undo, actual full-resolution 2048×2732 PNG, .finley backup restore cancel/confirm,
+  offline reload/Continue/Tiger Lily drawer selection, immediate fill then drawer, and safe
+  app update retained exact expected pixels. Opening/skip/held-touch/Reduce Motion/offline
+  intro regressions passed. No browser JS errors or external runtime requests.
+- **300-page check:** synthetic library in separate test storage, no real page-list changes:
+  300 cards/search worked, 8 nearby thumbnail requests, 1 full outline request for the opened
+  page, none for library/drawer browsing. This confirms lazy loading, not an iPad speed
+  measurement. Real Safari/Pencil/Photos sheet/VoiceOver remain on-device checks after upload.
+- **PC handoff:** start `start-server.bat`, open http://localhost:8000 (not the 8001 mockup).
+  If it still shows the old cached app, use App & offline → Check for updates → Update app;
+  keep all website data. Check home/search/Continue; color a real page; open Pages immediately,
+  change page and return; verify saved coloring. Check size/options, line-lock/build-up/finger,
+  color dot → More/full palettes, Brushes, Undo/Redo, … → Back to library, Focus/Show tools,
+  Save/PNG and both orientations. Owen reported "works great"; this PC checklist is accepted.
+- **iPad handoff:** in the installed app, use App & offline → Check for updates → Update app.
+  Check the compact library/search/Continue, Pencil and finger input, size/settings, colors
+  and Brushes. Switch Pages immediately after coloring and return to verify the saved result.
+  Check … → Back to library, Focus/Show tools, Fit, Undo/Redo, Save to Photos and both rotations.
+  Keep website data and backups. No new speed-log round is needed.
+- **Next:** approved checkpoint/upload → compact app iPad acceptance. Then
+  each alternate theme separately, starting Midnight Forest. Illustrated brush columns are
+  still a deferred request and have not been implemented.
