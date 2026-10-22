@@ -383,8 +383,12 @@ this issue. The repair copies the backup's compressed data independently of the 
 
 ### Project checkpoint and next step
 
-Current checkpoint: **Midnight Forest, version 20261021211413**, PC accepted
-("everything works good"); checkpoint/upload approved, iPad test pending.
+Current checkpoint: **Ocean Dreams, version 20261021233948**. Owen requested direct upload
+for her iPad test, skipping separate PC approval. Local checks passed; iPad acceptance is pending.
+
+Previous accepted app checkpoint: **153d049, Midnight Forest, version 20261021211413**, uploaded and
+verified live. PC accepted ("everything works good"); iPad accepted ("everything worked").
+This checkpoint records Midnight Forest's iPad acceptance and the new Ocean Dreams theme.
 
 Previous accepted app checkpoint: **a944bea, compact interface, version 20261021201511**, uploaded and
 verified live. PC accepted ("works great"); iPad accepted ("everythging worked perfect").
@@ -407,7 +411,8 @@ its iPad check has passed. Each alternate theme will still be built and tested s
 Both compact mockups are approved ("everything looks great!"). The actual compact interface
 **20261021201511** also passed its PC test ("works great"). This checkpoint includes that
 implementation, part 3's iPad acceptance and the preview-server repair. Its subsequent
-iPad test passed too. The next planned theme is Midnight Forest, in its own build/test round.
+iPad test passed too. Midnight Forest subsequently passed its own PC and iPad round.
+Ocean Dreams is now implemented for its own direct iPad test round.
 
 ## Storybook design (step 12, part 1)
 
@@ -648,7 +653,7 @@ Forest was subsequently authorized and is now local for PC review (below). The o
 still come one at a time. The illustrated brush-column idea remains deferred.
 
 
-## Midnight Forest (PC accepted; iPad test next)
+## Midnight Forest (PC and iPad accepted)
 
 Midnight Forest adds deep evergreen surfaces, silver-green ivy and soft moonlight accents.
 The library, Pages drawer, tool windows and opening all use its colors. Your coloring paper,
@@ -667,9 +672,10 @@ Storybook is still available; the app remembers your choice on this device, incl
 
 Local checks passed for selection, text contrast, six layouts, real strokes/Undo/saving,
 full-resolution export and offline reopening. Owen reported "everything works good" on PC,
-approving checkpoint/upload. The iPad test is next. Ocean Dreams is a separate later round.
+approving checkpoint/upload. After upload 153d049, he reported "everything worked" on her
+iPad too. Midnight Forest is accepted on both devices. Ocean Dreams is a separate later round.
 
-### Check Midnight Forest on her iPad
+### Accepted Midnight Forest iPad checklist (reference)
 
 1. While online, choose **App & offline -> Check for updates -> Update app**.
 2. Choose **Themes -> Midnight Forest -> Done**. Check library, Pages, settings, Brushes,
@@ -677,4 +683,27 @@ approving checkpoint/upload. The iPad test is next. Ocean Dreams is a separate l
 3. Draw a little, try Undo/Redo, leave/reopen the page and try Save to Photos.
 4. Close/reopen to check the look is remembered. Switch to Storybook and back.
 
-Keep website data and backups. Report the iPad result before we start Ocean Dreams.
+Keep website data and backups. This checklist passed; no repeat is pending. Owen subsequently
+authorized Ocean Dreams and asked to go directly to the iPad test (below).
+
+
+## Ocean Dreams (iPad test next)
+
+Ocean Dreams adds pale sea-glass surfaces, ocean blues, teal controls and pearl accents.
+The opening has a cooler shimmer, and its theme card has a small wave detail. Coloring paper
+stays white. Storybook and Midnight Forest remain available, and each theme keeps the same
+compact controls, tools and saved coloring.
+
+Owen requested direct upload for the iPad test, so this round skips a separate PC approval.
+Local checks passed for six layouts, readable controls, all three theme choices, exact saved
+coloring across switches, Undo/Redo, full-size PNG export and offline reopening.
+
+1. In the installed iPad app, choose **App & offline -> Check for updates -> Update app**.
+2. Choose **Themes -> Ocean Dreams -> Done**. Check the library, Pages, settings, Brushes
+   and full color picker in both orientations.
+3. Draw a little, try Undo/Redo, leave/reopen the page and Save to Photos.
+4. Close/reopen the app: Ocean Dreams should remain selected and recolor the opening too.
+   Switch to Storybook and Midnight Forest, then back to Ocean Dreams.
+
+Keep website data and backups. The iPad result is pending. Autumn Cottage is the next planned
+separate theme round after this one passes; it has not been built.

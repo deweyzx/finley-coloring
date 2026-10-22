@@ -32,6 +32,13 @@
   --midnight-moon:#dce7c7;
   --theme-moon-size:28px;
   --theme-moon-inset:20px;
+  --ocean-bg:#edf6f7;
+  --ocean-leather:#174e5d;
+  --ocean-leather-light:#2f7080;
+  --ocean-leather-deep:#0c3442;
+  --ocean-pearl:#e0f1eb;
+  --theme-wave-width:44px; --theme-wave-height:24px;
+  --theme-wave-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 24'%3E%3Cpath d='M2 6q5-7 11 0t11 0t11 0t11 0M2 18q5-7 11 0t11 0t11 0t11 0' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
   /* Parchment (the icon's pages) */
   --storybook-bg: #f3e8d0;
   --storybook-leather: #25482e;
@@ -415,6 +422,65 @@
   --opening-leaf:#99b98b; --opening-leaf-edge:#476d47; --opening-leaf-vein:#547b51;
   --opening-thread-1:#f2f7dd; --opening-thread-2:#c2d8a7; --opening-thread-3:#e6f0cb;
   --opening-vignette:rgba(1,9,5,.5);
+}
+
+/* Ocean Dreams: pale sea glass, deep ocean-blue covers and pearl details. This block
+   shares the accepted layout; white paper and painting colors are never recolored. */
+:root:where([data-theme="ocean-dreams"]) {
+  --compact-bg:var(--ocean-bg); --compact-surface:#f8fcfc; --compact-desk:#d9e9ed;
+  --compact-cover:var(--ocean-leather);
+  --compact-green:#205f6f; --compact-selected:#d3e9ea; --compact-line:#b7ced0;
+  --compact-ink:#193c48; --compact-muted:#4a6670;
+  --compact-shadow:0 2px 12px rgba(22,63,77,.14);
+  --compact-paper-shadow:0 1px 5px rgba(22,63,77,.2);
+  --bg:var(--ocean-bg); --bg-deep:#d4e7e9;
+  --surface:#f8fcfc; --surface-2:#e8f3f2; --desk:#dbeaec;
+  --leather:var(--ocean-leather); --leather-light:var(--ocean-leather-light);
+  --leather-deep:var(--ocean-leather-deep);
+  --on-leather:#f2fbf8; --on-leather-soft:#d1e7e3;
+  --ink:#173b48; --ink-soft:#244f5d; --muted:#4a6670;
+  --accent:#246979; --accent-deep:var(--ocean-leather); --accent-text:#f6fcf9;
+  --control-green-top:#307585;
+  --gold:#93b9ae; --gold-light:var(--ocean-pearl); --gold-deep:#3f706c;
+  --ivy:#568a85; --ivy-leaf:#b6d9c8; --ivy-vein:#477b75;
+  --hairline:#bbd3cd; --edge:#64878d;
+  --ribbon:#508682; --ribbon-deep:#326565; --focus:#0a637e;
+  --ink-shadow:#082e3b; --gilt-bottom:#729f98;
+  --control-top:#fcfefe; --control-bottom:#deedf0;
+  --search-edge:var(--edge);
+  --panel-top-color:var(--surface); --panel-bottom-color:var(--surface-2);
+  --bar-bottom:#e7f2f3; --desk-light:#eef7f7; --desk-deep:#c6dfe2;
+  --sheet-under:#f0f7f4;
+  --switch-off:#6d878a; --slider-track-color:#b3cdd0;
+  --disabled-edge:#afc7ca; --disabled-ink:#6c858b;
+  --swatch-inner-edge:rgba(18,52,65,.6);
+  --gold-rule:rgba(224,241,235,.6); --gold-rule-soft:rgba(224,241,235,.25);
+  --shadow-soft:0 1px 2px rgba(22,63,77,.1),0 4px 12px rgba(22,63,77,.1);
+  --shadow-lift:0 2px 3px rgba(22,63,77,.1),0 12px 28px rgba(22,63,77,.16);
+  --shadow-sheet:0 1px 1px rgba(22,63,77,.12),0 6px 14px rgba(22,63,77,.14);
+  --shadow-paper:0 2px 3px rgba(22,63,77,.1),0 18px 44px rgba(22,63,77,.22);
+  --shadow-stack:rgba(22,63,77,.12); --shadow-selected:0 6px 14px rgba(16,65,81,.3);
+  --shadow-cover:0 8px 22px rgba(12,52,66,.28);
+  --shadow-knob:0 3px 8px rgba(22,63,77,.28); --shadow-track:inset 0 1px 2px rgba(22,63,77,.2);
+  --shadow-swatch:inset 0 -3px 5px rgba(0,0,0,.12),0 2px 4px rgba(22,63,77,.18);
+  --backdrop:rgba(9,31,43,.48);
+  /* Splash D keeps its original motion, with sea-glass ivy and a pearl-blue thread. */
+  --opening-stem:#8dc1b2;
+  --opening-rim-1:#edf9f2; --opening-rim-2:#92bfb9; --opening-rim-3:#547f85;
+  --opening-rim-4:#bfddd1; --opening-rim-5:#f4fcf7;
+  --opening-thread-hair:#f4fffc;
+  --opening-tooling-edge:rgba(224,241,235,.85); --opening-tooling-soft:rgba(224,241,235,.35);
+  --opening-rim-edge:rgba(229,250,244,.4);
+  --opening-light-clear:rgba(223,252,246,0); --opening-light-bright:rgba(223,252,246,.95);
+  --opening-halo:rgba(156,231,224,.28); --opening-halo-clear:rgba(156,231,224,0);
+  --opening-ripple-edge:rgba(215,255,247,.9); --opening-ripple-glow:rgba(156,231,224,.4);
+  --opening-parchment-clear:rgba(237,246,247,0);
+  --opening-spark-white:#f5fffe; --opening-spark-core:#e9fff7;
+  --opening-spark-glow:rgba(185,248,235,.85); --opening-spark-clear:rgba(185,248,235,0);
+  --opening-mote-core:#f1fff9; --opening-mote-clear:rgba(185,248,235,0);
+  --opening-leaf:#8abbaa; --opening-leaf-edge:#366b66; --opening-leaf-vein:#4d867c;
+  --opening-thread-1:#f0fffa; --opening-thread-2:#a7ded8; --opening-thread-3:#dbf6e8;
+  --opening-vignette:rgba(4,28,40,.4);
 }
 
 :root { color-scheme:var(--ui-color-scheme); }
@@ -1890,6 +1956,8 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
 .theme-card.selected { border-color: var(--accent-deep); box-shadow: 0 0 0 var(--modal-rule) var(--accent-deep),var(--shadow-lift); }
 .theme-preview[data-theme-preview="storybook"] { --preview-leather: var(--storybook-leather); --preview-leather-light: var(--storybook-leather-light); --preview-leather-deep: var(--storybook-leather-deep); --preview-gold: var(--storybook-gold-light); --preview-paper: var(--paper); --preview-parchment: var(--storybook-bg); }
 .theme-preview[data-theme-preview="midnight-forest"] { --preview-leather: var(--midnight-leather); --preview-leather-light: var(--midnight-leather-light); --preview-leather-deep: var(--midnight-leather-deep); --preview-gold: var(--midnight-moon); --preview-paper: var(--paper); --preview-parchment: var(--midnight-bg); }
+.theme-preview[data-theme-preview="ocean-dreams"] { --preview-leather:var(--ocean-leather); --preview-leather-light:var(--ocean-leather-light); --preview-leather-deep:var(--ocean-leather-deep); --preview-gold:var(--ocean-pearl); --preview-paper:var(--paper); --preview-parchment:var(--ocean-bg); }
+.theme-preview[data-theme-preview="ocean-dreams"]::after { content:""; position:absolute; top:var(--theme-moon-inset); right:var(--theme-moon-inset); width:var(--theme-wave-width); height:var(--theme-wave-height); background:var(--preview-gold); -webkit-mask:var(--theme-wave-mask) center/contain no-repeat; mask:var(--theme-wave-mask) center/contain no-repeat; }
 .theme-preview[data-theme-preview="midnight-forest"]::after { content:""; position:absolute; top:var(--theme-moon-inset); right:var(--theme-moon-inset); width:var(--theme-moon-size); height:var(--theme-moon-size); border-radius:50%; background:var(--preview-gold); -webkit-mask:radial-gradient(circle at 70% 30%,var(--clear) 48%,var(--opening-mask-solid) 51%); mask:radial-gradient(circle at 70% 30%,var(--clear) 48%,var(--opening-mask-solid) 51%); }
 .theme-preview { position: relative; display: flex; align-items: center; justify-content: center; gap: var(--modal-gap); height: var(--theme-preview-height); background: var(--leather-grain),radial-gradient(100% 150% at 30% 10%,var(--preview-leather-light),var(--preview-leather) 60%,var(--preview-leather-deep)); }
 .theme-preview-rule { position: absolute; inset: var(--theme-preview-inset); border: var(--modal-rule) solid var(--preview-gold); border-radius: var(--radius-tile); opacity: 0.55; pointer-events: none; }

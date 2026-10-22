@@ -6,7 +6,7 @@
 //   const yes = await askConfirm({ title: "Delete it?", confirmLabel: "Delete", danger: true });
 //   // -> true or false
 
-import { openModal, closeModal } from './modal.js?v=20261021211413';
+import { openModal, closeModal } from './modal.js?v=20261021233948';
 
 let nextHeading = 0;
 function build({ title, text, body, buttons }) {

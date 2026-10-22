@@ -2,25 +2,25 @@
 // Loads the page, sets up the stacked layers, fits the picture on screen, and turns
 // taps and Pencil strokes into color.
 
-import { loadImage, drawLineArt } from "./lineart.js?v=20261021211413";
-import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=20261021211413";
-import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=20261021211413";
-import { setupColorPicker } from "./color-picker.js?v=20261021211413";
-import { setupSavePicture } from "./save-picture.js?v=20261021211413";
-import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=20261021211413";
-import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=20261021211413";
-import { createSlider } from "./slider.js?v=20261021211413";
-import { History } from "./history.js?v=20261021211413";
-import { Viewport } from "./viewport.js?v=20261021211413";
-import { setupInput } from "./touch-input.js?v=20261021211413";
-import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=20261021211413";
-import { runSpeedTest } from "./speed-test.js?v=20261021211413";
-import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=20261021211413";
-import { SETTINGS } from "./settings.js?v=20261021211413";
-import { hexToHsv, hsvToHex } from "./color.js?v=20261021211413";
-import { rememberPageForOffline } from "./offline.js?v=20261021211413";
-import { openModal, closeModal, modalIsOpen } from './modal.js?v=20261021211413';
-import { setupWorkspace } from './workspace-ui.js?v=20261021211413';
+import { loadImage, drawLineArt } from "./lineart.js?v=20261021233948";
+import { prepareFill, findFillArea, paintFill, warmUp } from "./fill.js?v=20261021233948";
+import { setupSwatches, onPaletteChange, currentColor, toRGB, noteColorUsed } from "./palette.js?v=20261021233948";
+import { setupColorPicker } from "./color-picker.js?v=20261021233948";
+import { setupSavePicture } from "./save-picture.js?v=20261021233948";
+import { BRUSHES, brushSettings, saveBrushSettings } from "./brushes.js?v=20261021233948";
+import { PaintEngine as StrokeEngine } from "./blend-engine.js?v=20261021233948";
+import { createSlider } from "./slider.js?v=20261021233948";
+import { History } from "./history.js?v=20261021233948";
+import { Viewport } from "./viewport.js?v=20261021233948";
+import { setupInput } from "./touch-input.js?v=20261021233948";
+import { toggleDebug, debugOn, debugLog, onSpeedTest } from "./touch-debug.js?v=20261021233948";
+import { runSpeedTest } from "./speed-test.js?v=20261021233948";
+import { saveArtwork, loadArtwork, forgetArtwork } from "./autosave.js?v=20261021233948";
+import { SETTINGS } from "./settings.js?v=20261021233948";
+import { hexToHsv, hsvToHex } from "./color.js?v=20261021233948";
+import { rememberPageForOffline } from "./offline.js?v=20261021233948";
+import { openModal, closeModal, modalIsOpen } from './modal.js?v=20261021233948';
+import { setupWorkspace } from './workspace-ui.js?v=20261021233948';
 
 const area = document.getElementById("canvas-area");
 const paper = document.getElementById("paper");

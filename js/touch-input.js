@@ -21,8 +21,8 @@
 // The time and distance limits are in settings.js. With the touch debug overlay turned on
 // (tap the page title 5 times), every touch and decision is shown on screen.
 
-import { SETTINGS } from "./settings.js?v=20261021211413";
-import { debugLog, debugOn } from "./touch-debug.js?v=20261021211413";
+import { SETTINGS } from "./settings.js?v=20261021233948";
+import { debugLog, debugOn } from "./touch-debug.js?v=20261021233948";
 
 const FILL_TAP_MAX_MS = 800; // a fill tap (one Pencil/finger/mouse tap)
 
