@@ -1,7 +1,7 @@
 // splash.js - the approved book cover and golden thread, once per page opening.
 // This helper is separate from app.js: it never paints, saves, changes the route or starts
 // a second animation when she browses pages or comes back from another app.
-import { SETTINGS } from "./settings.js?v=20261022001928";
+import { SETTINGS } from "./settings.js?v=20261022003833";
 
 const SVG = "http://www.w3.org/2000/svg";
 const THREAD = "M544 598 C 640 690 790 610 768 470 S 630 236 500 258 S 288 390 400 478 S 488 506 500 500";

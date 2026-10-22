@@ -54,9 +54,10 @@ table, and any decisions that changed.
   confirmed the entire final checklist "all worked perfectly": Save all pages offline showed
   10 of 10; the installed app reopened in Airplane Mode; a colored page opened, a new stroke
   survived leaving/reopening, and rotation worked. This supersedes older pending-retest notes.
-- **Current requested update:** larger maximum sizes for all eleven brushes and two-finger
-  canvas rotation, version `20261022001928`. Local checks passed; direct iPad handoff follows
-  Owen's recent preference to skip separate PC approval. iPad acceptance is pending.
+- **Current repair:** faster Watercolor at the retained maximum200, version `20261022003833`.
+  Local checks passed; direct iPad retest is next. After b14c638 / `20261022001928`, Owen
+  reported "watercolor slightly laggy everything else perfect". Rotation and the other ten
+  expanded brush sizes are accepted; watercolor is the only reported issue in that update.
 - **Previous app checkpoint:** 400a25a, Autumn Cottage, version `20261021235410`, committed/
   pushed and live files verified. Its iPad report has not yet been supplied; do not mark
   Autumn Cottage accepted based on this new feature request. Minimal remains unbuilt.
@@ -104,7 +105,9 @@ table, and any decisions that changed.
   acceptance and the Ocean Dreams implementation/direct-iPad workflow are included in this
   checkpoint in all three guides. The subsequent Ocean Dreams iPad acceptance and Autumn
   Cottage implementation/direct-iPad handoff were included in 400a25a. This checkpoint adds
-  the requested expanded brush ranges, rotation and their local checks to all three guides.
+  the requested expanded brush ranges and rotation as b14c638. This repair checkpoint records
+  their iPad acceptance except watercolor, plus its optimization and measurements in all
+  three guides.
   Themes remain separate test rounds.
 
 ### Accepted checkpoints
@@ -121,7 +124,8 @@ table, and any decisions that changed.
 | 153d049, version 20261021211413 | Midnight Forest appearance, remembered selection and keyboard theme radios | Uploaded; PC and iPad accepted |
 | f70d0ae, version 20261021233948 | Ocean Dreams appearance and fixed wave preview | Uploaded; local checks and her iPad accepted; separate PC approval skipped by request |
 | 400a25a, version 20261021235410 | Autumn Cottage appearance and fixed leaf preview | Uploaded; local checks passed; iPad report pending |
-| This checkpoint, version 20261022001928 | Larger brush ceilings, two-finger canvas rotation, upright Fit/export | Local checks passed; iPad acceptance pending |
+| b14c638, version 20261022001928 | Larger brush ceilings, canvas rotation, upright Fit/export | iPad accepted except slightly laggy watercolor |
+| This checkpoint, version 20261022003833 | Faster watercolor, retained max200 and texture | Local checks passed; iPad retest pending |
 
 ## Where we are
 
@@ -208,8 +212,8 @@ table, and any decisions that changed.
   column remains deferred.
 - **New request, 2026-10-22:** Owen requested a bigger watercolor maximum, then clarified
   bigger maxima for all brushes, plus finger rotation while zoomed. These updates interrupt
-  the remaining theme work. They are implemented with local checks passed; iPad acceptance
-  is next. They do not imply an Autumn Cottage acceptance report. See the final section.
+  the remaining theme work. Her iPad accepted rotation and the other brushes; watercolor was slightly laggy.
+  Its focused speed repair is ready for the iPad retest. They do not imply an Autumn Cottage acceptance report. See the final section.
 
 ## How to work with Owen
 
@@ -363,12 +367,13 @@ window restyle; it is a separate deferred follow-up, not yet scheduled or implem
   page opens, `warmUp()` works out the areas at 8 points along the page edges (usually the
   background). So starting a stroke or fill in the background takes ~2 ms instead of ~190 ms.
 
-## Current brush settings (expanded ceilings awaiting iPad acceptance)
+## Current brush settings (watercolor speed retest pending)
 
 This table is the current implementation in js/brushes.js. Historical development notes below
 retain earlier sizes, textures and measurements to explain decisions; they are not instructions
 to restore the old limits. Brush behavior was accepted in step 10; the larger ceilings requested
-on 2026-10-22 have passed local functional checks but not yet her iPad speed/feel check.
+on 2026-10-22 passed her iPad check except slightly laggy watercolor. The speed repair
+retains its max200 and awaits an iPad retest.
 
 | Tool | Size range (page pixels) | Default size / opacity | Current spacing |
 |---|---|---|---|
@@ -1953,7 +1958,7 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   theme, followed by final polish/review. The illustrated brush column is still deferred.
 
 
-### Larger brushes and canvas rotation (2026-10-22; iPad pending)
+### Larger brushes and canvas rotation (2026-10-22; accepted except watercolor)
 
 - **Request/status:** Owen asked for a larger watercolor maximum, then "actually make the
   max size for all brushes bigger in general", plus rotation with fingers while zoomed.
@@ -2011,6 +2016,47 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   two-finger Undo/three-finger Redo and normal Pencil palm rejection. Fit should restore upright.
   Try the new top sizes, especially Watercolor200, Glitter180, Metallic90, then export and
   reopen the page. Report any lag with brush/size; no log screenshot is required. Keep data.
-- **Next:** wait for her result on these functional changes before more theme work. Autumn
+- **iPad report:** after b14c638, Owen said "watercolor slightly laggy everything else
+  perfect". Rotation and the other ten expanded brushes are accepted. The focused watercolor
+  repair below retains200 and needs its own iPad retest.
+- **Next:** retest the watercolor repair before more theme work. Autumn
   Cottage still needs its iPad report; minimal and final polish remain. Illustrated brush
   columns remain a separate deferred follow-up.
+
+
+### Watercolor200 speed repair (2026-10-22; iPad retest pending)
+
+- **Report/scope:** Owen reported "watercolor slightly laggy everything else perfect" after
+  b14c638. Rotation and the other ten expanded brushes are accepted. Keep watercolor max200
+  and its accepted appearance; version `20261022003833` is ready for direct iPad upload/retest.
+  No separate Owen PC acceptance is claimed. Autumn Cottage's explicit report remains pending;
+  minimal/final polish remain later work.
+- **Avoidable work:** coverage is stored as integer bytes. Old watercolor skipped a pixel
+  only if it reached the fractional peak (e.g.114.75). Stored114 is already the strongest
+  possible byte, but overlapping dabs recalculated it. Comparing with floor(peak) skips that
+  redundant work without changing what can be painted.
+- **Other savings, watercolor only:** cache256 cloud offsets, squared inner/outer limits,
+  density and tooth factors in double-precision tables (about10KiB per engine). Reuse them
+  across strokes, refresh inner limits when the edge changes, step oval coordinates along
+  each row, and take square roots only in the soft edge. Same pressure, texture positions,
+  rims, spacing, build-up, clip, colors and paint-memory semantics. Other brushes are unchanged.
+- **Equivalence:** isolated Chrome compared the previous b14c638 engine with the repair,
+  identical seeds, two strokes per case. Twenty cases: size6/12/50/130/200, build-up on/off,
+  free/irregular line-lock, varying pressure/tilt and opacity45%/73%. Finished pixels and
+  memory matched byte-for-byte. This describes the checked cases, not every possible
+  floating-point path. Regression checks covered all expanded maxima, line-lock, rotation,
+  tilt/palm handling, gesture Undo/Redo, save-after-flush, exact upright PNG and offline use.
+- **Measured speed:** median of3 alternating runs per variant, 4x CPU slowdown, full
+  2048x2732 canvas, 2000 screen px/s at scale0.3, 240 samples and60 renders per simulated
+  second. Size200: live work978 -> 692ms (~29% less); dabs597 -> 311ms (~48% less); slowest
+  update35 -> 24ms. Rendering~377ms and final lift~200ms were largely unchanged at this
+  slowdown. Size130: live work572 -> 381ms (~33% less), slowest18 -> 11ms. Local simulator
+  evidence only; do not claim measured iPad latency or guaranteed smoothness at200.
+- **Files:** functional edits only stroke-engine.js; generated index/import/sw/offline stamps
+  updated to `20261022003833`, 59 app/thumbnail assets and same10 outlines. No new dependencies.
+  Development baseline/checks in tools/*.tmp are ignored. Other brush sizes/rotation remain
+  accepted and must not be lowered or changed as part of this repair.
+- **iPad handoff:** App & offline -> Check for updates -> Update app. Try Watercolor200 with
+  a few long fast strokes, usual pressure/tilt, line-lock/build-up and a rotated view. Check
+  Undo/Redo and leave/reopen. A simple smooth/still-laggy report is enough; no mandatory logs.
+- **Next:** wait for the watercolor retest before more theme work.

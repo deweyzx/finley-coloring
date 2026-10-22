@@ -384,8 +384,9 @@ this issue. The repair copies the backup's compressed data independently of the 
 
 ### Project checkpoint and next step
 
-Current update: **larger brush sizes and finger rotation, version 20261022001928**. Local
-checks passed; the iPad test is next under the recent direct-iPad workflow.
+Current update: **faster Watercolor200, version 20261022003833**; local checks passed and
+her iPad retest is next. After b14c638, Owen reported "watercolor slightly laggy everything
+else perfect": rotation and all other expanded brush sizes are accepted.
 
 Previous app checkpoint: **400a25a, Autumn Cottage, version 20261021235410**, uploaded and
 verified live. Its iPad report has not yet been supplied. The minimal theme is still unbuilt.
@@ -746,7 +747,7 @@ Keep website data and backups. Report the iPad result before the clean minimal t
 will be the last theme. The illustrated brush-column idea remains a separate future project.
 
 
-## Bigger brushes and finger rotation (iPad test next)
+## Bigger brushes and finger rotation (accepted except watercolor)
 
 All brush ceilings are roughly 50% bigger. Her existing sizes and opacity settings stay as
 she left them; the sliders simply have more room at the top.
@@ -777,7 +778,24 @@ Two-finger tap Undo and three-finger tap Redo still work. On a PC, Alt + mouse w
 4. Tap **Fit**, try the larger sizes, then Save to Photos and leave/reopen the page.
 
 Local checks passed for rotation, drawing/fill alignment, undo, all larger limits, line-lock,
-full-resolution upright export, both layouts and offline use. The new largest sizes are **not
-yet speed-checked on her iPad**; watercolor, glitter and metallic had smaller limits for speed.
+full-resolution upright export, both layouts and offline use. Her iPad
+accepted rotation and all other larger brushes; **watercolor was slightly laggy**. The
+speed repair below keeps watercolor at200.
 If one feels laggy, report the brush and size—no speed-log screenshot needed. Keep website data
 and backups. These changes are the current test round; remaining theme work waits for feedback.
+
+
+## Watercolor speed repair (iPad retest)
+
+Watercolor keeps **maximum size200** and its current texture. Overlapping dabs now skip
+pixels they cannot strengthen, and reuse small texture tables instead of repeating the same
+calculations. A slowed-down browser check used about **30% less drawing work** at200.
+Comparison strokes and saved paint memory matched the previous version pixel-for-pixel.
+Actual smoothness still needs her iPad retest; other brushes and rotation stay as accepted.
+
+1. **App & offline -> Check for updates -> Update app** while online.
+2. Try **Watercolor at200** with a few long fast strokes and her usual pressure/tilt.
+   Try line-lock/build-up and a rotated view as she normally uses them.
+3. Try Undo/Redo, then leave and reopen the page to check the coloring is kept.
+
+Just report **smooth** or **still laggy**. No speed-log screenshot is needed.

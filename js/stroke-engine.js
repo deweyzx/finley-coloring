@@ -29,7 +29,7 @@
 //
 // The brushes themselves are described in brushes.js.
 
-import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE, GLITTER, GLITTER_SIZE, CLOUD, CLOUD_SIZE } from "./brushes.js?v=20261022001928";
+import { GRAIN, GRAIN_SIZE, WASH, WASH_SIZE, GLITTER, GLITTER_SIZE, CLOUD, CLOUD_SIZE } from "./brushes.js?v=20261022003833";
 
 export class StrokeEngine {
   constructor(width, height) {
@@ -78,6 +78,25 @@ export class StrokeEngine {
     this.washShift = [Math.floor(this.rand() * WASH_SIZE), Math.floor(this.rand() * WASH_SIZE)];
     // Watercolor rims: how far in from the edge the darker pooling reaches.
     this.rimRadius = brush.wash ? Math.round(clamp(settings.size * brush.wash.rimWidth, 3, 18)) : 0;
+    // These watercolor values depend on texture bytes, not on the moving Pencil.
+    // Work out all 256 possibilities once instead of repeating the divisions and curves
+    // for every overlapping dab and every screen update. Double precision keeps the look.
+    if (brush.wash && this.washTablesFor !== brush.wash) {
+      this.washTablesFor = brush.wash;
+      this.washOffsets = new Float64Array(256);
+      this.washOutside2 = new Float64Array(256);
+      this.washInside2 = new Float64Array(256);
+      this.washInsideFor = null;
+      this.washDensity = new Float64Array(256);
+      this.washTooth = new Float64Array(256);
+      for (let i = 0; i < 256; i++) {
+        const p = i / 255;
+        this.washOffsets[i] = (p - 0.5) * brush.wash.wobble;
+        this.washOutside2[i] = (1 - this.washOffsets[i]) ** 2;
+        this.washDensity[i] = 1 - brush.wash.uneven * p * p * (3 - 2 * p);
+        this.washTooth[i] = 1 - (brush.wash.granulate || 0) * (1 - p);
+      }
+    }
     // Metallic: how far around each pixel to look when working out how rounded the stroke is
     // there (which way it faces the light).
     const lit = brush.effect && brush.effect.kind !== "glitter" ? brush.effect : null;
@@ -873,8 +892,8 @@ export class StrokeEngine {
     const R = this.rimRadius;
     const D = Math.round(R * 0.7);
     const wash = this.brush.wash;
-    const uneven = wash.uneven;
     const granulate = wash.granulate || 0;
+    const density = this.washDensity, tooth = this.washTooth;
     const sx = this.washShift[0];
     const sy = this.washShift[1];
     const cov = this.coverage;
@@ -910,10 +929,9 @@ export class StrokeEngine {
         rim = rim < 0 ? 0 : rim > 1 ? 1 : rim;
         let value = c * (wash.middle + wash.rim * rim);
         // patchy, like pigment pooling in some places and thinning in others...
-        const p = WASH[washRow + ((x + sx) & (WASH_SIZE - 1))] / 255;
-        value *= 1 - uneven * p * p * (3 - 2 * p);
+        value *= density[WASH[washRow + ((x + sx) & (WASH_SIZE - 1))]];
         // ...and settling into the dips of the paper (a fine, grainy look)
-        if (granulate) value *= 1 - granulate * (1 - GRAIN[grainRow + (x & (GRAIN_SIZE - 1))] / 255);
+        if (granulate) value *= tooth[GRAIN[grainRow + (x & (GRAIN_SIZE - 1))]];
         out[o] = value > 255 ? 255 : value;
       }
     }
@@ -1175,6 +1193,19 @@ function washRows(engine, cx, cy, x0, y0, x1, y1, cos, sin, rLong, rShort, qa, q
   const cov = engine.coverage;
   const clip = engine.clip;
   const cm = CLOUD_SIZE - 1;
+  const offsets = engine.washOffsets;
+  const outside2 = engine.washOutside2, inside2 = engine.washInside2;
+  if (engine.washInsideFor !== inner) {
+    for (let i = 0; i < 256; i++) {
+      const r = inner - offsets[i];
+      inside2[i] = r < 0 ? -1 : r * r;
+    }
+    engine.washInsideFor = inner;
+  }
+  const ua = cos / rLong, va = -sin / rShort;
+  // Coverage is stored as whole bytes. A dab peaking at 114.75 can only store 114;
+  // once a pixel is 114, revisiting it cannot strengthen it. Compare with that real ceiling.
+  const ceiling = Math.floor(peak);
   let cx0 = W;
   let cx1 = -1;
   let cy0 = engine.height;
@@ -1193,18 +1224,22 @@ function washRows(engine, cx, cy, x0, y0, x1, y1, cos, sin, rLong, rShort, qa, q
     const clipRow = clip ? (y - clip.y) * clip.w - clip.x : 0;
     const dys = dy * sin;
     const dyc = dy * cos;
-    for (let x = xs; x <= xe; x++) {
+    const firstX = xs + 0.5 - cx;
+    let u = (firstX * cos + dys) / rLong;
+    let v = (-firstX * sin + dyc) / rShort;
+    for (let x = xs; x <= xe; x++, u += ua, v += va) {
       if (clip && clip.mask[clipRow + x] === 0) continue; // outside the locked area
       const i = row + x;
       const c = cov[i];
-      if (c >= peak) continue; // already as strong as this dab could make it
-      const dx = x + 0.5 - cx;
-      const u = (dx * cos + dys) / rLong;
-      const v = (-dx * sin + dyc) / rShort;
+      if (c >= ceiling) continue;
       // the wet edge wanders in and out in soft, cloud-like shapes
-      const d = Math.sqrt(u * u + v * v) + (CLOUD[cloudRow + ((x + sy) & cm)] / 255 - 0.5) * wobble;
-      if (d >= 1) continue;
-      const value = (d <= inner ? 1 : (1 - d) / edge) * peak;
+      const d2 = u * u + v * v;
+      const cloud = CLOUD[cloudRow + ((x + sy) & cm)];
+      if (d2 >= outside2[cloud]) continue;
+      const offset = offsets[cloud];
+      // Square roots are needed only in the soft edge, not the filled middle or outside.
+      const value = (d2 <= inside2[cloud] ? 1 :
+        (1 - (Math.sqrt(d2) + offset)) / edge) * peak;
       if ((value | 0) > c) {
         cov[i] = value;
         if (x < cx0) cx0 = x;

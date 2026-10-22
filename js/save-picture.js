@@ -12,7 +12,7 @@
 //      share sheet is only used on an iPad or iPhone.)
 //   She can also touch and hold the preview picture and choose "Add to Photos".
 
-import { openModal, closeModal } from './modal.js?v=20261022001928';
+import { openModal, closeModal } from './modal.js?v=20261022003833';
 
 const button = document.getElementById("export-button");
 const dialog = document.getElementById("export-dialog");
