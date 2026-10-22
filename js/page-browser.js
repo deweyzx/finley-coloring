@@ -1,7 +1,7 @@
 // The editor's Pages drawer. Browse with small thumbnails; only opening a page loads its art.
-import { categories } from './library.js?v=20261021201511';
-import { getProgressTimes, getPreviewURL, previewsReady } from './autosave.js?v=20261021201511';
-import { getThumbnailURL } from './thumbnails.js?v=20261021201511';
+import { categories } from './library.js?v=20261021211413';
+import { getProgressTimes, getPreviewURL, previewsReady } from './autosave.js?v=20261021211413';
+import { getThumbnailURL } from './thumbnails.js?v=20261021211413';
 
 export function setupPageBrowser({currentPage, prepareChange, close}) {
   const get=id=>document.getElementById(id), content=get('pages-content'), search=get('pages-search');

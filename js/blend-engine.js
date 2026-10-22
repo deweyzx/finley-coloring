@@ -2,8 +2,8 @@
 // A frozen starting picture plus a carried paint tip keep the result independent of
 // screen refresh timing. Blender picks up paint and transports it along the path.
 // Only small, visited tiles are smoothed; each is cached for the rest of this pass.
-import { StrokeEngine } from "./stroke-engine.js?v=20261021201511";
-import { SETTINGS } from "./settings.js?v=20261021201511";
+import { StrokeEngine } from "./stroke-engine.js?v=20261021211413";
+import { SETTINGS } from "./settings.js?v=20261021211413";
 
 const TILE = 64;
 

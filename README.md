@@ -383,8 +383,13 @@ this issue. The repair copies the backup's compressed data independently of the 
 
 ### Project checkpoint and next step
 
-Current checkpoint: **compact interface, version 20261021201511**, accepted on PC ("works great").
-Checkpoint/upload is approved; the iPad review is next. Use `git log -1` for the checkpoint hash.
+Current checkpoint: **Midnight Forest, version 20261021211413**, PC accepted
+("everything works good"); checkpoint/upload approved, iPad test pending.
+
+Previous accepted app checkpoint: **a944bea, compact interface, version 20261021201511**, uploaded and
+verified live. PC accepted ("works great"); iPad accepted ("everythging worked perfect").
+This checkpoint includes the compact iPad acceptance, Midnight Forest implementation and
+its PC acceptance in all three project guides.
 
 Previous accepted app checkpoint: **38b4c83, Step 12 part 3, version 20261021174002**, the Storybook Themes selector
 and matching windows, uploaded with live files verified. **PC and iPad reviews passed**
@@ -401,7 +406,8 @@ passed PC review in all three guides. Storybook is the only theme in this first 
 its iPad check has passed. Each alternate theme will still be built and tested separately.
 Both compact mockups are approved ("everything looks great!"). The actual compact interface
 **20261021201511** also passed its PC test ("works great"). This checkpoint includes that
-implementation, part 3's iPad acceptance and the preview-server repair. The iPad test is next.
+implementation, part 3's iPad acceptance and the preview-server repair. Its subsequent
+iPad test passed too. The next planned theme is Midnight Forest, in its own build/test round.
 
 ## Storybook design (step 12, part 1)
 
@@ -557,7 +563,7 @@ Both mockups are now approved. The real compact interface also passed its own PC
 ("works great"). It comes before the
 alternate themes; those still come one at a time. The separate brush-column idea remains saved.
 Part 3's iPad check passed. This checkpoint includes the compact implementation and
-acceptance/design notes; the compact app's iPad review remains pending.
+acceptance/design notes; the compact app's iPad review has also passed.
 
 ### Try the compact layout mockup
 
@@ -596,9 +602,9 @@ Click **Flowers → Tiger Lilies → a page** to open the coloring preview. In t
 
 Review the home design in a tall and a wide window. The example progress is not your actual
 saved coloring. Both mockups were accepted; the real app implementation subsequently passed
-its PC test (below) and is approved for upload and iPad testing.
+its PC test (below), was uploaded as a944bea and passed its iPad test.
 
-## Working compact app (PC accepted; iPad test next)
+## Working compact app (PC and iPad accepted)
 
 This is the real app with the approved compact design, not the mockups. Start
 **`start-server.bat`**, then open **http://localhost:8000**. If you still see the old cached
@@ -627,8 +633,9 @@ picker, settings, export, backup restore, offline operation, safe updates and th
 A failed-save simulation kept the editable picture open. A separate 300-page simulation
 loaded only nearby thumbnails and the full outline of the opened page. These used isolated
 test storage. Owen confirmed the actual PC app "works great", approving checkpoint/upload.
+After upload a944bea, he confirmed the iPad checklist "everythging worked perfect".
 
-### Check the compact app on her iPad
+### Accepted iPad checklist (reference)
 
 1. Open the installed app, then **App & offline → Check for updates → Update app**.
 2. Check the compact library, search and Continue. Open a page, color a little, switch using
@@ -636,4 +643,38 @@ test storage. Owen confirmed the actual PC app "works great", approving checkpoi
 3. Try the Pencil and finger, size/settings, color dot → More, Brushes and Undo/Redo.
 4. Try **… → Back to library**, Focus/Show tools, Fit and Save to Photos in both orientations.
 
-Keep website data and backups. Report how this feels on her iPad before we start another theme.
+Keep website data and backups. This checklist has passed; no repeat is pending. Midnight
+Forest was subsequently authorized and is now local for PC review (below). The other themes
+still come one at a time. The illustrated brush-column idea remains deferred.
+
+
+## Midnight Forest (PC accepted; iPad test next)
+
+Midnight Forest adds deep evergreen surfaces, silver-green ivy and soft moonlight accents.
+The library, Pages drawer, tool windows and opening all use its colors. Your coloring paper,
+brush samples and downloaded picture stay white, and the actual painting colors stay the same.
+Storybook is still available; the app remembers your choice on this device, including offline.
+
+1. Start **start-server.bat** and open **http://localhost:8000** in Chrome.
+2. If you still have the cached version, use **App & offline -> Check for updates -> Update app**.
+3. Choose **Themes -> Midnight Forest -> Done**. Inspect the library and open a real page.
+4. Try **Pages**, size/settings, **Brushes**, and **color dot -> More**. Open a palette naming
+   box and check that text, controls and selected states are easy to read. Try tall and wide.
+5. Draw a short stroke, Undo/Redo it, and try **Save -> Download picture**. Check that the
+   picture and paint colors are unchanged. Leave/reopen the page to check the saved coloring.
+6. Refresh: Midnight Forest should remain selected. Switch to Storybook and back; on a fresh
+   reload the opening uses the chosen theme too.
+
+Local checks passed for selection, text contrast, six layouts, real strokes/Undo/saving,
+full-resolution export and offline reopening. Owen reported "everything works good" on PC,
+approving checkpoint/upload. The iPad test is next. Ocean Dreams is a separate later round.
+
+### Check Midnight Forest on her iPad
+
+1. While online, choose **App & offline -> Check for updates -> Update app**.
+2. Choose **Themes -> Midnight Forest -> Done**. Check library, Pages, settings, Brushes,
+   the full picker and palette naming with Pencil/finger in both orientations.
+3. Draw a little, try Undo/Redo, leave/reopen the page and try Save to Photos.
+4. Close/reopen to check the look is remembered. Switch to Storybook and back.
+
+Keep website data and backups. Report the iPad result before we start Ocean Dreams.

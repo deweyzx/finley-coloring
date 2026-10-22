@@ -37,15 +37,21 @@ table, and any decisions that changed.
   direction, and agreed to a matching home/library preview. He then said "everything looks
   great!", accepting both mockups. Owen then tested the actual compact app and reported
   "works great", accepting version `20261021201511` on PC and approving its checkpoint/upload.
-  The compact interface now awaits its iPad review. No alternate theme has started.
+  After upload a944bea, Owen reported "everythging worked perfect", accepting the compact
+  interface on her iPad too. Owen then said "okay lets do it", authorizing Midnight Forest
+  as the first alternate theme. Owen then reported "everything works good", accepting
+  version `20261021211413` on PC and approving its checkpoint/upload. Midnight Forest now
+  awaits the iPad test. Ocean Dreams, Autumn Cottage and minimal remain unbuilt.
   A future brush-column request is recorded below; it is not part of this implementation.
 - **Earlier step 11 acceptance:** after repair 173f41d, Owen said "everything returned". He then explicitly
   confirmed the entire final checklist "all worked perfectly": Save all pages offline showed
   10 of 10; the installed app reopened in Airplane Mode; a colored page opened, a new stroke
   survived leaving/reopening, and rotation worked. This supersedes older pending-retest notes.
-- **Current checkpoint:** compact library, coloring controls and Pages drawer, version
-  `20261021201511`; PC accepted ("works great"), checkpoint/upload approved, iPad pending.
-  Use `git log -1` for this checkpoint hash.
+- **Current checkpoint:** Midnight Forest, version `20261021211413`; PC accepted
+  ("everything works good"), checkpoint/upload approved, iPad pending.
+- **Previous accepted app checkpoint:** a944bea, compact library, coloring controls and Pages drawer,
+  version `20261021201511`; committed/pushed to main and live files verified. PC accepted
+  ("works great"); iPad accepted ("everythging worked perfect").
 - **Previous accepted app checkpoint:** 38b4c83, Step 12 part 3, version `20261021174002`:
   Storybook Themes selector and remaining windows; committed/pushed to main, live files verified
   against the checkpoint, PC and iPad accepted. Previous checkpoint: 14eb58e, part 2, version
@@ -76,7 +82,9 @@ table, and any decisions that changed.
   This part 3 checkpoint includes part 2's iPad acceptance, part 3's implementation and passed
   PC review in all three guides. The compact checkpoint includes part 3's iPad acceptance,
   both approved mockups, the real implementation and Owen's PC acceptance ("works great").
-  The preview-server repair is included too. Alternate themes remain separate test rounds.
+  The preview-server repair is included too. The Midnight Forest checkpoint includes the subsequent compact iPad acceptance and
+  Midnight Forest implementation/PC acceptance in all three guides. Alternate themes remain
+  separate test rounds.
 
 ### Accepted checkpoints
 
@@ -88,7 +96,8 @@ table, and any decisions that changed.
 | 0ff818a, Step 12 part 1, version 20261021155109 | Storybook library/coloring screens, offline fonts, accessible controls and slider repair | PC and her iPad accepted |
 | 14eb58e, Step 12 part 2, version 20261021162959 | Approved opening cover, ivy/golden thread, skip and Reduce Motion | PC and her iPad accepted |
 | 38b4c83, Step 12 part 3, version 20261021174002 | Storybook Themes selector, matching windows and shared modal focus | Uploaded; PC and iPad accepted |
-| This checkpoint, version 20261021201511 | Compact library, coloring controls, Pages drawer and preview-server repair | PC accepted; approved checkpoint/upload; iPad pending |
+| a944bea, version 20261021201511 | Compact library, coloring controls, Pages drawer and preview-server repair | Uploaded; PC and iPad accepted |
+| This checkpoint, version 20261021211413 | Midnight Forest appearance, remembered selection and keyboard theme radios | PC accepted; checkpoint/upload approved; iPad pending |
 
 ## Where we are
 
@@ -164,9 +173,11 @@ table, and any decisions that changed.
   and upload completed as 38b4c83, then iPad accepted ("ipad test worked"). Themes starts with
   Storybook alone and the remaining windows share its design. The new compact-workspace/page
   drawer and matching library mockups were approved ("everything looks great!"). The real
-  compact interface (`20261021201511`) passed Owen's PC test ("works great"); checkpoint/upload
-  approved, iPad review pending.
-  Alternate themes still come separately after this interface passes PC and iPad.
+  compact interface (`20261021201511`) passed Owen's PC test ("works great"), was uploaded as
+  a944bea, and passed her iPad test ("everythging worked perfect").
+  Midnight Forest (`20261021211413`) passed Owen's PC review ("everything works good");
+  checkpoint/upload approved, iPad test pending. Other themes remain separate later rounds; the
+  illustrated brush column remains deferred.
 
 ## How to work with Owen
 
@@ -212,7 +223,7 @@ table, and any decisions that changed.
 | 9 | Export the finished picture to Photos | ✅ |
 | 10 | Brush collection (Finley's picks), in 3 batches: paint brushes, effect brushes, blending tools | ✅ all three batches confirmed on iPad |
 | 11 | Installable + offline (manifest, service worker, icons), coloring backup/transfer | ✅ PC and installed iPad app accepted, including offline/reopen |
-| 12 | Magical storybook look, Themes, polish | parts 1–3 PC/iPad accepted; both compact mockups approved; real compact interface PC accepted, iPad pending; alternate themes later, one at a time |
+| 12 | Magical storybook look, Themes, polish | parts 1–3 PC/iPad accepted; both compact mockups approved; real compact interface PC/iPad accepted; Midnight Forest PC accepted, iPad pending; other themes later, one at a time |
 
 ### Notes for future steps
 
@@ -992,7 +1003,7 @@ implementations. Use the current settings table and later optimization notes for
 | `js/library.js` | Reads `pages/pages.js`, builds page objects |
 | `js/gallery.js` | Library screens, progress ribbons, collection stacks and actual most-recent continue card |
 | `js/splash.js` | Separate opening cover/thread helper: once per document, skip, Reduce Motion, cleanup |
-| `js/themes.js` | Appearance choices and remembered device theme; Storybook only in part 3 |
+| `js/themes.js` | Remembered device theme, live selection and keyboard radios; Storybook + Midnight Forest |
 | `js/modal.js` | Shared window focus, nested questions, background input blocking and return focus |
 | `fonts/` | Bundled Literata/Figtree WOFF2 files, licenses and source record; cached offline |
 | `js/thumbnails.js` | Browser-made thumbnails (fallback) |
@@ -1163,7 +1174,8 @@ artwork matched local files. Owen then confirmed the iPad checklist "everything 
 (2026-10-21). Parts 1 and 2 are complete. Owen subsequently authorized careful progress while
 away at the gym. Part 3 subsequently passed his PC review ("everything worked"); this checkpoint
 was uploaded as 38b4c83, then Owen confirmed "ipad test worked". Parts 1–3 are accepted.
-His newer compact-workspace/page-drawer request is recorded below; exact layout awaits review.
+His newer compact-workspace/page-drawer request is recorded below; its implementation
+was subsequently accepted on PC and iPad as a944bea.
 The separate brush-column idea is saved for later; no brush UI was redesigned here.
 
 ### Owen's choices
@@ -1318,7 +1330,7 @@ No text, about 2.9 s, shown when the app opens, then removed from the page.
   finger/Pencil skip. A separate iPad Reduce Motion/VoiceOver report has not been supplied.
   Splash colors come from theme variables so each later theme can recolor it.
 
-### Build order (parts 1–3 PC/iPad accepted; compact layout PC accepted, iPad pending)
+### Build order (parts 1–3 PC/iPad accepted; compact layout PC/iPad accepted)
 
 1. **Library and coloring screens:** new tokens and components in css/styles.css (all colors,
    fonts, sizes as variables), bundled fonts, header/continue card/collection stacks in
@@ -1329,8 +1341,9 @@ No text, about 2.9 s, shown when the app opens, then removed from the page.
    dialogs, App & offline, export). Test the Storybook selector/settings before adding themes.
    **New refinement after part 3 acceptance:** Owen requested a smaller, cleaner workspace
    with a Pages drawer and authorized its mockup. Both coloring and library mockups are now
-   accepted. Their real implementation is local and awaits PC testing. This does not authorize all
-   alternate themes or the separate illustrated brush column.
+   accepted. Their real implementation was uploaded as a944bea and accepted on PC and her
+   iPad. Midnight Forest was subsequently authorized separately and has passed its PC test.
+   This does not authorize all alternate themes or the separate illustrated brush column.
 4. **Other themes ONE AT A TIME:** Midnight Forest, Ocean Dreams, Autumn Cottage, then a clean
    minimal one. Owen explicitly requested an opportunity to test EACH before the next is built.
    Each theme is one CSS-variable block `:root[data-theme="..."]` plus a small JS settings object
@@ -1568,7 +1581,8 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   No app code, brush behavior, stored coloring or deployed files changed for this feedback.
   At the time of this feedback, part 3's iPad check had not been confirmed. Owen subsequently
   reported "ipad test worked"; part 3 is now accepted. The compact layout was subsequently
-  approved through both mockups and is now implemented locally for the actual PC test.
+  approved through both mockups, implemented and uploaded as a944bea, then accepted on PC
+  and her iPad (see the implementation section below).
 
 ### Compact workspace mockup and review handoff (2026-10-21)
 
@@ -1576,7 +1590,7 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   compact-layout mockup. This round builds a separate interactive preview, not the production
   layout. Owen subsequently approved the coloring mockup's visual direction ("looks amazing",
   "spectacular"), then approved the matching library ("everything looks great!"). Both mockups
-  are accepted; the following implementation section distinguishes the pending real-app test.
+  are accepted; the following implementation section records the separate real-app PC/iPad passes.
 - **Open:** start `start-design-preview.bat`, then
   http://localhost:8001/tools/design.tmp/compact-workspace.html . No app update is needed for
   this preview; it is a different local address. Do not send the live GitHub Pages URL as if
@@ -1629,7 +1643,7 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   that origin's root/index.html to the mockup and refuses sw.js in preview mode. Default
   port-8000 app serving stays unchanged. An isolated browser reproduced the old failure and
   confirmed the separate-origin preview styled/interactive while the app worker stayed intact.
-  This developer-server repair is local, uncommitted and not an app/offline-format change.
+  This developer-server repair was included in a944bea; it is not an app/offline-format change.
 
 ### Matching compact library mockup (2026-10-21; design accepted)
 
@@ -1665,13 +1679,15 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
 - **Review outcome:** Owen said "everything looks great!", accepting the companion and editor
   designs. The real app implementation followed locally (below) with real autosave, progress,
   tools, full color picker and offline assets. Neither prototype is published. The real
-  implementation passed its own PC review ("works great") and awaits the iPad test.
+  implementation passed its own PC review ("works great"), was uploaded as a944bea, and
+  passed her iPad test ("everythging worked perfect").
 
-### Compact interface implementation (2026-10-21; PC accepted, iPad pending)
+### Compact interface implementation (2026-10-21; PC and iPad accepted)
 
 - **Status:** both mockups accepted; real interface version `20261021201511` also passed
-  Owen's PC test ("works great"). This approves checkpoint/upload under the agreed workflow.
-  Wait for the compact app's iPad acceptance before starting an alternate theme.
+  Owen's PC test ("works great"). Committed/pushed as a944bea, with live files verified.
+  Owen then reported "everythging worked perfect" after the iPad checklist; this round is
+  complete and accepted on both devices. No new app code is needed for this acceptance.
 - **Library:** compact forest header, smaller paper stacks/cover cards, quiet gold detail,
   actual page/collection counts, real continue card and colored progress thumbnails. Search
   matches page/category/sub-category names across the library; empty results are explained.
@@ -1730,18 +1746,79 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
 - **300-page check:** synthetic library in separate test storage, no real page-list changes:
   300 cards/search worked, 8 nearby thumbnail requests, 1 full outline request for the opened
   page, none for library/drawer browsing. This confirms lazy loading, not an iPad speed
-  measurement. Real Safari/Pencil/Photos sheet/VoiceOver remain on-device checks after upload.
+  measurement. The subsequent user iPad checklist passed, including Pencil/finger and
+  Save to Photos. VoiceOver was not specifically reported or verified.
 - **PC handoff:** start `start-server.bat`, open http://localhost:8000 (not the 8001 mockup).
   If it still shows the old cached app, use App & offline → Check for updates → Update app;
   keep all website data. Check home/search/Continue; color a real page; open Pages immediately,
   change page and return; verify saved coloring. Check size/options, line-lock/build-up/finger,
   color dot → More/full palettes, Brushes, Undo/Redo, … → Back to library, Focus/Show tools,
   Save/PNG and both orientations. Owen reported "works great"; this PC checklist is accepted.
-- **iPad handoff:** in the installed app, use App & offline → Check for updates → Update app.
+- **iPad checklist accepted:** Owen reported "everythging worked perfect" after upload
+  a944bea. The following is retained for reference, not a pending repeat test. In the
+  installed app, use App & offline → Check for updates → Update app.
   Check the compact library/search/Continue, Pencil and finger input, size/settings, colors
   and Brushes. Switch Pages immediately after coloring and return to verify the saved result.
   Check … → Back to library, Focus/Show tools, Fit, Undo/Redo, Save to Photos and both rotations.
   Keep website data and backups. No new speed-log round is needed.
-- **Next:** approved checkpoint/upload → compact app iPad acceptance. Then
-  each alternate theme separately, starting Midnight Forest. Illustrated brush columns are
+- **Next:** Owen subsequently authorized Midnight Forest ("okay lets do it"); its local
+  implementation and PC handoff are recorded below. Other themes follow separately. Illustrated brush columns are
   still a deferred request and have not been implemented.
+
+### Midnight Forest implementation and handoff (2026-10-21; PC accepted, iPad pending)
+
+- **Authorization/status:** after compact interface a944bea passed her iPad checklist, Owen
+  said "okay lets do it" to the first alternate theme. Midnight Forest version
+  `20261021211413` then passed his PC test ("everything works good"), approving checkpoint
+  and upload under the agreed workflow. Wait for its iPad acceptance before another theme.
+- **Look:** deep evergreen desk and surfaces, pale sage selected controls, silver-green ivy
+  and moonlight accents. Library/header, Pages drawer, editor controls, picker/palettes,
+  brush chooser, naming/confirmation boxes, App & offline and export share the dark materials.
+  Splash D uses the same geometry/timing/icon with cooler ivy, rim and thread colors. There
+  are no new background animations, per-stroke effects, raster assets, fonts or runtime requests.
+  Literata/Figtree and the approved enchanted-book icon remain shared with Storybook.
+- **Structure:** one Midnight Forest override block at the top of css/styles.css, with
+  `:root:where([data-theme="midnight-forest"])` keeping media-query dimensions effective.
+  Separate compact-cover/accent, input, brush-card, search-edge and knob tokens prevent pale
+  text on a white naming field or white brush label cards. Dark controls use color-scheme:dark;
+  the explicit paper token, canvases, brush sample backgrounds and PNG output stay white.
+  No canvas CSS filters, blending modes or palette-color substitutions were added.
+- **Selector:** Storybook stays the default for new devices; existing valid choices stay selected.
+  THEMES in js/themes.js now has exactly Storybook and Midnight Forest. Both previews use fixed
+  reference colors independent of the active look; Midnight has a small static crescent.
+  Changing a card applies immediately and saves localStorage key `theme`, including offline.
+  The early existing preference read prevents a light-page flash on reload. Missing/unknown
+  values still use Storybook; blocked storage permits the look for this visit with a notice.
+  Radio cards now use one Tab stop with arrows/Home/End; existing modal focus/Escape is reused.
+  The browser theme-color follows the actual compact background. Theme choice remains a device
+  preference, outside the .finley backup format. OS dark mode does not override her choice.
+- **Checks passed:** isolated Chrome and test storage, default Storybook, two choices, selection
+  and keyboard radios, preview stability, dark naming field, all eleven brushes, settings and
+  full picker. Checked text/action pairs are at least 6.30:1. Six layouts: 834x1194, 1194x834,
+  768x1024, 1024x768, 390x844 and 320x740; headers/toolbars/popovers/Pages/theme dialog fit and
+  the longer theme list scrolls. Real Daffodil marker stroke, exact Undo/Redo, page/home/theme
+  switching and reopening preserved identical saved color pixels. PNG download remains
+  2048x2732; offline downloads, offline reload/Continue and Reduce Motion passed. Screenshots
+  of library/editor/chooser/settings/brushes/naming were inspected. No browser JS errors or
+  outside requests. This is local Chrome evidence, not a Safari/Pencil/iPad acceptance claim.
+- **Files:** css/styles.css, css/compact.css and js/themes.js contain the functional changes.
+  index.html, JS imports, sw.js and offline-assets.js have generated version stamps; offline
+  contents remain 59 app/thumbnail assets and 10 outlines. Drawing, fill, gestures, history,
+  autosave, backup and export algorithms are unchanged. Development checks/screenshots in
+  tools/*.tmp are ignored and do not ship. Prior compact iPad acceptance is in all three guides.
+- **PC handoff:** start start-server.bat and open http://localhost:8000 (the real app, not
+  the port-8001 mockup). If cached, App & offline -> Check for updates -> Update app. Choose
+  Themes -> Midnight Forest -> Done; inspect the library, Pages, settings, Brushes, full picker
+  and a palette naming box. Try a tall/wide window, a short stroke/Undo/Redo and Save/Download.
+  Refresh to check the selected look is remembered, then switch to Storybook and back. Check
+  that paper/coloring stays the same. No website-data clearing or backup restore is needed.
+- **PC acceptance:** Owen reported "everything works good" after the handoff above; no
+  repeat PC check is pending.
+- **iPad handoff:** while online, App & offline -> Check for updates -> Update app. Choose
+  Themes -> Midnight Forest -> Done. Check library, Pages, settings, Brushes, full picker and
+  palette naming with Pencil/finger, plus both orientations. Draw/Undo/Redo, leave/reopen and
+  Save to Photos; refresh/reopen to verify the look is remembered, then switch Storybook/back.
+  Keep website data and backups. No speed log is needed unless a new lag problem appears.
+- **Next:** approved checkpoint/upload -> Midnight Forest iPad test.
+  Ocean Dreams, Autumn Cottage and minimal remain separate later rounds. The illustrated
+  brush column is still deferred.
