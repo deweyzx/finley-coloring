@@ -101,6 +101,12 @@ export const SETTINGS = {
   tapGestureMaxMs: 350,
   // ...and no finger may move more than this many screen pixels (more = zoom/pan).
   tapGestureMoveLimit: 12,
+  // A deliberate twist starts rotation even before either finger travels very far.
+  // Tiny wobbles stay eligible for tap undo/redo; close fingers give a noisy angle.
+  rotateGestureDegrees: 6,
+  rotateGestureMinDistance: 40,
+  // Alt + mouse wheel rotates on a computer (radians per wheel pixel).
+  wheelRotateRate: 0.002,
   // A touch the iPad reports as wider than this (screen pixels) is treated as a palm and ignored.
   // Finley has long nails, so she touches with the flat pad of her finger, which the iPad
   // reports as much bigger than a fingertip; at 60 her fingers counted as palms. Palm rejection

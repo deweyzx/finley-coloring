@@ -9,7 +9,7 @@
 //       * touches already on the screen when the Pencil lands are her hand: ignored, and a
 //         finger stroke still in progress is taken back with no mark;
 //       * touches the iPad reports as palm-sized are always ignored.
-//   - Two fingers moving: pinch to zoom, drag to pan.
+//   - Two fingers moving: pinch to zoom, drag to pan, twist to rotate the picture.
 //   - Two fingers tapped (down and up quickly, barely moving): undo.
 //     Three fingers tapped: redo. Anything that moves or lasts longer is zoom/pan instead.
 //   - When one finger is drawing and a second finger lands soon after (or the first finger
@@ -21,8 +21,8 @@
 // The time and distance limits are in settings.js. With the touch debug overlay turned on
 // (tap the page title 5 times), every touch and decision is shown on screen.
 
-import { SETTINGS } from "./settings.js?v=20261021235410";
-import { debugLog, debugOn } from "./touch-debug.js?v=20261021235410";
+import { SETTINGS } from "./settings.js?v=20261022001928";
+import { debugLog, debugOn } from "./touch-debug.js?v=20261022001928";
 
 const FILL_TAP_MAX_MS = 800; // a fill tap (one Pencil/finger/mouse tap)
 
@@ -51,6 +51,7 @@ export function setupInput(area, viewport, h) {
   // ---------- drawing / tapping with one pointer ----------
 
   function beginDraw(e) {
+    viewport.stop(); // the paper must not keep settling underneath a new stroke
     capture(e);
     draw = {
       id: e.pointerId,
@@ -81,6 +82,7 @@ export function setupInput(area, viewport, h) {
 
   function addToGesture(id, time, info) {
     if (!gesture) {
+      viewport.stop();
       gesture = { ids: [], t0: time, maxCount: 0, moved: false, base: null, fingers: [], cancelled: false };
     }
     gesture.ids.push(id);
@@ -103,24 +105,42 @@ export function setupInput(area, viewport, h) {
     const ay = fromTouchDown ? a.y0 : a.y;
     const bx = fromTouchDown ? b.x0 : b.x;
     const by = fromTouchDown ? b.y0 : b.y;
-    gesture.base = { scale: viewport.scale, x: viewport.x, y: viewport.y, cx: (ax + bx) / 2, cy: (ay + by) / 2, dist: Math.max(1, Math.hypot(ax - bx, ay - by)) };
+    gesture.base = { scale: viewport.scale, x: viewport.x, y: viewport.y, rotation: viewport.rotation,
+      cx: (ax + bx) / 2, cy: (ay + by) / 2, dist: Math.max(1, Math.hypot(ax - bx, ay - by)),
+      angle: Math.atan2(by - ay, bx - ax), lastDistance: Math.hypot(ax - bx, ay - by), turn: 0 };
   }
 
   function moveGesture(id) {
     const t = touches.get(id);
     const f = gesture.fingers.find((x) => x.id === id);
     if (t && f) f.moved = Math.max(f.moved, Math.round(Math.hypot(t.x - t.x0, t.y - t.y0)));
+    const [a, b] = gesture.ids.map((i) => touches.get(i)).filter(Boolean);
+    if (!a || !b || !gesture.base) return;
+    const angle = Math.atan2(b.y - a.y, b.x - a.x);
+    const distance = Math.hypot(a.x - b.x, a.y - b.y);
+    const base = gesture.base;
+    // Freeze just the angle when fingers nearly meet; their direction is noisy there.
+    // Reset the angle reference while close so spreading apart cannot cause a sudden flip.
+    if (distance >= SETTINGS.rotateGestureMinDistance && base.lastDistance >= SETTINGS.rotateGestureMinDistance)
+      base.turn += Math.atan2(Math.sin(angle - base.angle), Math.cos(angle - base.angle));
+    base.angle = angle;
+    base.lastDistance = distance;
+    const twist = distance >= SETTINGS.rotateGestureMinDistance &&
+      Math.abs(base.turn) >= SETTINGS.rotateGestureDegrees * Math.PI / 180;
+    if (twist) gesture.rotating = true;
     if (!gesture.moved) {
       const far = gesture.fingers.find((x) => x.moved > SETTINGS.tapGestureMoveLimit && gesture.ids.includes(x.id));
-      if (!far) return; // still could be a tap: don't move the page yet
+      if (!far && !twist) return; // still could be a tap: don't move the page yet
       gesture.moved = true;
-      if (gesture.ids.length >= 2) debugLog(`zoom/pan started (a finger moved ${far.moved} px)`);
+      debugLog(twist ? 'zoom/pan/rotate started (deliberate twist)' : `zoom/pan started (a finger moved ${far.moved} px)`);
       rebase(true); // the page hasn't moved yet, so measure from where the fingers went down
+      gesture.base.turn = distance >= SETTINGS.rotateGestureMinDistance && gesture.base.dist >= SETTINGS.rotateGestureMinDistance
+        ? Math.atan2(Math.sin(angle - gesture.base.angle), Math.cos(angle - gesture.base.angle)) : 0;
+      gesture.base.angle = angle;
+      gesture.base.lastDistance = distance;
     }
-    const [a, b] = gesture.ids.map((i) => touches.get(i)).filter(Boolean);
-    if (a && b && gesture.base) {
-      viewport.pinch(gesture.base, (a.x + b.x) / 2, (a.y + b.y) / 2, Math.hypot(a.x - b.x, a.y - b.y));
-    }
+    viewport.pinch(gesture.base, (a.x + b.x) / 2, (a.y + b.y) / 2, distance,
+      gesture.rotating ? gesture.base.turn : 0);
   }
 
   function endGesture(e) {
@@ -129,7 +149,7 @@ export function setupInput(area, viewport, h) {
     const took = Math.round(e.timeStamp - g.t0);
     let result;
     if (g.cancelled) result = "nothing: the iPad cancelled the touch (pointercancel)";
-    else if (g.moved) result = g.maxCount >= 2 ? "zoom/pan" : "nothing: 1 finger moved (fingers don't pan alone)";
+    else if (g.moved) result = g.maxCount >= 2 ? (g.rotating ? "zoom/pan/rotate" : "zoom/pan") : "nothing: 1 finger moved (fingers don't pan alone)";
     else if (g.maxCount < 2) result = "nothing: only 1 finger";
     else if (g.maxCount > 3) result = `nothing: ${g.maxCount} fingers (2 = undo, 3 = redo)`;
     else if (took >= SETTINGS.tapGestureMaxMs) result = `nothing: took ${took} ms (tap limit ${SETTINGS.tapGestureMaxMs} ms)`;
@@ -174,6 +194,7 @@ export function setupInput(area, viewport, h) {
 
     if (e.pointerType === "mouse") {
       if (e.button === 1 || (e.button === 0 && spaceHeld)) {
+        viewport.stop();
         capture(e);
         mousePan = { x: e.clientX, y: e.clientY };
         e.preventDefault();
@@ -284,7 +305,8 @@ export function setupInput(area, viewport, h) {
     (e) => {
       if (!h.ready()) return;
       e.preventDefault();
-      viewport.zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY);
+      if (e.altKey) viewport.rotateAt(-e.deltaY * SETTINGS.wheelRotateRate, e.clientX, e.clientY);
+      else viewport.zoomAt(Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY);
       clearTimeout(area.wheelTimer);
       area.wheelTimer = setTimeout(() => viewport.settle(), 250);
     },

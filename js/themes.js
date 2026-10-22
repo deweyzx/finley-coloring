@@ -1,6 +1,6 @@
 // themes.js - appearance only. Themes arrive one at a time for Owen and Finley to test.
 // Painting, palettes and the white artwork paper are separate from this device preference.
-import { openModal, closeModal } from './modal.js?v=20261021235410';
+import { openModal, closeModal } from './modal.js?v=20261022001928';
 
 export const THEMES = [
   {id:'storybook', name:'Storybook', description:'Forest-green leather, warm parchment and gold.'},

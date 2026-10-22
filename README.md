@@ -176,7 +176,8 @@ On the PC: Ctrl+Z to undo, Ctrl+Y to redo.
 
 ## Zoom, pan and the Pencil
 
-- **On the iPad:** pinch with two fingers to zoom, drag with two fingers to move around. Pinch
+- **On the iPad:** pinch with two fingers to zoom, drag with two fingers to move around,
+  and twist those fingers to rotate the picture. **Fit** returns it upright. Pinch
   smaller than the page and it springs back to show the whole page.
 - **The Apple Pencil and one finger both draw** (and tap to fill). Two fingers zoom and move.
 - **Palm rejection is automatic:** while the Pencil is touching the screen, and for half a second
@@ -188,7 +189,7 @@ On the PC: Ctrl+Z to undo, Ctrl+Y to redo.
   fingers, their timing, movement and size, and what the app decided. The log's **Hide log**
   button turns it off. The gesture limits are in `js/settings.js`.
 - **On the PC:** the mouse wheel zooms, dragging with the middle mouse button (or holding the
-  space bar and dragging) moves around, and Ctrl+0 shows the whole page again.
+  space bar and dragging) moves around. **Alt + wheel** rotates; **Ctrl+0** fits upright.
 
 To change how a brush feels, or to add a new one, edit `js/brushes.js`. Each brush is one short
 block of settings, and the comments at the top explain each setting.
@@ -383,8 +384,11 @@ this issue. The repair copies the backup's compressed data independently of the 
 
 ### Project checkpoint and next step
 
-Current checkpoint: **Autumn Cottage, version 20261021235410**. Local checks passed;
-separate PC approval is skipped under the requested direct iPad workflow. The iPad test is next.
+Current update: **larger brush sizes and finger rotation, version 20261022001928**. Local
+checks passed; the iPad test is next under the recent direct-iPad workflow.
+
+Previous app checkpoint: **400a25a, Autumn Cottage, version 20261021235410**, uploaded and
+verified live. Its iPad report has not yet been supplied. The minimal theme is still unbuilt.
 
 Previous accepted app checkpoint: **f70d0ae, Ocean Dreams, version 20261021233948**, uploaded and
 verified live. Local checks passed and Owen confirmed her iPad test "everything worked great".
@@ -740,3 +744,40 @@ requested direct iPad workflow, without a separate PC approval round.
 
 Keep website data and backups. Report the iPad result before the clean minimal theme, which
 will be the last theme. The illustrated brush-column idea remains a separate future project.
+
+
+## Bigger brushes and finger rotation (iPad test next)
+
+All brush ceilings are roughly 50% bigger. Her existing sizes and opacity settings stay as
+she left them; the sliders simply have more room at the top.
+
+| Tool | Previous maximum | New maximum |
+|---|---:|---:|
+| Pencil | 40 | 60 |
+| Marker | 120 | 180 |
+| Eraser | 200 | 300 |
+| Airbrush | 300 | 450 |
+| Smooth hair | 200 | 300 |
+| Watercolor | 130 | 200 |
+| Splatter | 240 | 360 |
+| Glitter | 120 | 180 |
+| Metallic | 60 | 90 |
+| Blender / Blur | 48 | 72 each |
+
+With two fingers on the picture, **twist to rotate**, pinch to zoom and drag to pan in the
+same gesture. **Fit** returns the whole page upright. The saved/exported picture stays upright.
+Two-finger tap Undo and three-finger tap Redo still work. On a PC, Alt + mouse wheel rotates.
+
+### Try it on her iPad
+
+1. **App & offline -> Check for updates -> Update app** while online.
+2. Open a real page, zoom in, then twist and move with two fingers. Lift and place fingers
+   again, draw/fill while rotated, and check that marks land under the Pencil.
+3. Try line-lock, two-finger Undo, three-finger Redo and resting her hand while using Pencil.
+4. Tap **Fit**, try the larger sizes, then Save to Photos and leave/reopen the page.
+
+Local checks passed for rotation, drawing/fill alignment, undo, all larger limits, line-lock,
+full-resolution upright export, both layouts and offline use. The new largest sizes are **not
+yet speed-checked on her iPad**; watercolor, glitter and metallic had smaller limits for speed.
+If one feels laggy, report the brush and size—no speed-log screenshot needed. Keep website data
+and backups. These changes are the current test round; remaining theme work waits for feedback.

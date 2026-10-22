@@ -7,7 +7,7 @@ one tested step at a time. CLAUDE.md and AGENTS.md share the same current projec
 **Keep this file current:** when a step is finished and committed, update "Where we are", the step
 table, and any decisions that changed.
 
-## Resume here — current status (2026-10-21)
+## Resume here — current status (2026-10-22)
 
 - **Step 11 is complete and accepted on the iPad.** Steps 1–11 are finished.
 - **Step 12 part 1 is complete and accepted on PC and her iPad.** Owen chose splash
@@ -54,9 +54,12 @@ table, and any decisions that changed.
   confirmed the entire final checklist "all worked perfectly": Save all pages offline showed
   10 of 10; the installed app reopened in Airplane Mode; a colored page opened, a new stroke
   survived leaving/reopening, and rotation worked. This supersedes older pending-retest notes.
-- **Current checkpoint:** Autumn Cottage, version `20261021235410`; local checks passed,
-  direct checkpoint/upload for iPad testing authorized by the ongoing theme workflow.
-  Separate Owen PC approval is skipped; iPad acceptance is pending.
+- **Current requested update:** larger maximum sizes for all eleven brushes and two-finger
+  canvas rotation, version `20261022001928`. Local checks passed; direct iPad handoff follows
+  Owen's recent preference to skip separate PC approval. iPad acceptance is pending.
+- **Previous app checkpoint:** 400a25a, Autumn Cottage, version `20261021235410`, committed/
+  pushed and live files verified. Its iPad report has not yet been supplied; do not mark
+  Autumn Cottage accepted based on this new feature request. Minimal remains unbuilt.
 - **Previous accepted app checkpoint:** f70d0ae, Ocean Dreams, version `20261021233948`; committed
   and pushed to main, with live files verified. Local checks passed; Owen accepted her iPad
   checklist ("everything worked great"). Separate Owen PC approval was explicitly skipped.
@@ -100,8 +103,9 @@ table, and any decisions that changed.
   Midnight Forest implementation/PC acceptance in all three guides. Its subsequent iPad
   acceptance and the Ocean Dreams implementation/direct-iPad workflow are included in this
   checkpoint in all three guides. The subsequent Ocean Dreams iPad acceptance and Autumn
-  Cottage implementation/direct-iPad handoff are included in this checkpoint. Themes remain
-  separate test rounds.
+  Cottage implementation/direct-iPad handoff were included in 400a25a. This checkpoint adds
+  the requested expanded brush ranges, rotation and their local checks to all three guides.
+  Themes remain separate test rounds.
 
 ### Accepted checkpoints
 
@@ -116,7 +120,8 @@ table, and any decisions that changed.
 | a944bea, version 20261021201511 | Compact library, coloring controls, Pages drawer and preview-server repair | Uploaded; PC and iPad accepted |
 | 153d049, version 20261021211413 | Midnight Forest appearance, remembered selection and keyboard theme radios | Uploaded; PC and iPad accepted |
 | f70d0ae, version 20261021233948 | Ocean Dreams appearance and fixed wave preview | Uploaded; local checks and her iPad accepted; separate PC approval skipped by request |
-| This checkpoint, version 20261021235410 | Autumn Cottage appearance and fixed leaf preview | Local checks passed; direct iPad upload authorized; iPad pending |
+| 400a25a, version 20261021235410 | Autumn Cottage appearance and fixed leaf preview | Uploaded; local checks passed; iPad report pending |
+| This checkpoint, version 20261022001928 | Larger brush ceilings, two-finger canvas rotation, upright Fit/export | Local checks passed; iPad acceptance pending |
 
 ## Where we are
 
@@ -201,6 +206,10 @@ table, and any decisions that changed.
   `20261021235410`, local checks passed; direct upload for iPad testing is authorized. Wait
   for its iPad acceptance before the separate minimal theme round. The illustrated brush
   column remains deferred.
+- **New request, 2026-10-22:** Owen requested a bigger watercolor maximum, then clarified
+  bigger maxima for all brushes, plus finger rotation while zoomed. These updates interrupt
+  the remaining theme work. They are implemented with local checks passed; iPad acceptance
+  is next. They do not imply an Autumn Cottage acceptance report. See the final section.
 
 ## How to work with Owen
 
@@ -354,25 +363,26 @@ window restyle; it is a separate deferred follow-up, not yet scheduled or implem
   page opens, `warmUp()` works out the areas at 8 points along the page edges (usually the
   background). So starting a stroke or fill in the background takes ~2 ms instead of ~190 ms.
 
-## Current accepted brush settings
+## Current brush settings (expanded ceilings awaiting iPad acceptance)
 
 This table is the current implementation in js/brushes.js. Historical development notes below
 retain earlier sizes, textures and measurements to explain decisions; they are not instructions
-to restore the old limits. All brushes were accepted on Finley's iPad in step 10.
+to restore the old limits. Brush behavior was accepted in step 10; the larger ceilings requested
+on 2026-10-22 have passed local functional checks but not yet her iPad speed/feel check.
 
 | Tool | Size range (page pixels) | Default size / opacity | Current spacing |
 |---|---|---|---|
-| Pencil | 1–40 | 8 / 90% | 0.12 |
-| Marker | 4–120 | 30 / 70% | 0.08 |
-| Eraser | 4–200 | 40 / 100% | 0.08 |
-| Airbrush | 10–300 | 80 / 60% | 0.2 |
-| Smooth hair | 2–200 | 24 / 85% | 0.12 |
-| Watercolor | 6–130 | 50 / 45% | 0.3 |
-| Splatter | 10–240 | 70 / 90% | 0.3 |
-| Glitter | 4–120 | 30 / 90% | 0.16 |
-| Metallic | 3–60 | 20 / 100% | 0.16 |
-| Blender | 6–48 | 30 / 65% | 0.2 |
-| Blur | 6–48 | 30 / 65% | 0.3 |
+| Pencil | 1–60 | 8 / 90% | 0.12 |
+| Marker | 4–180 | 30 / 70% | 0.08 |
+| Eraser | 4–300 | 40 / 100% | 0.08 |
+| Airbrush | 10–450 | 80 / 60% | 0.2 |
+| Smooth hair | 2–300 | 24 / 85% | 0.12 |
+| Watercolor | 6–200 | 50 / 45% | 0.3 |
+| Splatter | 10–360 | 70 / 90% | 0.3 |
+| Glitter | 4–180 | 30 / 90% | 0.16 |
+| Metallic | 3–90 | 20 / 100% | 0.16 |
+| Blender | 6–72 | 30 / 65% | 0.2 |
+| Blur | 6–72 | 30 / 65% | 0.3 |
 
 - Smooth hair keeps Finley's preferred batch-1 appearance, with its later faster inner loop.
 - Pencil: pressure curve 0.5, minimum size 0.6 and opacity 0.5; grain fill [0.45, 0.85].
@@ -1941,3 +1951,66 @@ tested on his PC and said it works;** then commit + push, then he checks on the 
   and backups; no speed-log round is needed for this appearance-only update.
 - **Next:** wait for her Autumn Cottage acceptance. Then the clean minimal theme is the last
   theme, followed by final polish/review. The illustrated brush column is still deferred.
+
+
+### Larger brushes and canvas rotation (2026-10-22; iPad pending)
+
+- **Request/status:** Owen asked for a larger watercolor maximum, then "actually make the
+  max size for all brushes bigger in general", plus rotation with fingers while zoomed.
+  Version `20261022001928` implements both and passed local checks. Continue his recent
+  direct-iPad testing preference; no separate Owen PC acceptance is claimed. Autumn Cottage
+  remains pending on her iPad, and the minimal theme has not started.
+- **Expanded ceilings, page pixels:** Pencil 40 -> 60; Marker 120 -> 180; Eraser 200 -> 300;
+  Airbrush 300 -> 450; Smooth hair 200 -> 300; Watercolor 130 -> 200; Splatter 240 -> 360;
+  Glitter 120 -> 180; Metallic 60 -> 90; Blender and Blur 48 -> 72 each. About 50% larger.
+  Minimums/default sizes/opacity, pressure, textures, spacing and saved settings are unchanged.
+  These are optional higher limits; this is not a rendering-speed optimization. Previous
+  iPad-safe ceilings remain in the history above; watercolor/glitter/metallic were capped
+  for actual lag. Do not claim the expanded ceilings are smooth on her iPad until she tests.
+  Keep feedback simple (brush, size, smooth/laggy), not another mandatory speed-log round.
+- **Viewport:** viewport.js adds radians `rotation` and the same CSS transform for all three
+  stacked canvases: translate -> rotate -> scale, from the top-left origin. Inverse rotation
+  in toPage keeps strokes, fills and line-lock aligned. Rotated extents determine fit/minimum
+  zoom; page-coordinate clamping keeps the paper reachable. zoomAt/panBy keep the existing
+  rotation; pinch anchors zoom, drag and twist under the fingers' midpoint. Accumulated angle
+  handles crossing +/-180 and multiple turns. Fit/Ctrl+0 resets upright, centered and fitted.
+  New pages and physical device/window resizing fit upright, as the existing resize behavior
+  did for zoom. The view angle is not a saved modification or an Undo entry.
+- **Gesture safeguards:** touch-input stores starting rotation, finger angle and accumulated
+  turn, rebasing when fingers are added/lifted. Existing 350ms tap/12px wobble, palm-size120
+  and Pencil priority are unchanged. Deliberate twists activate at 6 degrees; angle updates
+  freeze when fingers nearly meet (under40 screen pixels), while pinch/pan still work, avoiding
+  an unstable flip. New tweakable values are in settings.js. Two-/three-finger taps remain
+  Undo/Redo and a gesture cancels the tentative first-finger mark. Debug reports zoom/pan/rotate.
+  Alt + mouse wheel rotates at the pointer on PC; ordinary wheel still zooms.
+- **Pencil/animation:** readPoint subtracts view.rotation from screen-reported Pencil azimuth;
+  pressure/altitude are unchanged. A new drawing pointer, new gesture or mouse pan stops a
+  pending viewport settle animation immediately, so paper cannot keep sliding under a stroke.
+  This edge case was found during the rotated tilt comparison and fixed before handoff.
+- **Saving/export:** color pixels, line art, history and saved PNGs stay in upright page space.
+  No image resampling, line-art rotation bake, DB/backup-format change or texture alteration.
+  Existing save-before-page-change guard remains. Fit's tooltip/accessible label says upright.
+- **Checks passed, isolated Chrome/storage:** inverse mapping/anchored zoom/rotation at many
+  angles and multi-turn pinch; rotated fit/settle and stopping animation; actual two-touch
+  twist+zoom+pan without marks; correct rotated marker placement; exact tap Undo/Redo; finger
+  replacement/cancel and palm ignoring. Rotated fill chose the exact same mask/pixels as an
+  upright tap. Equivalent tilted Pencil strokes were visually equal (478 edge pixels differed
+  by1 channel level due to CSS transform serialization); alignment was checked directly.
+  All eleven slider maxima/previews reached their limits and persisted per-brush after reload.
+  Each maximum rendered/committed inside a half-page clip with zero changes outside it,
+  including Blender/Blur. Full-resolution PNG matched the upright color+line composite exactly.
+  Both iPad-shaped layouts and offline reload/rotation passed, with no browser JS errors.
+  Offline reload followed a flush through Pages; no new guarantee about forcibly unloading
+  before asynchronous saves finish is implied. PC timings are not iPad performance evidence.
+- **Files/version:** brushes.js (ceilings only), viewport.js, touch-input.js, settings.js,
+  editor.js (tilt axes) and index.html (Fit label); other modules have generated version stamps.
+  `20261022001928`, 59 app/thumbnail assets, same10 outlines. No new dependency or asset.
+  Development tools/check-rotate-sizes.tmp and its screenshots are ignored, not shipped.
+- **iPad handoff:** App & offline -> Check for updates -> Update app. Open a real page, zoom,
+  then twist and drag with two fingers together. Draw/fill while rotated, check line-lock,
+  two-finger Undo/three-finger Redo and normal Pencil palm rejection. Fit should restore upright.
+  Try the new top sizes, especially Watercolor200, Glitter180, Metallic90, then export and
+  reopen the page. Report any lag with brush/size; no log screenshot is required. Keep data.
+- **Next:** wait for her result on these functional changes before more theme work. Autumn
+  Cottage still needs its iPad report; minimal and final polish remain. Illustrated brush
+  columns remain a separate deferred follow-up.

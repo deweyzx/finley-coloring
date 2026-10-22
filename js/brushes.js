@@ -59,7 +59,7 @@ export const BRUSHES = {
   pencil: {
     name: "Pencil",
     icon: `<path d="M4 20 L5.2 15.2 L15.5 4.9 L19.1 8.5 L8.8 18.8 Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M13.6 6.8 L17.2 10.4" stroke="currentColor" stroke-width="1.7"/><path d="M4 20 L5.2 15.2 L8.8 18.8 Z" fill="currentColor"/>`,
-    sizeRange: [1, 40],
+    sizeRange: [1, 60],
     defaults: { size: 8, opacity: 0.9 },
     hardness: 0.75,
     spacing: 0.12,
@@ -74,7 +74,7 @@ export const BRUSHES = {
   marker: {
     name: "Marker",
     icon: `<path d="M7.5 16.5 L14.8 4.2 L19.8 7.2 L12.5 19.5 Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M7.5 16.5 L6 21 L10 19.2" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>`,
-    sizeRange: [4, 120],
+    sizeRange: [4, 180],
     defaults: { size: 30, opacity: 0.7 },
     hardness: 0.82,
     spacing: 0.08,
@@ -88,7 +88,7 @@ export const BRUSHES = {
   eraser: {
     name: "Eraser",
     icon: `<path d="M9 19 L3.8 13.8 L12.8 4.8 L20.2 12.2 L13.4 19 Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8.3 9.3 L15.7 16.7" stroke="currentColor" stroke-width="1.7"/><path d="M9 19 H 20" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>`,
-    sizeRange: [4, 200],
+    sizeRange: [4, 300],
     defaults: { size: 40, opacity: 1 },
     hardness: 0.85,
     spacing: 0.08,
@@ -106,7 +106,7 @@ export const BRUSHES = {
   airbrush: {
     name: "Airbrush",
     icon: `<rect x="3.5" y="10" width="8" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M5.5 10 V7.2 H9.5 V10" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="14.5" cy="6.5" r="1.1" fill="currentColor"/><circle cx="17.8" cy="4.6" r="0.9" fill="currentColor"/><circle cx="18" cy="8.6" r="1.1" fill="currentColor"/><circle cx="21" cy="6.6" r="0.8" fill="currentColor"/><circle cx="20.6" cy="11" r="0.9" fill="currentColor"/>`,
-    sizeRange: [10, 300],
+    sizeRange: [10, 450],
     defaults: { size: 80, opacity: 0.6 },
     hardness: 0,
     soft: true,
@@ -124,7 +124,7 @@ export const BRUSHES = {
   smoothHair: {
     name: "Smooth hair",
     icon: `<path d="M20.5 3.5 L13.2 10.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M14.2 9 L15 9.8 L11.5 13.3 L10.7 12.5 Z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M10.7 12.5 C7.2 12.6 5.4 15 4.5 20 C9.5 19 11.4 17 11.5 13.3 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>`,
-    sizeRange: [2, 200],
+    sizeRange: [2, 300],
     defaults: { size: 24, opacity: 0.85 },
     hardness: 0.55,
     spacing: 0.12, // (was 0.06; with the quick loop it looks the same and is about 4x lighter)
@@ -141,7 +141,7 @@ export const BRUSHES = {
   watercolor: {
     name: "Watercolor",
     icon: `<path d="M12 3.2 C9 7.8 6.3 11 6.3 14.6 a5.7 5.7 0 0 0 11.4 0 C17.7 11 15 7.8 12 3.2 Z" fill="currentColor" fill-opacity="0.25" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.2 14.8 a2.9 2.9 0 0 0 2.6 2.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`,
-    sizeRange: [6, 130], // (was 160: too heavy at her drawing speed on her iPad)
+    sizeRange: [6, 200],
     defaults: { size: 50, opacity: 0.45 },
     hardness: 0.65,
     spacing: 0.3, // (was 0.07, then 0.2: far fewer dabs, to keep up on her iPad; the cloud-like edge hides the difference)
@@ -158,7 +158,7 @@ export const BRUSHES = {
   splatter: {
     name: "Splatter",
     icon: `<circle cx="10.5" cy="12.5" r="4" fill="currentColor"/><circle cx="18" cy="7" r="1.6" fill="currentColor"/><circle cx="5" cy="5.5" r="1.2" fill="currentColor"/><circle cx="18.6" cy="16.8" r="1.3" fill="currentColor"/><circle cx="5.6" cy="19.2" r="1.8" fill="currentColor"/><circle cx="12.5" cy="4" r="0.9" fill="currentColor"/><circle cx="20.5" cy="12" r="0.8" fill="currentColor"/>`,
-    sizeRange: [10, 240],
+    sizeRange: [10, 360],
     defaults: { size: 70, opacity: 0.9 },
     hardness: 0.8,
     spacing: 0.3,
@@ -177,7 +177,7 @@ export const BRUSHES = {
   glitter: {
     name: "Glitter",
     icon: `<path d="M12 3 L13.6 9.4 L20 11 L13.6 12.6 L12 19 L10.4 12.6 L4 11 L10.4 9.4 Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M18.5 15.5 L19.2 17.8 L21.5 18.5 L19.2 19.2 L18.5 21.5 L17.8 19.2 L15.5 18.5 L17.8 17.8 Z" fill="currentColor"/><circle cx="5.5" cy="18.5" r="1.2" fill="currentColor"/><circle cx="19" cy="5" r="1" fill="currentColor"/>`,
-    sizeRange: [4, 120], // (was 150: too heavy at her drawing speed on her iPad)
+    sizeRange: [4, 180],
     defaults: { size: 30, opacity: 0.9 },
     hardness: 0.95,
     spacing: 0.16, // (was 0.1: fewer dabs, looks the same)
@@ -194,7 +194,7 @@ export const BRUSHES = {
   metallic: {
     name: "Metallic",
     icon: `<path d="M5 19 C8 12 11 16 14 9 C15.5 5.5 18 4.5 20 5" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/><path d="M6.4 16.3 C8.6 12.6 10.6 14.6 12.8 9.6" fill="none" style="stroke: var(--surface)" stroke-width="1" stroke-linecap="round" opacity="0.9"/><path d="M19 13 L19.6 14.9 L21.5 15.5 L19.6 16.1 L19 18 L18.4 16.1 L16.5 15.5 L18.4 14.9 Z" fill="currentColor"/>`,
-    sizeRange: [3, 60], // (was 120: too heavy at her drawing speed on her iPad)
+    sizeRange: [3, 90],
     defaults: { size: 20, opacity: 1 },
     hardness: 0.8,
     spacing: 0.16, // (was 0.08: half the dabs, looks the same)
@@ -208,7 +208,7 @@ export const BRUSHES = {
     name: "Blender",
     // A paper blending stump, in the same diagonal, outlined style as Pencil/Marker.
     icon: `<path d="M4 20 L6 13.5 L15.6 3.9 Q16.5 3 17.4 3.9 L20.1 6.6 Q21 7.5 20.1 8.4 L10.5 18 Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M6 13.5 L10.5 18 M14.1 5.4 L18.6 9.9 M4 20 L7.1 19" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>`,
-    sizeRange: [6, 48], defaults: { size: 30, opacity: 0.65 },
+    sizeRange: [6, 72], defaults: { size: 30, opacity: 0.65 },
     hardness: 0.65, spacing: 0.2,
     // A light touch already does useful blending; pressure adds control, not a hurdle.
     // The opacity slider still sets the maximum. No pressure threshold or hard press needed.
@@ -220,7 +220,7 @@ export const BRUSHES = {
     name: "Blur",
     // A soft blending brush, matching Smooth hair's handle and fine outline.
     icon: `<path d="M20.5 3.5 L14 10 M18.4 3.2 L12.4 9.2 L15.2 12 L21.2 6 Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M12.4 9.2 C8.1 9.5 4.8 13 4.2 18.8 C9.7 18.2 13.5 15.5 15.2 12 M8.1 15.7 L6.3 18.2 M10.8 14.4 L9.5 17.2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>`,
-    sizeRange: [6, 48], defaults: { size: 30, opacity: 0.65 },
+    sizeRange: [6, 72], defaults: { size: 30, opacity: 0.65 },
     hardness: 0.65, spacing: 0.3,
     pressure: { size: [0.9, 1], opacity: [0.6, 1], curve: 0.4 },
     tilt: { widen: 0.2, opacity: 1, grainFill: 1 },
